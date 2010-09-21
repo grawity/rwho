@@ -21,8 +21,12 @@ sub fetch() {
 	my $resp = $ua->get(NOTIFY_URL);
 	my $data = decode_json($resp->decoded_content);
 	my @data = sort {$a->{user} cmp $b->{user}} @$data;
-	for my $entry (@data) {
-		prettyprint @{$entry}{qw(host user rhost line time)};
+	if (scalar @data) {
+		for my $entry (@data) {
+			prettyprint @{$entry}{qw(host user rhost line time)};
+		}
+	} else {
+		print "Nobody's on.\n";
 	}
 }
 
