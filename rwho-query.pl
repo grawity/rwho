@@ -9,22 +9,32 @@ use LWP::UserAgent;
 use JSON;
 use POSIX qw/strftime/;
 
-sub prettyprint(@) {
-	my ($host, $user, $rhost, $line, $time) = @_;
-	printf "%-12s %-20s %s  %s\n",
-		($user, "$host:$line", strftime("%F %R", localtime $time),
-			$rhost || '(local login)');
+my %last = (user => "", host => "");
+
+sub prettyprint {
+	my ($entry) = @_;
+	my %entry = %$entry;
+	printf "%-12s %-12s %-8s %s  %s\n",
+		($entry{user} ne $last{user} ? $entry{user} : ""),
+		$entry{host},
+		$entry{line},
+		strftime("%F %R", localtime $entry{time}),
+		$entry{rhost} || '(local login)';
+
+	%last = %entry;
 }
 
 sub fetch() {
 	my $ua = LWP::UserAgent->new;
 	my $resp = $ua->get(NOTIFY_URL);
 	my $data = decode_json($resp->decoded_content);
-	my @data = sort {$a->{user} cmp $b->{user}} @$data;
+	my @data = sort {
+		$a->{user} cmp $b->{user}
+		or $a->{host} cmp $b->{host}
+		#or -($a->{time} <=> $b->{time})
+		} @$data;
 	if (scalar @data) {
-		for my $entry (@data) {
-			prettyprint @{$entry}{qw(host user rhost line time)};
-		}
+		prettyprint $_ for @data;
 	} else {
 		print "Nobody's on.\n";
 	}
