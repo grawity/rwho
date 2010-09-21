@@ -80,6 +80,10 @@ sub watch() {
 	1 while $inotify->poll;
 }
 
+sub cleanup {
+	upload("destroy", []);
+}
+
 =foo
 sub get_fqdn() {
 	use Socket qw/pack_sockaddr_in inet_aton/;
@@ -94,9 +98,8 @@ $my_hostname = get_fqdn();
 
 $my_hostname = hostname;
 
-$SIG{INT} = sub {
-	upload("destroy", []);
-};
+$SIG{INT} = \&cleanup;
+$SIG{TERM} = \&cleanup;
 
 print "sending initial update\n";
 update();
