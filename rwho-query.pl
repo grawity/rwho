@@ -14,7 +14,7 @@ my %last = (user => "", host => "");
 sub prettyprint {
 	my ($entry) = @_;
 	my %entry = %$entry;
-	printf "%-12s %-12s %-8s %s  %s\n",
+	printf "%-12s %-12s %-8s %-17s %s\n",
 		($entry{user} ne $last{user} ? $entry{user} : ""),
 		$entry{host},
 		$entry{line},
@@ -34,6 +34,8 @@ sub fetch() {
 		#or -($a->{time} <=> $b->{time})
 		} @$data;
 	if (scalar @data) {
+		printf "%-12s %-12s %-8s %-17s %s\n",
+			"USER", "HOST", "LINE", "LOGGED ON", "FROM";
 		prettyprint $_ for @data;
 	} else {
 		print "Nobody's on.\n";
