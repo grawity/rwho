@@ -89,7 +89,7 @@ $actions = array(
 			return false;
 		}
 		$data = json_decode($_POST["utmp"]);
-		if (!$data) {
+		if ($data === false) {
 			print "error: no data\n";
 			return false;
 		}
