@@ -3,23 +3,39 @@
 
 const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
 
-// read user input
-
-$input = fgets(STDIN);
-if (!strlen($input)) {
-	die("Error.\n");
+function finger_parse($input) {
+	$input = rtrim($input, "\r\n");
+	if ($input === "/W" or substr($input, 0, 3) === "/W ") {
+		$query = substr($input, 3);
+		$detail = true;
+	} else {
+		$query = $input;
+		$detail = false;
+	}
+	return array($query, $detail);
 }
-$input = rtrim($input);
 
-// strip off /W
+function prettyprint($data) {
+	$fmt = "%-12s %-12s %-8s %s\r\n";
+	printf($fmt, "USER", "HOST", "LINE", "FROM");
 
-if ($input == "/W" or substr($input, 0, 3) == "/W ") {
-	$query = substr($input, 3);
-	$detail = true;
-} else {
-	$query = $input;
-	$detail = false;
+	$last = array("user" => null);
+	foreach ($data as $row) {
+		printf($fmt,
+			// only display usernames once
+			$row["user"] !== $last["user"] ? $row["user"] : "",
+			$row["host"],
+			$row["line"],
+			strlen($row["rhost"]) ? $row["rhost"] : "(local)"
+			);
+		$last = $row;
+	}
 }
+
+$input = fgets(STDIN)
+	or die();
+
+list($query, $detail) = finger_parse($input);
 
 $q_user = null;
 $q_host = null;
@@ -33,41 +49,25 @@ if (strlen($query)) {
 	}
 }
 
-$db = new SQLite3(DB_PATH, SQLITE3_OPEN_READONLY);
+$db = new SQLite3(DB_PATH, SQLITE3_OPEN_READONLY)
+	or die("error: could not open rwho database\r\n");
 
 $sql = "SELECT * FROM utmp";
-
 $cond = array();
 if (strlen($q_user))
 	$cond[] = "user=:user";
 if (strlen($q_host))
 	$cond[] = "host=:host";
 if (count($cond))
-	$sql = $sql." WHERE ".implode(" AND ", $cond);
+	$sql .= " WHERE ".implode(" AND ", $cond);
+$sql .= " ORDER BY user, host, line, time DESC";
 
 $st = $db->prepare($sql);
 $st->bindValue(":user", $q_user);
 $st->bindValue(":host", $q_host);
-
-$fmt = "%-12s %-12s %-6s %s\n";
-printf($fmt, "USER", "HOST", "LINE", "FROM");
-
 $res = $st->execute();
 $data = array();
 while ($row = $res->fetchArray(SQLITE3_ASSOC))
 	$data[] = $row;
 
-usort($data, function($a, $b) {
-	$s = strcmp($a["user"], $b["user"]);
-	if (!$s) $s = strcmp($a["host"], $b["host"]);
-	if (!$s) $s = strcmp($a["line"], $b["line"]);
-	return $s;
-	});
-
-$last = array("user" => null);
-foreach ($data as $row) {
-	printf($fmt,
-		($row["user"] != $last["user"] ? $row["user"] : ""),
-		$row["host"], $row["line"], $row["rhost"]);
-	$last = $row;
-}
+prettyprint($data);
