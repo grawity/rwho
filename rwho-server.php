@@ -5,10 +5,11 @@ const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
 
 function ut_insert($db, $host, $entry) {
 	$st = $db->prepare('
-		INSERT INTO `utmp` (host, user, rhost, line, time, updated)
-		VALUES (:host, :user, :rhost, :line, :time, :updated)');
+		INSERT INTO `utmp` (host, user, uid, rhost, line, time, updated)
+		VALUES (:host, :user, :uid, :rhost, :line, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
+	$st->bindValue(":uid", $entry->uid);
 	$st->bindValue(":rhost", $entry->host);
 	$st->bindValue(":line", $entry->line);
 	$st->bindValue(":time", $entry->time);
