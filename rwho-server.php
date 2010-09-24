@@ -4,26 +4,24 @@ header("Content-Type: text/plain; charset=utf-8");
 const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
 
 function ut_insert($db, $host, $entry) {
-	list ($user, $rhost, $line, $time) = $entry;
 	$st = $db->prepare('
 		INSERT INTO `utmp` (host, user, rhost, line, time, updated)
 		VALUES (:host, :user, :rhost, :line, :time, :updated)');
 	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $user);
-	$st->bindValue(":rhost", $rhost);
-	$st->bindValue(":line", $line);
-	$st->bindValue(":time", $time);
+	$st->bindValue(":user", $entry->user);
+	$st->bindValue(":rhost", $entry->host);
+	$st->bindValue(":line", $entry->line);
+	$st->bindValue(":time", $entry->time);
 	$st->bindValue(":updated", time());
 	return $st->execute();
 }
 
 function ut_delete($db, $host, $entry) {
-	list ($user, $rhost, $line, $time) = $entry;
 	$st = $db->prepare('DELETE FROM `utmp` WHERE host=:host AND user=:user AND line=:line');
 	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $user);
-	$st->bindValue(":line", $line);
-	$st->bindValue(":time", $time);
+	$st->bindValue(":user", $entry->user);
+	$st->bindValue(":line", $entry->line);
+	//$st->bindValue(":time", $entry->time);
 	return $st->execute();
 }
 

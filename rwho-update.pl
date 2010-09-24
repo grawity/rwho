@@ -22,7 +22,13 @@ sub ut_dump() {
 	if (eval {require User::Utmp}) {
 		while (my $ent = User::Utmp::getutxent()) {
 			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
-				push @utmp, $ent;
+				push @utmp, {
+					user => $ent->{ut_user},
+					uid => scalar getpwnam($ent->{ut_user}),
+					line => $ent->{ut_line},
+					host => $ent->{ut_host},
+					time => $ent->{ut_time},
+				};
 			}
 		}
 		User::Utmp::endutxent();
@@ -32,12 +38,11 @@ sub ut_dump() {
 		while (my $ent = $utmp->getutent()) {
 			if ($ent->user_process) {
 				push @utmp, {
-					ut_host => $ent->ut_host,
-					ut_line => $ent->ut_line,
-					ut_pid => $ent->ut_pid,
-					ut_time => $ent->ut_time,
-					ut_type => $ent->ut_type,
-					ut_user => $ent->ut_user,
+					user => $ent->ut_user,
+					uid => scalar getpwnam($ent->ut_user),
+					line => $ent->ut_line,
+					host => $ent->ut_host,
+					time => $ent->ut_time,
 				};
 			}
 		}
@@ -50,11 +55,7 @@ sub ut_dump() {
 }
 
 sub update() {
-	my @keep = qw(ut_user ut_host ut_line ut_time);
-	my @data = ();
-	for my $entry (ut_dump()) {
-		push @data, [@$entry{@keep}];
-	}
+	my @data = ut_dump();
 	upload("put", \@data);
 }
 
