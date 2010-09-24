@@ -94,18 +94,6 @@ sub cleanup {
 	upload("destroy", []);
 }
 
-=foo
-sub get_fqdn() {
-	use Socket qw/pack_sockaddr_in inet_aton/;
-	use Socket::GetAddrInfo qw/:newapi getnameinfo/;
-	my $addr = pack_sockaddr_in(0, inet_aton("127.0.0.1"));
-	my ($err, $host, $service) = getnameinfo($addr);
-	return $host;
-}
-
-$my_hostname = get_fqdn();
-=cut
-
 $my_hostname = hostname;
 
 $SIG{INT} = \&cleanup;
@@ -115,13 +103,17 @@ $SIG{TERM} = \&cleanup;
 update();
 
 $pid_periodic = forked {
+	my $interval = 3*60;
+
+	$0 = "rwho-update: periodic(${interval}s)";
 	$SIG{INT} = "DEFAULT";
 	$SIG{TERM} = "DEFAULT";
 
 	while (1) {
-		sleep 3*60;
+		sleep $interval;
 		update();
 	}
 };
 
+$0 = "rwho-update: inotify(".PATH_UTMP.")";
 watch();
