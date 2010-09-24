@@ -10,12 +10,20 @@ use constant {
 	NOTIFY_REALM => 'rwho',
 };
 
+use POSIX qw(signal_h);
 use Linux::Inotify2;
 use Sys::Hostname;
 use JSON;
 use LWP::UserAgent;
 
 my $my_hostname;
+my $pid_periodic;
+
+sub forked(&) {
+	my $sub = shift;
+	my $pid = fork();
+	if ($pid) {return $pid} else {exit &$sub}
+}
 
 sub ut_dump() {
 	my @utmp = ();
@@ -82,6 +90,7 @@ sub watch() {
 }
 
 sub cleanup {
+	kill SIGTERM, $pid_periodic unless $pid_periodic == $$;
 	upload("destroy", []);
 }
 
@@ -102,7 +111,17 @@ $my_hostname = hostname;
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
 
-print "sending initial update\n";
+# initial update
 update();
-print "watching ".PATH_UTMP." for modifications\n";
+
+$pid_periodic = forked {
+	$SIG{INT} = "DEFAULT";
+	$SIG{TERM} = "DEFAULT";
+
+	while (1) {
+		sleep 3*60;
+		update();
+	}
+};
+
 watch();
