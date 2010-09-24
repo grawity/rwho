@@ -70,4 +70,8 @@ $data = array();
 while ($row = $res->fetchArray(SQLITE3_ASSOC))
 	$data[] = $row;
 
-prettyprint($data);
+if (!count($data)) {
+	print "Nobody is logged in.\r\n";
+} else {
+	prettyprint($data);
+}
