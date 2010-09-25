@@ -4,14 +4,13 @@ header("Content-Type: text/plain; charset=utf-8");
 const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
 
 function ut_insert($db, $host, $entry) {
-	$st = $db->prepare('
-		INSERT INTO `utmp` (host, user, uid, rhost, line, time, updated)
-		VALUES (:host, :user, :uid, :rhost, :line, :time, :updated)');
+	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :subsys, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":uid", $entry->uid);
 	$st->bindValue(":rhost", $entry->host);
 	$st->bindValue(":line", $entry->line);
+	$st->bindValue(":subsys", $entry->sys);
 	$st->bindValue(":time", $entry->time);
 	$st->bindValue(":updated", time());
 	return $st->execute();
