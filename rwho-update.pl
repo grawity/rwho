@@ -33,7 +33,7 @@ sub getproc($) {
 	return $cmd;
 }
 
-sub getsys($$) {
+sub getproto($$) {
 	my ($pid, $line) = @_;
 	my $proc = getproc $pid;
 
@@ -91,7 +91,7 @@ sub update() {
 	for (@data) {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
-		$_->{sys} = getsys($_->{pid}, $_->{line});
+		$_->{proto} = getproto($_->{pid}, $_->{line});
 		delete $_->{pid};
 	}
 	upload("put", \@data);

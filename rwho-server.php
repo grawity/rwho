@@ -3,14 +3,21 @@ header("Content-Type: text/plain; charset=utf-8");
 
 const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
 
+// to help with inotifywait-monitoring the db
+function touch_timestamp() {
+	$fh = fopen(DB_PATH.".updated", "w");
+	fwrite($fh, time()."\n");
+	fclose($fh);
+}
+
 function ut_insert($db, $host, $entry) {
-	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :subsys, :time, :updated)');
+	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":uid", $entry->uid);
 	$st->bindValue(":rhost", $entry->host);
 	$st->bindValue(":line", $entry->line);
-	$st->bindValue(":subsys", $entry->sys);
+	$st->bindValue(":protocol", $entry->proto);
 	$st->bindValue(":time", $entry->time);
 	$st->bindValue(":updated", time());
 	return $st->execute();
@@ -59,6 +66,7 @@ $actions = array(
 		$db = new SQLite3(DB_PATH);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
+		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -77,6 +85,7 @@ $actions = array(
 		$db = new SQLite3(DB_PATH);
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
+		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -96,6 +105,7 @@ $actions = array(
 		ut_delete_host($db, $host);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
+		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -108,6 +118,7 @@ $actions = array(
 
 		$db = new SQLite3(DB_PATH);
 		ut_delete_host($db, $host);
+		touch_timestamp();
 		print "OK\n";
 	},
 
