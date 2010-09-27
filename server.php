@@ -39,18 +39,6 @@ function ut_delete_host($db, $host) {
 }
 
 $actions = array(
-	"query" => function() {
-		$db = new SQLite3(DB_PATH, SQLITE3_OPEN_READONLY);
-
-		$res = $db->query('select * from `utmp`');
-
-		$utmp = array();
-		while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
-			$utmp[] = $row;
-		}
-		print json_encode($utmp);
-	},
-
 	"insert" => function() {
 		$host = $_POST["host"];
 		if (!strlen($host)) {
