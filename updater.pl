@@ -23,30 +23,6 @@ sub forked(&) {
 	if ($pid) {return $pid} else {exit &$sub}
 }
 
-sub getproc($) {
-	my $pid = shift;
-	open my $fh, "<", "/proc/$pid/cmdline";
-	my $cmd;
-	{local $/ = "\0"; $cmd = <$fh>};
-	return $cmd;
-}
-
-sub getproto($$) {
-	my ($pid, $line) = @_;
-	my $proc = getproc $pid;
-
-	$line =~ m!^smb/!
-		and return "smb";
-
-	$proc =~ /^sshd:/
-		and return "ssh";
-
-	$line =~ /^tty\d/
-		and return "local";
-
-	return "unknown";
-}
-
 sub ut_dump() {
 	my @utmp = ();
 	if (eval {require User::Utmp}) {
@@ -57,7 +33,6 @@ sub ut_dump() {
 					line => $ent->{ut_line},
 					host => $ent->{ut_host},
 					time => $ent->{ut_time},
-					pid => $ent->{ut_pid},
 				};
 			}
 		}
@@ -72,7 +47,6 @@ sub ut_dump() {
 					line => $ent->ut_line,
 					host => $ent->ut_host,
 					time => $ent->ut_time,
-					pid => $ent->ut_pid,
 				};
 			}
 		}
@@ -89,8 +63,6 @@ sub update() {
 	for (@data) {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
-		$_->{proto} = getproto($_->{pid}, $_->{line});
-		delete $_->{pid};
 	}
 	upload("put", \@data);
 }

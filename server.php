@@ -5,14 +5,13 @@ require __DIR__."/config.inc";
 
 function ut_insert($db, $host, $entry) {
 	$st = $db->prepare('INSERT INTO `utmp`
-		(host, user, uid, rhost, line, protocol, time, updated)
-		VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
+		(host, user, uid, rhost, line, time, updated)
+		VALUES (:host, :user, :uid, :rhost, :line, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":uid", $entry->uid);
 	$st->bindValue(":rhost", $entry->host);
 	$st->bindValue(":line", $entry->line);
-	$st->bindValue(":protocol", $entry->proto);
 	$st->bindValue(":time", $entry->time);
 	$st->bindValue(":updated", time());
 	return $st->execute();
