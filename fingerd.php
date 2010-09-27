@@ -9,6 +9,8 @@ function finger_handle() {
 	list ($query, $detail) = finger_parse($input);
 	list ($q_user, $q_host) = parse_query($query);
 	$data = retrieve($q_user, $q_host);
+	if (!count($data))
+		die("Nobody is logged in.\r\n");
 	if (!$detail)
 		$data = prep_summarize($data);
 	pretty_text($data);
