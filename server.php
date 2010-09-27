@@ -3,13 +3,6 @@ header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/config.inc";
 
-// to help with inotifywait-monitoring the db
-function touch_timestamp() {
-	$fh = fopen(DB_PATH.".updated", "w");
-	fwrite($fh, time()."\n");
-	fclose($fh);
-}
-
 function ut_insert($db, $host, $entry) {
 	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
@@ -56,7 +49,6 @@ $actions = array(
 
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
-		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -74,7 +66,6 @@ $actions = array(
 
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
-		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -93,7 +84,6 @@ $actions = array(
 		ut_delete_host($db, $host);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
-		touch_timestamp();
 		print "OK\n";
 	},
 
@@ -105,7 +95,6 @@ $actions = array(
 		}
 
 		ut_delete_host($db, $host);
-		touch_timestamp();
 		print "OK\n";
 	},
 );
