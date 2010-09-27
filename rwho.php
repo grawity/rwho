@@ -37,7 +37,9 @@ function pretty_html($data) {
 				.(strlen(query::$host) ? $host
 					: "<a href=\"?host=$host\">$host</a>")
 				."</td>\n";
-			print "\t<td>$line</td>\n";
+			print "\t<td>"
+				.($row["_summary"] ? "($line ttys)" : $line)
+				."</td>\n";
 			print "\t<td>$rhost</td>\n";
 
 			print "</tr>\n";

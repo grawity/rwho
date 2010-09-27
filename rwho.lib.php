@@ -42,8 +42,10 @@ function retrieve($q_user, $q_host) {
 	} while (!$res);
 
 	$data = array();
-	while ($row = $res->fetchArray(SQLITE3_ASSOC))
+	while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+		$row["_summary"] = false;
 		$data[] = $row;
+	}
 	return $data;
 }
 
@@ -69,9 +71,10 @@ function prep_summarize($utmp) {
 					"user" => $user,
 					"host" => $host,
 					"line" => count($lines) == 1
-						? $lines[0] : "{".count($lines)."}",
+						? $lines[0] : count($lines),
 					"rhost" => strlen($from)
 						? $from : "(local)",
+					"_summary" => count($lines) > 1,
 					);
 			}
 		}
@@ -87,7 +90,9 @@ function pretty_text($data) {
 	foreach ($data as $row) {
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
-			$row["host"], $row["line"], $row["rhost"]);
+			$row["host"],
+			$row["_summary"] ? "{".$row["line"]."}" : $row["line"],
+			$row["rhost"]);
 		$last = $row;
 	}
 }
