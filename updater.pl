@@ -5,9 +5,7 @@ use strict;
 
 use constant PATH_UTMP => '/var/run/utmp';
 use constant {
-	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/rwho.php',
-	NOTIFY_SITE => 'equal.cluenet.org:80',
-	NOTIFY_REALM => 'rwho',
+	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/rwho/server.php',
 };
 
 use POSIX qw(signal_h);
@@ -136,7 +134,7 @@ update();
 $pid_periodic = forked {
 	my $interval = 3*60;
 
-	$0 = "rwho-update: periodic(${interval}s)";
+	$0 = "rwho-updater: periodic(${interval}s)";
 	$SIG{INT} = "DEFAULT";
 	$SIG{TERM} = "DEFAULT";
 
@@ -146,5 +144,5 @@ $pid_periodic = forked {
 	}
 };
 
-$0 = "rwho-update: inotify(".PATH_UTMP.")";
+$0 = "rwho-updater: inotify(".PATH_UTMP.")";
 watch();

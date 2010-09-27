@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 use constant
-	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/rwho.php';
+	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/server.php';
 
 use LWP::UserAgent;
 use JSON;
