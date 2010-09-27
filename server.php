@@ -1,7 +1,7 @@
 <?php
 header("Content-Type: text/plain; charset=utf-8");
 
-const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
+require __DIR__."/config.inc";
 
 // to help with inotifywait-monitoring the db
 function touch_timestamp() {
@@ -11,6 +11,7 @@ function touch_timestamp() {
 }
 
 function ut_insert($db, $host, $entry) {
+	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
@@ -24,6 +25,7 @@ function ut_insert($db, $host, $entry) {
 }
 
 function ut_delete($db, $host, $entry) {
+	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('DELETE FROM `utmp` WHERE host=:host AND user=:user AND line=:line');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
@@ -33,6 +35,7 @@ function ut_delete($db, $host, $entry) {
 }
 
 function ut_delete_host($db, $host) {
+	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('DELETE FROM utmp WHERE host=:host');
 	$st->bindValue(":host", $host);
 	return $st->execute();
@@ -51,7 +54,6 @@ $actions = array(
 			return false;
 		}
 
-		$db = new SQLite3(DB_PATH);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
 		touch_timestamp();
@@ -70,7 +72,6 @@ $actions = array(
 			return false;
 		}
 
-		$db = new SQLite3(DB_PATH);
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
 		touch_timestamp();
@@ -89,7 +90,6 @@ $actions = array(
 			return false;
 		}
 
-		$db = new SQLite3(DB_PATH);
 		ut_delete_host($db, $host);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
@@ -104,23 +104,18 @@ $actions = array(
 			return false;
 		}
 
-		$db = new SQLite3(DB_PATH);
 		ut_delete_host($db, $host);
 		touch_timestamp();
 		print "OK\n";
 	},
-
-	null => function() {
-		print "Unknown action.\n";
-	},
 );
 
-$action = isset($_REQUEST["action"])
-	? $_REQUEST["action"]
-	: "query";
-
-$handler = isset($actions[$action])
-	? $actions[$action]
-	: $actions[null];
-
-$handler();
+if (isset($_REQUEST["action"])) {
+	if (isset($actions[$action])) {
+		$actions[$action]();
+	} else {
+		die("Unknown action\n");
+	}
+} else {
+	die("Action not specified\n");
+}

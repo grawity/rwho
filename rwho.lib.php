@@ -1,6 +1,6 @@
 <?php
 
-const DB_PATH = "/home/grawity/lib/cgi-data/rwho.db";
+require __DIR__."/config.inc";
 
 function parse_query($query) {
 	$user = null;
@@ -17,32 +17,25 @@ function parse_query($query) {
 }
 
 function retrieve($q_user, $q_host) {
-	$db = new SQLite3(DB_PATH, SQLITE3_OPEN_READONLY)
+	$db = new PDO(DB_PATH, DB_USER, DB_PASS)
 		or die("error: could not open rwho database\r\n");
 
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
-	if (strlen($q_user)) $conds[] = "user='".$db->escapeString($q_user)."'";
-	if (strlen($q_host)) $conds[] = "host='".$db->escapeString($q_host)."'";
+	if (strlen($q_user)) $conds[] = "user=:user";
+	if (strlen($q_host)) $conds[] = "host=:host";
 	if (count($conds))
 		$sql .= " WHERE ".implode(" AND ", $conds);
 	$sql .= " ORDER BY user, host, line, time DESC";
 
-	$t = time();
-	do {
-		if (time() - $t > 30) {
-			return false;
-			die("error: giving up after 30 seconds\n");
-		}
-
-		$res = $db->query($sql);
-		if (!$res) {
-			sleep(1);
-		}
-	} while (!$res);
+	$st = $db->prepare($sql);
+	if (strlen($q_user)) $st->bindValue(":user", $q_user);
+	if (strlen($q_host)) $st->bindValue(":host", $q_host);
+	if (!$st->execute())
+		return null;
 
 	$data = array();
-	while ($row = $res->fetchArray(SQLITE3_ASSOC)) {
+	while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
 		$row["_summary"] = false;
 		$data[] = $row;
 	}

@@ -1,0 +1,5 @@
+<?php
+# See http://php.net/manual/en/pdo.drivers.php
+const DB_PATH = "mysql:FIXME";
+const DB_USER = "";
+const DB_PASS = "";
