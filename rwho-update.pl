@@ -125,6 +125,7 @@ sub cleanup {
 }
 
 $my_hostname = hostname;
+$my_hostname =~ s/\..*$//;
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
