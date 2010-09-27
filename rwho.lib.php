@@ -96,6 +96,7 @@ function user_is_global($user) {
 }
 
 if (!defined("RWHO_LIB")) {
+	header("Content-Type: text/plain; charset=utf-8");
 	$data = retrieve(null, null);
 	if ($data)
 		pretty_text($data);
