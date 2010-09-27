@@ -4,7 +4,9 @@ header("Content-Type: text/plain; charset=utf-8");
 require __DIR__."/config.inc";
 
 function ut_insert($db, $host, $entry) {
-	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
+	$st = $db->prepare('INSERT INTO `utmp`
+		(host, user, uid, rhost, line, protocol, time, updated)
+		VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":uid", $entry->uid);
