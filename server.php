@@ -4,7 +4,6 @@ header("Content-Type: text/plain; charset=utf-8");
 require __DIR__."/config.inc";
 
 function ut_insert($db, $host, $entry) {
-	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('INSERT INTO `utmp` VALUES (:host, :user, :uid, :rhost, :line, :protocol, :time, :updated)');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
@@ -18,7 +17,6 @@ function ut_insert($db, $host, $entry) {
 }
 
 function ut_delete($db, $host, $entry) {
-	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('DELETE FROM `utmp` WHERE host=:host AND user=:user AND line=:line');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
@@ -28,7 +26,6 @@ function ut_delete($db, $host, $entry) {
 }
 
 function ut_delete_host($db, $host) {
-	$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 	$st = $db->prepare('DELETE FROM utmp WHERE host=:host');
 	$st->bindValue(":host", $host);
 	return $st->execute();
@@ -47,6 +44,7 @@ $actions = array(
 			return false;
 		}
 
+		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
 		print "OK\n";
@@ -64,6 +62,7 @@ $actions = array(
 			return false;
 		}
 
+		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
 		print "OK\n";
@@ -81,6 +80,7 @@ $actions = array(
 			return false;
 		}
 
+		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
@@ -94,6 +94,7 @@ $actions = array(
 			return false;
 		}
 
+		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
 		print "OK\n";
 	},
