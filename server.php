@@ -103,6 +103,7 @@ $actions = array(
 );
 
 if (isset($_REQUEST["action"])) {
+	$action = $_REQUEST["action"];
 	if (isset($actions[$action])) {
 		$actions[$action]();
 	} else {
