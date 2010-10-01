@@ -1,4 +1,6 @@
 #!/usr/bin/perl
+# rwho data collector daemon
+
 # Debian: liblinux-inotify2-perl libjson-perl libjson-xs-perl libsys-utmp-perl
 use warnings;
 use strict;
@@ -106,7 +108,7 @@ update();
 $pid_periodic = forked {
 	my $interval = 3*60;
 
-	$0 = "rwho-updater: periodic(${interval}s)";
+	$0 = "rwhod: periodic(${interval}s)";
 	$SIG{INT} = "DEFAULT";
 	$SIG{TERM} = "DEFAULT";
 
@@ -116,5 +118,5 @@ $pid_periodic = forked {
 	}
 };
 
-$0 = "rwho-updater: inotify(".PATH_UTMP.")";
+$0 = "rwhod: inotify(".PATH_UTMP.")";
 watch();
