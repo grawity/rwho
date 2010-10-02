@@ -2,6 +2,11 @@
 
 require __DIR__."/config.inc";
 
+if (!defined("MAX_AGE"))
+	// maximum age before which the entry will be considered stale
+	// default is 1 minute more than the rwhod periodic update time
+	define("MAX_AGE", 11*60);
+
 function parse_query($query) {
 	$user = null;
 	$host = null;
@@ -79,9 +84,13 @@ function prep_summarize($utmp) {
 	return $out;
 }
 
+function is_stale($timestamp) {
+	return $timestamp < time() - MAX_AGE;
+}
+
 function pretty_text($data) {
-	$fmt = "%-12s %-12s %-8s %s\r\n";
-	printf($fmt, "USER", "HOST", "LINE", "FROM");
+	$fmt = "%-12s %-12s %-8s %1s %s\r\n";
+	printf($fmt, "USER", "HOST", "LINE", "", "FROM");
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
@@ -89,6 +98,7 @@ function pretty_text($data) {
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$row["host"],
 			$row["_summary"] ? "{".$row["line"]."}" : $row["line"],
+			is_stale($row["updated"]) ? "?" : "",
 			$row["rhost"]);
 		$last = $row;
 	}

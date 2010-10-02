@@ -2,9 +2,6 @@
 define("RWHO_LIB", true);
 require __DIR__."/rwho.lib.php";
 
-// maximum entry age above which the entry will be considered stale
-define("MAX_AGE", 9*60);
-
 class query {
 	static $user;
 	static $host;
@@ -29,7 +26,7 @@ function pretty_html($data) {
 				? htmlspecialchars($row["rhost"])
 				: "<i>(local)</i>";
 
-			if (isset($row["updated"]) and $row["updated"] < time()-MAX_AGE)
+			if (is_stale($row["updated"]))
 				print "<tr class=\"stale\">\n";
 			else
 				print "<tr>\n";
