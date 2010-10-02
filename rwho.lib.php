@@ -63,8 +63,8 @@ function prep_summarize($utmp) {
 				} else {
 					$from = $entry["rhost"];
 				}
-				$byfrom[$from][] = $entry["line"];
-				$updated[$from] = max($updated[$from], $entry["updated"]);
+				@$byfrom[$from][] = $entry["line"];
+				@$updated[$from] = max($updated[$from], $entry["updated"]);
 			}
 			ksort($byfrom);
 			foreach ($byfrom as $from => &$lines) {
