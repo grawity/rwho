@@ -106,7 +106,7 @@ $SIG{TERM} = \&cleanup;
 update();
 
 $pid_periodic = forked {
-	my $interval = 3*60;
+	my $interval = 10*60;
 
 	$0 = "rwhod: periodic(${interval}s)";
 	$SIG{INT} = "DEFAULT";
