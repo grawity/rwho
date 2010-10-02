@@ -104,6 +104,11 @@ if (!query::$detailed)
 		color: #aaa;
 		font-style: italic;
 	}
+
+	.footer {
+		color: gray;
+		font-size: smaller;
+	}
 	</style>
 </head>
 
@@ -149,3 +154,7 @@ echo strlen(query::$host)
 <p>Could not retrieve <code>rwho</code> information.</p>
 
 <?php endif; ?>
+
+<p class="footer">
+Refreshed on <?php echo strftime("%Y-%m-%d %H:%M:%S") ?>
+</p>
