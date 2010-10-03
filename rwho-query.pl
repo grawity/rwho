@@ -3,7 +3,7 @@ use warnings;
 use strict;
 
 use constant
-	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/server.php';
+	JSON_URL => 'http://equal.cluenet.org/~grawity/rwho/json.php';
 
 use LWP::UserAgent;
 use JSON;
@@ -26,7 +26,7 @@ sub prettyprint {
 
 sub fetch() {
 	my $ua = LWP::UserAgent->new;
-	my $resp = $ua->get(NOTIFY_URL);
+	my $resp = $ua->get(JSON_URL);
 	my $data = decode_json($resp->decoded_content);
 	my @data = sort {
 		$a->{user} cmp $b->{user}
