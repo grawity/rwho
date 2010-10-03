@@ -6,9 +6,6 @@ use warnings;
 use strict;
 
 use constant PATH_UTMP => '/var/run/utmp';
-use constant {
-	NOTIFY_URL => 'http://equal.cluenet.org/~grawity/misc/rwho/server.php',
-};
 
 use POSIX qw(signal_h);
 use Linux::Inotify2;
@@ -16,7 +13,14 @@ use Sys::Hostname;
 use JSON;
 use LWP::UserAgent;
 
+my %config = (
+	#notify_url => undef,
+	notify_url => "http://equal.cluenet.org/~grawity/rwho/server.php",
+	update_interval => 10*60,
+);
+
 my $my_hostname;
+
 my $pid_periodic;
 
 sub forked(&) {
@@ -55,7 +59,7 @@ sub ut_dump() {
 		$utmp->endutent();
 	}
 	else {
-		die "fatal: either User::Utmp or Sys::Utmp required\n";
+		die "error: either User::Utmp or Sys::Utmp required\n";
 	}
 	return @utmp;
 }
@@ -77,7 +81,7 @@ sub upload($$) {
 		action => $action,
 		utmp => encode_json($data),
 	);
-	my $resp = $ua->post(NOTIFY_URL, \%data);
+	my $resp = $ua->post($config{notify_url}, \%data);
 	if (!$resp->is_success) {
 		print "error: ".$resp->status_line."\n";
 	}
@@ -92,8 +96,15 @@ sub watch() {
 }
 
 sub cleanup {
-	kill SIGTERM, $pid_periodic unless $pid_periodic == $$;
+	if (defined $pid_periodic) {
+		kill SIGTERM, $pid_periodic unless $pid_periodic == $$;
+	}
 	upload("destroy", []);
+}
+
+## startup code
+if (!defined $config{notify_url}) {
+	die "error: notify_url not specified\n";
 }
 
 $my_hostname = hostname;
@@ -101,22 +112,25 @@ $my_hostname =~ s/\..*$//;
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
+$SIG{HUP} = \&update;
 
 # initial update
 update();
 
-$pid_periodic = forked {
-	my $interval = 10*60;
+if ($config{update_interval}) {
+	$pid_periodic = forked {
+		my $interval = $config{update_interval};
 
-	$0 = "rwhod: periodic(${interval}s)";
-	$SIG{INT} = "DEFAULT";
-	$SIG{TERM} = "DEFAULT";
+		$0 = "rwhod: periodic(${interval}s)";
+		$SIG{INT} = "DEFAULT";
+		$SIG{TERM} = "DEFAULT";
 
-	while (1) {
-		sleep $interval;
-		update();
-	}
-};
+		while (1) {
+			sleep $interval;
+			update();
+		}
+	};
+}
 
 $0 = "rwhod: inotify(".PATH_UTMP.")";
 watch();
