@@ -42,7 +42,7 @@ function pretty_html($data) {
 					: "<a href=\"?host=$host\">$host</a>")
 				."</td>\n";
 			print "\t<td>"
-				.($row["_summary"] ? "($line ttys)" : $line)
+				.($row["is_summary"] ? "($line ttys)" : $line)
 				."</td>\n";
 			print "\t<td>$rhost</td>\n";
 

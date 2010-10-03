@@ -41,7 +41,7 @@ function retrieve($q_user, $q_host) {
 
 	$data = array();
 	while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
-		$row["_summary"] = false;
+		$row["is_summary"] = false;
 		$data[] = $row;
 	}
 	return $data;
@@ -75,7 +75,7 @@ function prep_summarize($utmp) {
 						? $lines[0] : count($lines),
 					"rhost" => strlen($from)
 						? $from : "(local)",
-					"_summary" => count($lines) > 1,
+					"is_summary" => count($lines) > 1,
 					"updated" => $updated[$from],
 					);
 			}
@@ -97,7 +97,7 @@ function pretty_text($data) {
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$row["host"],
-			$row["_summary"] ? "{".$row["line"]."}" : $row["line"],
+			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
 			is_stale($row["updated"]) ? "?" : "",
 			$row["rhost"]);
 		$last = $row;
