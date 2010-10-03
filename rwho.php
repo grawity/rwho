@@ -77,9 +77,6 @@ if (!query::$detailed)
 	}
 
 	table#sessions {
-/*
-		font-family: monospace;
-*/
 		border-collapse: collapse;
 	}
 
