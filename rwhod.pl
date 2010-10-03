@@ -81,7 +81,7 @@ sub upload($$) {
 		action => $action,
 		utmp => encode_json($data),
 	);
-	my $resp = $ua->post($config{notify_url}, \%data);
+	my $resp = $ua->post($notify_url, \%data);
 	if (!$resp->is_success) {
 		print "error: ".$resp->status_line."\n";
 	}
@@ -113,7 +113,7 @@ $SIG{TERM} = \&cleanup;
 
 chdir "/";
 update();
-if ($config{update_interval}) {
+if ($update_interval) {
 	$pid_periodic = forked {
 		$0 = "rwhod: periodic(${update_interval}s)";
 		$SIG{INT} = "DEFAULT";
