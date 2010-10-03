@@ -57,7 +57,7 @@ function prep_summarize($utmp) {
 	foreach ($byuser as $user => &$byhost) {
 		foreach ($byhost as $host => &$sessions) {
 			$byfrom = array();
-			$updated = array();
+			$summary = array();
 			foreach ($sessions as $entry) {
 				if (preg_match('/^(.+):S\.\d+$/', $entry["rhost"], $m)) {
 					$from = "(screen) {$m[1]}";
@@ -65,19 +65,21 @@ function prep_summarize($utmp) {
 					$from = $entry["rhost"];
 				}
 				@$byfrom[$from][] = $entry["line"];
-				@$updated[$from] = max($updated[$from], $entry["updated"]);
+				@$summary[$from]["updated"] = max($summary[$from]["updated"], $entry["updated"]);
+				@$summary[$from]["uid"] = $entry["uid"];
 			}
 			ksort($byfrom);
 			foreach ($byfrom as $from => &$lines) {
 				$out[] = array(
 					"user" => $user,
+					"uid" => $summary[$from]["uid"],
 					"host" => $host,
 					"line" => count($lines) == 1
 						? $lines[0] : count($lines),
 					"rhost" => strlen($from)
 						? $from : "(local)",
 					"is_summary" => count($lines) > 1,
-					"updated" => $updated[$from],
+					"updated" => $summary[$from]["updated"],
 					);
 			}
 		}
@@ -95,11 +97,19 @@ function pretty_text($data) {
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
+		$flag = "";
+		if (is_stale($row["updated"]))
+			$flag = "?";
+		if ($row["uid"] == 0)
+			$flag = "#";
+		elseif ($row["uid"] < 25000)
+			$flag = "*";
+
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$row["host"],
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
-			is_stale($row["updated"]) ? "?" : "",
+			$flag,
 			$row["rhost"]);
 		$last = $row;
 	}
