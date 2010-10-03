@@ -68,7 +68,6 @@ sub update() {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
 	}
-	print "Uploading ".scalar(@data)." entries\n";
 	upload("put", \@data);
 }
 
