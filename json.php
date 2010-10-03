@@ -1,4 +1,7 @@
 <?php
+namespace RWho;
+error_reporting(E_ALL^E_NOTICE);
+
 define("RWHO_LIB", true);
 require __DIR__."/rwho.lib.php";
 

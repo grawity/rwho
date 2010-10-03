@@ -1,4 +1,5 @@
 <?php
+namespace RWho;
 
 require __DIR__."/config.inc";
 
@@ -22,7 +23,7 @@ function parse_query($query) {
 }
 
 function retrieve($q_user, $q_host) {
-	$db = new PDO(DB_PATH, DB_USER, DB_PASS)
+	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
 		or die("error: could not open rwho database\r\n");
 
 	$sql = "SELECT * FROM utmp";
@@ -40,7 +41,7 @@ function retrieve($q_user, $q_host) {
 		return null;
 
 	$data = array();
-	while ($row = $st->fetch(PDO::FETCH_ASSOC)) {
+	while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
 		$row["is_summary"] = false;
 		$data[] = $row;
 	}

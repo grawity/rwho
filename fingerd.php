@@ -1,5 +1,7 @@
 #!/usr/bin/php
 <?php
+namespace RWho;
+
 define("RWHO_LIB", true);
 require __DIR__."/rwho.lib.php";
 

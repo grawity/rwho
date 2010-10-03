@@ -1,4 +1,6 @@
 <?php
+namespace RWho;
+
 header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/config.inc";
@@ -45,7 +47,7 @@ $actions = array(
 			return false;
 		}
 
-		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
+		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
 		print "OK\n";
@@ -63,7 +65,7 @@ $actions = array(
 			return false;
 		}
 
-		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
+		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
 		print "OK\n";
@@ -81,7 +83,7 @@ $actions = array(
 			return false;
 		}
 
-		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
+		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
@@ -95,7 +97,7 @@ $actions = array(
 			return false;
 		}
 
-		$db = new PDO(DB_PATH, DB_USER, DB_PASS);
+		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
 		print "OK\n";
 	},
