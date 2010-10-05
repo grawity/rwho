@@ -100,7 +100,7 @@ function pretty_text($data) {
 		$flag = "";
 		if (is_stale($row["updated"]))
 			$flag = "?";
-		if ($row["uid"] == 0)
+		elseif ($row["uid"] == 0)
 			$flag = "#";
 		elseif ($row["uid"] < 25000)
 			$flag = "*";
