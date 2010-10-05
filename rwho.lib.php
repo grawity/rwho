@@ -57,7 +57,7 @@ function prep_summarize($utmp) {
 	foreach ($byuser as $user => &$byhost) {
 		foreach ($byhost as $host => &$sessions) {
 			$byfrom = array();
-			$summary = array();
+			$updated = array();
 			foreach ($sessions as $entry) {
 				if (preg_match('/^(.+):S\.\d+$/', $entry["rhost"], $m)) {
 					$from = "(screen) {$m[1]}";
@@ -65,21 +65,21 @@ function prep_summarize($utmp) {
 					$from = $entry["rhost"];
 				}
 				@$byfrom[$from][] = $entry["line"];
-				@$summary[$from]["updated"] = max($summary[$from]["updated"], $entry["updated"]);
-				@$summary[$from]["uid"] = $entry["uid"];
+				@$updated[$from] = max($updated[$from], $entry["updated"]);
+				$uid = $entry["uid"];
 			}
 			ksort($byfrom);
 			foreach ($byfrom as $from => &$lines) {
 				$out[] = array(
 					"user" => $user,
-					"uid" => $summary[$from]["uid"],
+					"uid" => $uid,
 					"host" => $host,
 					"line" => count($lines) == 1
 						? $lines[0] : count($lines),
 					"rhost" => strlen($from)
 						? $from : "(local)",
 					"is_summary" => count($lines) > 1,
-					"updated" => $summary[$from]["updated"],
+					"updated" => $updated[$from],
 					);
 			}
 		}
