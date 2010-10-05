@@ -14,6 +14,15 @@ class query {
 function H($str) { return htmlspecialchars($str); }
 
 function pretty_html($data) {
+	if (!count($data)) {
+		print "<tr>\n";
+		print "\t<td colspan=\"4\" style=\"font-style: italic\">"
+			."Nobody is logged in."
+			."</td>\n";
+		print "</tr>\n";
+		return;
+	}
+
 	$byuser = array();
 	foreach ($data as $row)
 		$byuser[$row["user"]][] = $row;
@@ -22,6 +31,8 @@ function pretty_html($data) {
 
 	foreach ($byuser as $data) {
 		foreach ($data as $k => $row) {
+			if (!query::$detailed and time()-$row["updated"] > 86400)
+				continue;
 			$user = htmlspecialchars($row["user"]);
 			$host = htmlspecialchars($row["host"]);
 			$line = htmlspecialchars($row["line"]);
@@ -88,6 +99,10 @@ if (!query::$detailed)
 		background: #eee;
 	}
 
+	table#sessions tfoot {
+		font-size: smaller;
+	}
+
 	table#sessions td,
 	table#sessions th {
 		border-width: 1px 0;
@@ -95,6 +110,10 @@ if (!query::$detailed)
 		border-color: #aaa;
 		padding: 3px;
 		vertical-align: top;
+	}
+
+	table#sessions th {
+		text-align: left;
 	}
 
 	tr.stale td {
@@ -109,7 +128,7 @@ if (!query::$detailed)
 	</style>
 </head>
 
-<?php if ($data): ?>
+<?php if ($data !== false): ?>
 <!-- user session table -->
 
 <h1><?php
@@ -130,20 +149,25 @@ echo strlen(query::$host)
 	<th style="min-width: 40ex">address</th>
 </thead>
 
-<?php if (strlen(query::$user) or strlen(query::$host)): ?>
 <tfoot>
+<?php if (strlen(query::$user) or strlen(query::$host)): ?>
 	<td colspan="4">
 		<a href="?">Back to all sessions</a>
 	</td>
-</tfoot>
+<?php elseif (!query::$detailed): ?>
+	<td colspan="4">
+		<a href="?full">Expanded view</a>
+	</td>
 <?php endif; ?>
+</tfoot>
 
 <?php pretty_html($data); ?>
 </table>
 
-<?php if (strlen(query::$user) and user_is_global(query::$user)): ?>
+<?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
 <p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>
-<?php endif; ?>
+<?php } ?>
+
 
 <?php else: ?>
 <!-- error message -->
