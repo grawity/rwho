@@ -76,8 +76,9 @@ function prep_summarize($utmp) {
 					"host" => $host,
 					"line" => count($lines) == 1
 						? $lines[0] : count($lines),
-					"rhost" => strlen($from)
-						? $from : "(local)",
+					#"rhost" => strlen($from)
+					#	? $from : "(local)",
+					"rhost" => $from,
 					"is_summary" => count($lines) > 1,
 					"updated" => $updated[$from],
 					);
@@ -110,7 +111,7 @@ function pretty_text($data) {
 			$flag,
 			$row["host"],
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
-			$row["rhost"]);
+			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
 	}
 }
