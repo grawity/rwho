@@ -92,8 +92,8 @@ function is_stale($timestamp) {
 }
 
 function pretty_text($data) {
-	$fmt = "%-12s %-12s %-8s %1s %s\r\n";
-	printf($fmt, "USER", "HOST", "LINE", "", "FROM");
+	$fmt = "%-12s %1s %-12s %-8s %s\r\n";
+	printf($fmt, "USER", "", "HOST", "LINE", "FROM");
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
@@ -103,13 +103,13 @@ function pretty_text($data) {
 		elseif ($row["uid"] == 0)
 			$flag = "#";
 		elseif ($row["uid"] < 25000)
-			$flag = "*";
+			$flag = "<";
 
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
+			$flag,
 			$row["host"],
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
-			$flag,
 			$row["rhost"]);
 		$last = $row;
 	}
