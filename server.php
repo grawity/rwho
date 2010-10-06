@@ -36,11 +36,8 @@ function ut_delete_host($db, $host) {
 
 $actions = array(
 	"insert" => function() {
-		$host = $_POST["host"];
-		if (!strlen($host)) {
-			print "error: host not specified\n";
-			return false;
-		}
+		global $host;
+
 		$data = json_decode($_POST["utmp"]);
 		if (!$data) {
 			print "error: no data\n";
@@ -54,11 +51,8 @@ $actions = array(
 	},
 
 	"delete" => function() {
-		$host = $_POST["host"];
-		if (!strlen($host)) {
-			print "error: host not specified\n";
-			return false;
-		}
+		global $host;
+
 		$data = json_decode($_POST["utmp"]);
 		if (!$data) {
 			print "error: no data\n";
@@ -72,11 +66,8 @@ $actions = array(
 	},
 
 	"put" => function() {
-		$host = $_POST["host"];
-		if (!strlen($host)) {
-			print "error: host not specified\n";
-			return false;
-		}
+		global $host;
+
 		$data = json_decode($_POST["utmp"]);
 		if ($data === false) {
 			print "error: no data\n";
@@ -91,17 +82,20 @@ $actions = array(
 	},
 
 	"destroy" => function() {
-		$host = $_POST["host"];
-		if (!strlen($host)) {
-			print "error: host not specified\n";
-			return false;
-		}
+		global $host;
 
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
 		print "OK\n";
 	},
 );
+
+if (strlen($_POST["fqdn"]))
+	$host = $_POST["fqdn"];
+elseif (strlen($_POST["host"]))
+	$host = $_POST["host"];
+else
+	die("Host not specified\n");
 
 if (isset($_REQUEST["action"])) {
 	$action = $_REQUEST["action"];
