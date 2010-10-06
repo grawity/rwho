@@ -15,7 +15,23 @@ my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
 my $update_interval = 10*60;
 
 my $my_hostname;
+my $my_fqdn;
 my $pid_periodic;
+
+sub canon_hostname($) {
+	my $host = shift;
+	if (eval {require Net::addrinfo}) {
+		my $hint = Net::addrinfo->new(
+			flags => Net::addrinfo->AI_CANONNAME);
+		my $ai = Net::addrinfo::getaddrinfo($host, undef, $hint);
+		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
+	} else {
+		open my $fd, "-|", "getent", "hosts", $host;
+		my @ai = split(" ", <$fd>);
+		close $fd;
+		return $ai[1] // $host;
+	}
+}
 
 # Run code in subprocess
 # $pid = forked { ... };
@@ -77,6 +93,7 @@ sub upload($$) {
 	my $ua = LWP::UserAgent->new;
 	my %data = (
 		host => $my_hostname,
+		fqdn => $my_fqdn,
 		action => $action,
 		utmp => encode_json($data),
 	);
@@ -106,6 +123,7 @@ if (!defined $notify_url) {
 
 $my_hostname = hostname;
 $my_hostname =~ s/\..*$//;
+$my_fqdn = canon_hostname($my_hostname);
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
