@@ -34,7 +34,8 @@ function pretty_html($data) {
 			if (!query::$detailed and time()-$row["updated"] > 86400)
 				continue;
 			$user = htmlspecialchars($row["user"]);
-			$host = htmlspecialchars($row["host"]);
+			$fqdn = htmlspecialchars($row["host"]);
+			$host = strip_domain($fqdn);
 			$line = htmlspecialchars($row["line"]);
 			$rhost = strlen($row["rhost"])
 				? htmlspecialchars($row["rhost"])
@@ -53,7 +54,7 @@ function pretty_html($data) {
 
 			print "\t<td>"
 				.(strlen(query::$host) ? $host
-					: "<a href=\"?host=$host\">$host</a>")
+					: "<a href=\"?host=$fqdn\">$host</a>")
 				."</td>\n";
 			print "\t<td>"
 				.($row["is_summary"] ? "($line ttys)" : $line)
