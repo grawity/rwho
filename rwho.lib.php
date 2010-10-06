@@ -29,14 +29,17 @@ function retrieve($q_user, $q_host) {
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
 	if (strlen($q_user)) $conds[] = "user=:user";
-	if (strlen($q_host)) $conds[] = "host=:host";
+	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
 	if (count($conds))
 		$sql .= " WHERE ".implode(" AND ", $conds);
 	$sql .= " ORDER BY user, host, line, time DESC";
 
 	$st = $db->prepare($sql);
 	if (strlen($q_user)) $st->bindValue(":user", $q_user);
-	if (strlen($q_host)) $st->bindValue(":host", $q_host);
+	if (strlen($q_host)) {
+		$st->bindValue(":host", $q_host);
+		$st->bindValue(":parthost", "$q_host.%");
+	}
 	if (!$st->execute())
 		return null;
 
@@ -91,6 +94,11 @@ function is_stale($timestamp) {
 	return $timestamp < time() - MAX_AGE;
 }
 
+function strip_domain($fqdn) {
+	$pos = strpos($fqdn, ".");
+	return $pos === false ? $fqdn : substr($fqdn, 0, $pos);
+}
+
 function pretty_text($data) {
 	$fmt = "%-12s %1s %-12s %-8s %s\r\n";
 	printf($fmt, "USER", "", "HOST", "LINE", "FROM");
@@ -108,7 +116,7 @@ function pretty_text($data) {
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$flag,
-			$row["host"],
+			strip_domain($row["host"]),
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
 			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
