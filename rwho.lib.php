@@ -58,9 +58,10 @@ function prep_summarize($utmp) {
 		foreach ($byhost as $host => &$sessions) {
 			$byfrom = array();
 			$updated = array();
+
 			foreach ($sessions as $entry) {
 				if (preg_match('/^(.+):S\.\d+$/', $entry["rhost"], $m)) {
-					$from = "(screen) {$m[1]}";
+					$from = $m[1]." (screen)";
 				} else {
 					$from = $entry["rhost"];
 				}
@@ -76,8 +77,6 @@ function prep_summarize($utmp) {
 					"host" => $host,
 					"line" => count($lines) == 1
 						? $lines[0] : count($lines),
-					#"rhost" => strlen($from)
-					#	? $from : "(local)",
 					"rhost" => $from,
 					"is_summary" => count($lines) > 1,
 					"updated" => $updated[$from],
