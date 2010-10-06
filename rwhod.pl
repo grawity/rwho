@@ -10,6 +10,7 @@ use Linux::Inotify2;
 use Sys::Hostname;
 use JSON;
 use LWP::UserAgent;
+use Data::Dumper;
 
 my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
 my $update_interval = 10*60;
@@ -25,6 +26,11 @@ sub canon_hostname($) {
 			flags => Net::addrinfo->AI_CANONNAME);
 		my $ai = Net::addrinfo::getaddrinfo($host, undef, $hint);
 		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
+	} elsif (eval {require Socket::GetAddrInfo}) {
+		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
+		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, undef, \%hint);
+		# FIXME: print error messages when needed
+		return $err ? $host : ((shift @ai)->{canonname} // $host);
 	} else {
 		open my $fd, "-|", "getent", "hosts", $host;
 		my @ai = split(" ", <$fd>);
