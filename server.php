@@ -5,6 +5,21 @@ header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/config.inc";
 
+function update_host($db, $host) {
+	$st = $db->prepare('INSERT INTO `hosts`
+		(host, lastupdate) VALUES (:host, :time)
+		ON DUPLICATE KEY UPDATE lastupdate=:time');
+	$st->bindValue(":host", $host);
+	$st->bindValue(":time", time());
+	return $st->execute();
+}
+
+function delete_host($db, $host) {
+	$st = $db->prepare('DELETE FROM `hosts` WHERE host=:host');
+	$st->bindValue(":host", $host);
+	return $st->execute();
+}
+
 function ut_insert($db, $host, $entry) {
 	$st = $db->prepare('INSERT INTO `utmp`
 		(host, user, uid, rhost, line, time, updated)
@@ -47,6 +62,7 @@ $actions = array(
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
+		update_host($db, $host);
 		print "OK\n";
 	},
 
@@ -62,6 +78,7 @@ $actions = array(
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		foreach ($data as $entry)
 			ut_delete($db, $host, $entry);
+		update_host($db, $host);
 		print "OK\n";
 	},
 
@@ -76,8 +93,10 @@ $actions = array(
 
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
+		var_dump($data);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
+		update_host($db, $host);
 		print "OK\n";
 	},
 
@@ -86,6 +105,7 @@ $actions = array(
 
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
+		delete_host($db, $host);
 		print "OK\n";
 	},
 );
