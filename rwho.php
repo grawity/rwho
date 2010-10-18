@@ -93,6 +93,7 @@ if (!query::$detailed)
 
 	table#sessions {
 		border-collapse: collapse;
+		font-size: 11pt;
 	}
 
 	table#sessions thead,
