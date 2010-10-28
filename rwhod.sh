@@ -17,7 +17,15 @@ ctl() {
 		ctl start
 		;;
 	status)
-		[[ -f $PIDFILE ]] && pid=$(< "$PIDFILE") && kill -0 $pid
+		if [[ -f $PIDFILE ]] && pid=$(< "$PIDFILE"); then
+			if kill -0 $pid; then
+				echo "running: pid $pid"
+			else
+				echo "unsure: pid $pid but can't signal"
+			fi
+		else
+			echo "not running or no pidfile"
+		fi
 	esac
 }
 
