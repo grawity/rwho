@@ -5,6 +5,7 @@ use warnings;
 use strict;
 use constant PATH_UTMP => '/var/run/utmp';
 
+use Getopt::Long qw(:config no_ignore_case bundling);
 use POSIX qw(signal_h);
 use Linux::Inotify2;
 use Sys::Hostname;
@@ -12,7 +13,7 @@ use JSON;
 use LWP::UserAgent;
 use Data::Dumper;
 
-my $DEBUG = 1;
+my $DEBUG = 0;
 
 my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
 my $update_interval = 10*60;
@@ -142,6 +143,11 @@ sub debug {
 }
 
 ## startup code
+GetOptions(
+	"d|debug" => \$DEBUG,
+	"i|interval=i" => \$update_interval,
+);
+
 if (!defined $notify_url) {
 	die "error: notify_url not specified\n";
 }
