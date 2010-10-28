@@ -28,7 +28,7 @@ sub canon_hostname($) {
 		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
 	} elsif (eval {require Socket::GetAddrInfo}) {
 		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
-		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, undef, \%hint);
+		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, "", \%hint);
 		# FIXME: print error messages when needed
 		return $err ? $host : ((shift @ai)->{canonname} // $host);
 	} else {
