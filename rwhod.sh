@@ -22,9 +22,11 @@ ctl() {
 				echo "running: pid $pid"
 			else
 				echo "unsure: pid $pid but can't signal"
+				return 2
 			fi
 		else
 			echo "not running or no pidfile"
+			return 1
 		fi
 	esac
 }
