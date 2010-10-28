@@ -21,17 +21,19 @@ my $pid_periodic;
 
 sub canon_hostname($) {
 	my $host = shift;
-	if (eval {require Net::addrinfo}) {
-		my $hint = Net::addrinfo->new(
-			flags => Net::addrinfo->AI_CANONNAME);
-		my $ai = Net::addrinfo::getaddrinfo($host, undef, $hint);
-		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
-	} elsif (eval {require Socket::GetAddrInfo}) {
+	if (eval {require Socket::GetAddrInfo}) {
 		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
 		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, "", \%hint);
 		# FIXME: print error messages when needed
 		return $err ? $host : ((shift @ai)->{canonname} // $host);
-	} else {
+	}
+	elsif (eval {require Net::addrinfo}) {
+		my $hint = Net::addrinfo->new(
+			flags => Net::addrinfo->AI_CANONNAME);
+		my $ai = Net::addrinfo::getaddrinfo($host, undef, $hint);
+		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
+	}
+	else {
 		open my $fd, "-|", "getent", "hosts", $host;
 		my @ai = split(" ", <$fd>);
 		close $fd;
