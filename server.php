@@ -7,10 +7,11 @@ require __DIR__."/config.inc";
 
 function update_host($db, $host) {
 	$st = $db->prepare('INSERT INTO `hosts`
-		(host, lastupdate) VALUES (:host, :time)
-		ON DUPLICATE KEY UPDATE lastupdate=:time');
+		(host, last_update, last_addr) VALUES (:host, :time, :addr)
+		ON DUPLICATE KEY UPDATE last_update=:time, last_addr=:addr');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":time", time());
+	$st->bindValue(":addr", $_SERVER["REMOTE_ADDR"]);
 	return $st->execute();
 }
 
