@@ -6,17 +6,19 @@ use strict;
 use constant PATH_UTMP => '/var/run/utmp';
 
 use Getopt::Long qw(:config no_ignore_case bundling);
-use POSIX qw(signal_h);
+use POSIX qw(:errno_h :signal_h);
 use Linux::Inotify2;
 use Sys::Hostname;
 use JSON;
 use LWP::UserAgent;
 use Data::Dumper;
 
-my $DEBUG = 0;
-
 my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
 my $update_interval = 10*60;
+
+my $DEBUG = 0;
+my $do_fork = 0;
+my $do_single = 0;
 
 my $my_hostname;
 my $my_fqdn;
@@ -145,7 +147,9 @@ sub debug {
 ## startup code
 GetOptions(
 	"d|debug" => \$DEBUG,
+	"fork" => \$do_fork,
 	"i|interval=i" => \$update_interval,
+	"single" => \$do_single,
 );
 
 if (!defined $notify_url) {
@@ -161,8 +165,36 @@ $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
 
 chdir "/";
+
+if ($do_single) {
+	debug("doing single update");
+	update();
+	if ($do_fork) {
+		warn "warning: --fork ignored in single mode\n";
+	}
+	exit();
+}
+
 debug("doing initial update");
 update();
+
+if ($do_fork) {
+	my $pid = fork;
+	if (!defined $pid) {
+		die "$!";
+	} elsif ($pid > 0) {
+		debug("forked to $pid");
+		print "$pid\n";
+		exit;
+	} elsif ($pid == 0) {
+		my $sid = POSIX::setsid;
+		if ($sid < 0) {
+			warn "setsid failed: $!";
+		}
+		debug("running in background");
+	}
+}
+
 if ($update_interval) {
 	debug("starting poller");
 	$pid_periodic = forked {
@@ -176,6 +208,7 @@ if ($update_interval) {
 		}
 	};
 }
+
 debug("starting inotify watch");
 $0 = "rwhod: inotify(".PATH_UTMP.")";
 watch();
