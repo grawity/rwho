@@ -11,7 +11,7 @@ $full = !isset($_GET["summary"]);
 
 $data = retrieve($user, $host);
 if (!$full)
-	$data = prep_summarize($data);
+	$data = summarize($data);
 
 foreach ($data as &$row) {
 	unset($row["rowid"]);

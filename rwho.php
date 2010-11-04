@@ -74,7 +74,7 @@ query::$detailed = strlen(query::$user) || strlen(query::$host)
 $data = retrieve(query::$user, query::$host);
 
 if (!query::$detailed)
-	$data = prep_summarize($data);
+	$data = summarize($data);
 
 ?>
 <!DOCTYPE html>

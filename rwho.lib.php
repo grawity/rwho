@@ -51,7 +51,7 @@ function retrieve($q_user, $q_host) {
 	return $data;
 }
 
-function prep_summarize($utmp) {
+function summarize($utmp) {
 	$out = array();
 	$byuser = array();
 	foreach ($utmp as &$entry) {

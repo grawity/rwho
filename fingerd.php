@@ -14,7 +14,7 @@ function finger_handle() {
 	if (!count($data))
 		die("Nobody is logged in.\r\n");
 	if (!$detail)
-		$data = prep_summarize($data);
+		$data = summarize($data);
 	pretty_text($data);
 }
 
