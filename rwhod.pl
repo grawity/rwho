@@ -6,6 +6,7 @@ use strict;
 use constant PATH_UTMP => '/var/run/utmp';
 
 use Getopt::Long qw(:config no_ignore_case bundling);
+use Pod::Usage;
 use POSIX qw(:errno_h :signal_h);
 use Linux::Inotify2;
 use Sys::Hostname;
@@ -146,11 +147,13 @@ sub debug {
 
 ## startup code
 GetOptions(
-	"v|verbose" => \$verbose,
 	"fork" => \$do_fork,
+	"help" => sub { pod2usage(1); },
 	"i|interval=i" => \$update_interval,
+	"man" => sub { pod2usage(-exitstatus => 0, -verbose => 2); },
 	"single" => \$do_single,
-);
+	"v|verbose" => \$verbose,
+) or pod2usage(2);
 
 if (!defined $notify_url) {
 	die "error: notify_url not specified\n";
@@ -212,3 +215,69 @@ if ($update_interval) {
 debug("starting inotify watch");
 $0 = "rwhod: inotify(".PATH_UTMP.")";
 watch();
+
+__END__
+
+=head1 NAME
+
+rwhod - remote-who collector daemon
+
+=head1 SYNOPSIS
+
+rwhod [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--fork>
+
+Fork to background after initial update and print PID to stdout.
+
+=item B<--help>
+
+Obvious.
+
+=item B<-i>, B<--interval>=seconds
+
+Periodic update every B<seconds> seconds (600 by default).
+
+=item B<--man>
+
+Display the manual page.
+
+=item B<--single>
+
+Do a single update and exit.
+
+=item B<-v>, B<--verbose>
+
+Print informative messages.
+
+=back
+
+=head1 DEPENDENCIES
+
+B<C<getaddrinfo>>: C<Socket::GetAddrInfo>, C<Net::addrinfo>, or the C<getent> binary.
+
+B<C<utmp> access>: C<Sys::Utmp> or C<User::Utmp>
+
+B<C<inotify>>: C<Linux::Inotify2> for real-time C<utmp> monitoring.
+
+B<HTTP>: C<JSON> and C<LWP::UserAgent>
+
+=head1 BUGS
+
+It's useless.
+
+C<inotify> requirement makes the script unportable outside Linux.
+
+Using C<getaddrinfo> just to find our own FQDN might be overkill when the rest of the world can use C<gethostbyaddr> on 127.0.0.1.
+
+Data submission URL is hardcoded.
+
+Hosts are only identified by their FQDN, so it's possible to upload fake data.
+
+Incremental updates are not yet implemented (server-side support exists).
+
+=cut
