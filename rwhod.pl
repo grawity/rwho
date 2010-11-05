@@ -238,9 +238,9 @@ Fork to background after initial update and print PID to stdout.
 
 Obvious.
 
-=item B<-i>, B<--interval>=seconds
+=item B<-i I<seconds>>, B<--interval=I<seconds>>
 
-Periodic update every B<seconds> seconds (600 by default).
+Periodic update every I<seconds> seconds (600 by default).
 
 =item B<--man>
 
