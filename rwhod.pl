@@ -16,7 +16,7 @@ use Data::Dumper;
 my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
 my $update_interval = 10*60;
 
-my $DEBUG = 0;
+my $verbose = 0;
 my $do_fork = 0;
 my $do_single = 0;
 
@@ -141,12 +141,12 @@ sub cleanup {
 
 sub debug {
 	local $" = " ";
-	$DEBUG and print "rwhod[$$]: @_\n";
+	$verbose and print "rwhod[$$]: @_\n";
 }
 
 ## startup code
 GetOptions(
-	"d|debug" => \$DEBUG,
+	"v|verbose" => \$verbose,
 	"fork" => \$do_fork,
 	"i|interval=i" => \$update_interval,
 	"single" => \$do_single,
