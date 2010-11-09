@@ -2,6 +2,11 @@
 RWHOD=(~/code/useless/rwho/rwhod.pl)
 PIDFILE=~/tmp/rwhod-$(hostname).pid
 
+if [[ -z $PERL5LIB ]]; then
+	PERL5LIB=~/lib/perl5:~/usr/lib/perl5
+fi
+export PERL5LIB
+
 ctl() {
 	case $1 in
 	start)
