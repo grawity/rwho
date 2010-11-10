@@ -80,6 +80,7 @@ if (!query::$detailed)
 <!DOCTYPE html>
 <head>
 	<meta charset="utf-8">
+	<meta http-equiv="Refresh" content="10">
 	<title>Users logged in</title>
 	<style>
 	body {
