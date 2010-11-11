@@ -20,6 +20,7 @@ my $update_interval = 10*60;
 my $verbose = 0;
 my $do_fork = 0;
 my $do_single = 0;
+my $hide_root = 1;
 
 my $my_hostname;
 my $my_fqdn;
@@ -103,6 +104,9 @@ sub update() {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
 	}
+	if ($hide_root) {
+		@data = grep {$_->{user} ne "root"} @data;
+	}
 	debug("update: uploading ".scalar(@data)." items");
 	upload("put", \@data);
 }
@@ -151,6 +155,7 @@ GetOptions(
 	"help" => sub { pod2usage(1); },
 	"i|interval=i" => \$update_interval,
 	"man" => sub { pod2usage(-exitstatus => 0, -verbose => 2); },
+	"root" => sub { $hide_root = 0; },
 	"single" => \$do_single,
 	"v|verbose" => \$verbose,
 ) or pod2usage(2);
@@ -245,6 +250,10 @@ Periodic update every I<seconds> seconds (600 by default).
 =item B<--man>
 
 Display the manual page.
+
+=item B<--root>
+
+Include root logins.
 
 =item B<--single>
 
