@@ -81,6 +81,7 @@ if (!query::$detailed)
 <head>
 	<meta charset="utf-8">
 	<meta http-equiv="Refresh" content="10">
+	<meta name="robots" content="noindex, nofollow">
 	<title>Users logged in</title>
 	<style>
 	body {
