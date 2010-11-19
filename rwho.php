@@ -28,6 +28,15 @@ function output_xml($data) {
 	$doc = new \DOMDocument("1.0", "utf-8");
 	$doc->formatOutput = true;
 	$root = $doc->appendChild($doc->createElement("rwho"));
+	if (strlen(query::$user))
+		$root->appendChild($doc->createAttribute("user"))
+			->appendChild($doc->createTextNode(query::$user));
+	if (strlen(query::$host))
+		$root->appendChild($doc->createAttribute("host"))
+			->appendChild($doc->createTextNode(query::$host));
+	if (!query::$detailed)
+		$root->appendChild($doc->createAttribute("summary"))
+			->appendChild($doc->createTextNode("true"));
 
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("row"));
