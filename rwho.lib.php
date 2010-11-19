@@ -63,11 +63,9 @@ function summarize($utmp) {
 			$updated = array();
 
 			foreach ($sessions as $entry) {
-				if (preg_match('/^(.+):S\.\d+$/', $entry["rhost"], $m)) {
-					$from = $m[1]." (screen)";
-				} else {
-					$from = $entry["rhost"];
-				}
+				$from = $entry["rhost"];
+				$from = preg_replace('/:S\.\d+$/', '', $from);
+				#$from = preg_replace('/\..+$/', '', $from);
 				@$byfrom[$from][] = $entry["line"];
 				@$updated[$from] = max($updated[$from], $entry["updated"]);
 				$uid = $entry["uid"];
