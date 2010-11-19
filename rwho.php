@@ -49,6 +49,8 @@ function output_xml($data) {
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("row"));
 
+		unset($row["rowid"]);
+
 		$date = date("c", $row["updated"]);
 		$rowx->appendChild($doc->createAttribute("updated"))
 			->appendChild($doc->createTextNode($date));
