@@ -97,40 +97,9 @@ function strip_domain($fqdn) {
 	return $pos === false ? $fqdn : substr($fqdn, 0, $pos);
 }
 
-function pretty_text($data) {
-	$fmt = "%-12s %1s %-12s %-8s %s\r\n";
-	printf($fmt, "USER", "", "HOST", "LINE", "FROM");
-
-	$last = array("user" => null);
-	foreach ($data as $row) {
-		$flag = "";
-		if (is_stale($row["updated"]))
-			$flag = "?";
-		elseif ($row["uid"] == 0)
-			$flag = "#";
-		elseif ($row["uid"] < 25000)
-			$flag = "<";
-
-		printf($fmt,
-			$row["user"] !== $last["user"] ? $row["user"] : "",
-			$flag,
-			strip_domain($row["host"]),
-			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
-			strlen($row["rhost"]) ? $row["rhost"] : "-");
-		$last = $row;
-	}
-}
-
 function user_is_global($user) {
 	$pwent = posix_getpwnam($user);
 	return $pwent ? $pwent["uid"] > 25000 : false;
 }
 
-if (!defined("RWHO_LIB")) {
-	header("Content-Type: text/plain; charset=utf-8");
-	$data = retrieve(null, null);
-	if ($data)
-		pretty_text($data);
-	else
-		print "error: Failed to retrieve rwho data.\n";
-}
+return true;
