@@ -9,9 +9,45 @@ class query {
 	static $user;
 	static $host;
 	static $detailed;
+	static $format;
 }
 
 function H($str) { return htmlspecialchars($str); }
+
+function output_json($data) {
+	foreach ($data as &$row)
+		unset($row["rowid"]);
+
+	header("Content-Type: text/plain; charset=utf-8");
+	print json_encode($data)."\n";
+}
+
+function output_xml($data) {
+	header("Content-Type: application/xml");
+
+	$doc = new \DOMDocument("1.0", "utf-8");
+	$doc->formatOutput = true;
+	$root = $doc->appendChild($doc->createElement("rwho"));
+
+	foreach ($data as $row) {
+		$rowx = $root->appendChild($doc->createElement("row"));
+
+		$rowx->appendChild($doc->createAttribute("updated"))
+			->appendChild($doc->createTextNode($row["updated"]));
+		unset($row["updated"]);
+
+		if ($row["is_summary"])
+			$rowx->appendChild($doc->createAttribute("summary"))
+				->appendChild($doc->createTextNode("true"));
+		unset($row["is_summary"]);
+
+		foreach ($row as $k => $v)
+			$rowx->appendChild($doc->createElement($k))
+				->appendChild($doc->createTextNode($v));
+	}
+
+	print $doc->saveXML();
+}
 
 function pretty_html($data) {
 	if (!count($data)) {
@@ -70,12 +106,14 @@ query::$user = $_GET["user"];
 query::$host = $_GET["host"];
 query::$detailed = strlen(query::$user) || strlen(query::$host)
 	|| isset($_GET["full"]);
+query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
 $data = retrieve(query::$user, query::$host);
 
 if (!query::$detailed)
 	$data = summarize($data);
 
+if (query::$format == "html") {
 ?>
 <!DOCTYPE html>
 <head>
@@ -183,3 +221,16 @@ echo strlen(query::$host)
 <p class="footer">
 Refreshed on <?php echo strftime("%Y-%m-%d %H:%M:%S") ?>
 </p>
+<?php
+}
+elseif (query::$format == "json") {
+	output_json($data);
+}
+elseif (query::$format == "xml") {
+	output_xml($data);
+}
+else {
+	header("Content-Type: text/plain; charset=utf-8", true, 406);
+	print "Unsupported output format.\n";
+}
+?>
