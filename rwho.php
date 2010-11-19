@@ -34,8 +34,6 @@ function output_xml($data) {
 
 	$doc = new \DOMDocument("1.0", "utf-8");
 	$doc->formatOutput = true;
-	$doc->appendChild($doc->createProcessingInstruction(
-		"xml-stylesheet", 'type="text/xsl" href="rwho.xsl"'));
 
 	$root = $doc->appendChild($doc->createElement("rwho"));
 	if (strlen(query::$user))
