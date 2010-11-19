@@ -32,8 +32,9 @@ function output_xml($data) {
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("row"));
 
+		$date = date("c", $row["updated"]);
 		$rowx->appendChild($doc->createAttribute("updated"))
-			->appendChild($doc->createTextNode($row["updated"]));
+			->appendChild($doc->createTextNode($date));
 		unset($row["updated"]);
 
 		if ($row["is_summary"])
