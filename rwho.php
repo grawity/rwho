@@ -27,6 +27,9 @@ function output_xml($data) {
 
 	$doc = new \DOMDocument("1.0", "utf-8");
 	$doc->formatOutput = true;
+	$doc->appendChild($doc->createProcessingInstruction(
+		"xml-stylesheet", 'type="text/xsl" href="rwho.xsl"'));
+
 	$root = $doc->appendChild($doc->createElement("rwho"));
 	if (strlen(query::$user))
 		$root->appendChild($doc->createAttribute("user"))
@@ -127,57 +130,11 @@ if (query::$format == "html") {
 ?>
 <!DOCTYPE html>
 <head>
+	<title>Users logged in</title>
 	<meta charset="utf-8">
 	<meta http-equiv="Refresh" content="10">
 	<meta name="robots" content="noindex, nofollow">
-	<title>Users logged in</title>
-	<style>
-	body {
-		font-family: "Tahoma", sans-serif;
-	}
-
-	a {
-		color: #44d;
-		text-decoration: none;
-	}
-
-	table#sessions {
-		border-collapse: collapse;
-		font-size: 11pt;
-	}
-
-	table#sessions thead,
-	table#sessions tfoot {
-		background: #eee;
-	}
-
-	table#sessions tfoot {
-		font-size: smaller;
-	}
-
-	table#sessions td,
-	table#sessions th {
-		border-width: 1px 0;
-		border-style: solid;
-		border-color: #aaa;
-		padding: 3px;
-		vertical-align: top;
-	}
-
-	table#sessions th {
-		text-align: left;
-	}
-
-	tr.stale td {
-		color: #aaa;
-		font-style: italic;
-	}
-
-	.footer {
-		color: gray;
-		font-size: smaller;
-	}
-	</style>
+	<link rel="stylesheet" href="rwho.css">
 </head>
 
 <?php if ($data !== false): ?>

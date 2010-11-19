@@ -1,0 +1,45 @@
+body {
+	font-family: "Tahoma", sans-serif;
+}
+
+a {
+	color: #44d;
+	text-decoration: none;
+}
+
+table#sessions {
+	border-collapse: collapse;
+	font-size: 11pt;
+}
+
+table#sessions thead,
+table#sessions tfoot {
+	background: #eee;
+}
+
+table#sessions tfoot {
+	font-size: smaller;
+}
+
+table#sessions td,
+table#sessions th {
+	border-width: 1px 0;
+	border-style: solid;
+	border-color: #aaa;
+	padding: 3px;
+	vertical-align: top;
+}
+
+table#sessions th {
+	text-align: left;
+}
+
+tr.stale td {
+	color: #aaa;
+	font-style: italic;
+}
+
+.footer {
+	color: gray;
+	font-size: smaller;
+}
