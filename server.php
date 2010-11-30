@@ -5,6 +5,26 @@ header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/config.inc";
 
+if (defined("LIBIDENT")
+and (@include LIBIDENT.PATH_SEPARATOR."libident.php")) {
+	\Ident\Ident::$timeout = 4;
+	$ident = \Ident\query_cgiremote();
+} else {
+	$ident = null;
+}
+
+function putlog($host, $ident, $msg) {
+	$unsafe = "\000..\037";
+	if ($ident and $ident->success and strlen($ident->userid))
+		$user = $ident->userid;
+	else
+		$user = "";
+	$host = addcslashes($host, $unsafe);
+	$user = addcslashes($user, $unsafe);
+	$msg = "rwho-server: addr={$_SERVER["REMOTE_ADDR"]} host=$host ident=$user $msg";
+	syslog(LOG_INFO, $msg);
+}
+
 function update_host($db, $host) {
 	$st = $db->prepare('INSERT INTO `hosts`
 		(host, last_update, last_addr) VALUES (:host, :time, :addr)
@@ -121,6 +141,7 @@ else
 if (isset($_REQUEST["action"])) {
 	$action = $_REQUEST["action"];
 	if (isset($actions[$action])) {
+		putlog($host, $ident, "action=$action data=".strlen($_POST["utmp"]));
 		$actions[$action]();
 	} else {
 		die("Unknown action\n");
