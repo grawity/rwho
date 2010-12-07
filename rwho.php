@@ -87,8 +87,6 @@ function pretty_html($data) {
 
 	foreach ($byuser as $data) {
 		foreach ($data as $k => $row) {
-			if (!query::$detailed and time()-$row["updated"] > 86400)
-				continue;
 			$user = htmlspecialchars($row["user"]);
 			$fqdn = htmlspecialchars($row["host"]);
 			$host = strip_domain($fqdn);
