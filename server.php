@@ -6,7 +6,7 @@ header("Content-Type: text/plain; charset=utf-8");
 require __DIR__."/config.inc";
 
 if (defined("LIBIDENT")
-and (@include LIBIDENT.PATH_SEPARATOR."libident.php")) {
+and (@include LIBIDENT.DIRECTORY_SEPARATOR."libident.php")) {
 	\Ident\Ident::$timeout = 4;
 	$ident = \Ident\query_cgiremote();
 } else {
