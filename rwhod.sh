@@ -28,6 +28,12 @@ ctl() {
 		ctl stop
 		ctl start
 		;;
+	update)
+		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
+			ctl stop
+			ctl start
+		fi
+		;;
 	status)
 		if [[ -f $PIDFILE ]] && pid=$(< "$PIDFILE"); then
 			if kill -0 $pid 2>/dev/null; then
