@@ -4,6 +4,7 @@ namespace RWho;
 header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/config.inc";
+openlog("rwho-server", null, LOG_DAEMON);
 
 if (defined("LIBIDENT")
 and (@include LIBIDENT.DIRECTORY_SEPARATOR."libident.php")) {
@@ -21,7 +22,7 @@ function putlog($host, $ident, $msg) {
 		$user = "";
 	$host = addcslashes($host, $unsafe);
 	$user = addcslashes($user, $unsafe);
-	$msg = "rwho-server: addr={$_SERVER["REMOTE_ADDR"]} host=$host ident=$user $msg";
+	$msg = "addr={$_SERVER["REMOTE_ADDR"]} host=$host ident=$user $msg";
 	syslog(LOG_INFO, $msg);
 }
 
