@@ -99,10 +99,10 @@ def get_sessions():
 		
 		print "="*79
 		for k, v in sess.items():
-			print "%-10s: %s" % (k, repr(v))
+			print "%-10s: %r" % (k, v)
 		print
 		for k, v in utent.items():
-			print "%-10s: %s" % (k, repr(v))
+			print "%-10s: %r" % (k, v)
 		
 		yield utent
 
