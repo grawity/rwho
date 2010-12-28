@@ -5,11 +5,13 @@ import ctypes	as c
 import json
 from urllib import urlencode
 import urllib2
-
+import servicemanager	as sm
 from win32con import *
 from win32gui import *
 from win32ts import *
 from win32security import *
+import win32service
+import win32serviceutil
 
 # generic types
 UINT							= c.c_uint
@@ -247,4 +249,23 @@ def upload(sdata):
 	resp = urllib2.urlopen(SERVER_URL, urlencode(data))
 	print resp.read()
 
-m = RWhoMonitor()
+class RWhoService(win32serviceutil.ServiceFramework):
+	_svc_name_ = "rwhod"
+	_svc_display_name_ = "rwho daemon"
+	def __init__(self, args):
+		win32serviceutil.ServiceFramework.__init__(self, args)
+
+	def SvcStop(self):
+		self.ReportServiceStatus(win32service.SERVICE_STOP_PENDING)
+		cleanup()
+		PostQuitMessage(0)
+		self.ReportServiceStatus(win32service.SERVICE_STOPPED)
+
+	def SvcDoRun(self):
+		m = RWhoMonitor()
+
+if __name__ == '__main__':
+	if len(sys.argv) > 1:
+		win32serviceutil.HandleCommandLine(RWhoService)
+	else:
+		m = RWhoMonitor()
