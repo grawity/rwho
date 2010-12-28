@@ -1,4 +1,5 @@
 import os, sys
+import atexit
 import socket
 import time
 import ctypes	as c
@@ -167,12 +168,12 @@ class RWhoMonitor(Monitor):
 			return True
 
 	def OnSuspend(self):
-		upload(None)
+		cleanup()
 	def OnResume(self):
 		update()
 	def OnShutdown(self):
 		print "Shutdown"
-		upload(None)
+		cleanup()
 	def OnTimer(self):
 		print "Timer"
 		self.tid = SetTimer(self.hWnd, self.tid, self.periodic_timeout*1000)
@@ -224,12 +225,13 @@ def collect_session_info():
 		yield entry
 
 def update():
-	sdata = list(collect_session_info())
-	upload(sdata)
+	upload(list(collect_session_info()))
 
-def upload(sdata=None):
-	if sdata is None:
-		sdata = []
+@atexit.register
+def cleanup():
+	upload([])
+
+def upload(sdata):
 	print "Uploading %d items" % len(sdata)
 	data = {
 		"host": socket.gethostname().lower(),
