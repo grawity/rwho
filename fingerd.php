@@ -32,8 +32,8 @@ function finger_parse($input) {
 
 function output($data, $detailed=false) {
 	$fmt = $detailed
-		? "%-12s %1s %-22s %-8s %s\r\n"
-		: "%-12s %1s %-12s %-8s %s\r\n";
+		? "%-12s %1s %-22s %-10s %s\r\n"
+		: "%-12s %1s %-12s %-10s %s\r\n";
 	printf($fmt, "USER", "", "HOST", "LINE", "FROM");
 
 	$last = array("user" => null);
