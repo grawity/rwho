@@ -11,7 +11,17 @@ from win32gui import *
 from win32ts import *
 from win32security import *
 
+# generic types
+UINT							= c.c_uint
+WORD							= c.c_uint16
+DWORD							= c.c_uint32
+WCHAR							= c.c_wchar
+HWND							= DWORD
+
+# window messages
 WM_WTSSESSION_CHANGE		= 0x2B1
+
+# WM_WTSSESSION_CHANGE events
 WTS_CONSOLE_CONNECT			= 0x1
 WTS_CONSOLE_DISCONNECT		= 0x2
 WTS_REMOTE_CONNECT			= 0x3
@@ -23,7 +33,7 @@ WTS_SESSION_UNLOCK			= 0x8
 WTS_SESSION_REMOTE_CONTROL	= 0x9
 
 # http://msdn.microsoft.com/en-us/library/aa383860(v=vs.85).aspx
-# enum WTS_CONNECTSTATE_CLASS
+WTS_CONNECTSTATE_CLASS		= DWORD
 WTSActive			= 0
 WTSConnected		= 1
 WTSConnectQuery	= 2
@@ -35,19 +45,15 @@ WTSReset			= 7
 WTSDown			= 8
 WTSInit				= 9
 
-# enum WTS_INFO_CLASS
+# http://msdn.microsoft.com/en-us/library/aa383861(v=vs.85).aspx
+WTS_INFO_CLASS		= DWORD
 WTSSessionInfo             = 24
 
+# include <winsta.h>
+# http://msdn.microsoft.com/en-us/library/cc248871(PROT.10).aspx
 WINSTATIONNAME_LENGTH		= 32
+USERNAME_LENGTH				= 20
 DOMAIN_LENGTH					= 17
-USERNAME_LENGTH				= 21
-
-UINT							= c.c_uint
-WORD							= c.c_uint16
-DWORD							= c.c_uint32
-WCHAR							= c.c_wchar
-HWND							= DWORD
-WTS_CONNECTSTATE_CLASS		= DWORD
 
 class LARGE_INTEGER(c.Structure):
 	_fields_ = (
@@ -60,6 +66,7 @@ class FILETIME(c.Structure):
 		("dwLowDateTime",	DWORD),
 	)
 class WTSINFO(c.Structure):
+	# http://msdn.microsoft.com/en-us/library/bb736370(v=vs.85).aspx
 	_fields_ = (
 		("State",						WTS_CONNECTSTATE_CLASS),
 		("SessionId",					DWORD),
@@ -69,9 +76,9 @@ class WTSINFO(c.Structure):
 		("OutgoingFrames",			DWORD),
 		("IncomingCompressedBytes",	DWORD),
 		("OutgoingCompressedBytes",	DWORD),
-		("WinStationName",			WCHAR * WINSTATIONNAME_LENGTH),
-		("Domain",					WCHAR * DOMAIN_LENGTH),
-		("UserName",				WCHAR * USERNAME_LENGTH),
+		("WinStationName",			WCHAR * (WINSTATIONNAME_LENGTH+1)),
+		("Domain",					WCHAR * (DOMAIN_LENGTH+1)),
+		("UserName",				WCHAR * (USERNAME_LENGTH+1)),
 		("ConnectTime",				FILETIME),
 		("DisconnectTime",			FILETIME),
 		("LastInputTime",				FILETIME),
@@ -121,13 +128,13 @@ class Monitor():
 		wc.lpszClassName = self.className
 		wc.lpfnWndProc = self.WndProc
 		self.classAtom = RegisterClass(wc)
-		
+
 		style = 0
 		self.hWnd = CreateWindow(self.classAtom, self.wndName,
 			style, 0, 0, CW_USEDEFAULT, CW_USEDEFAULT,
 			0, 0, hInst, None)
 		UpdateWindow(self.hWnd)
-		
+
 		WTSRegisterSessionNotification(self.hWnd, NOTIFY_FOR_ALL_SESSIONS)
 
 	def WndProc(self, hWnd, message, wParam, lParam):
