@@ -115,7 +115,6 @@ $actions = array(
 
 		$db = new \PDO(DB_PATH, DB_USER, DB_PASS);
 		ut_delete_host($db, $host);
-		var_dump($data);
 		foreach ($data as $entry)
 			ut_insert($db, $host, $entry);
 		update_host($db, $host);
