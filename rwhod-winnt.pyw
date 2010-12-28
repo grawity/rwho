@@ -146,6 +146,13 @@ class Monitor():
 			return True
 
 class RWhoMonitor(Monitor):
+	def __init__(self):
+		Monitor.__init__(self)
+		self.tid = 42
+		self.periodic_timeout = 10*60
+		self.OnTimer()
+		PumpMessages()
+
 	def WndProc(self, hWnd, message, wParam, lParam):
 		if message == WM_POWERBROADCAST:
 			if wParam == PBT_APMSUSPEND:
@@ -241,7 +248,3 @@ def upload(sdata):
 	print resp.read()
 
 m = RWhoMonitor()
-m.tid = 42
-m.periodic_timeout = 10*60
-m.OnTimer()
-PumpMessages()
