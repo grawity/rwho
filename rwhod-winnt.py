@@ -1,5 +1,4 @@
 import os, sys
-import atexit
 import socket
 import time
 import ctypes	as c
@@ -227,7 +226,6 @@ def collect_session_info():
 def update():
 	upload(list(collect_session_info()))
 
-@atexit.register
 def cleanup():
 	upload([])
 
