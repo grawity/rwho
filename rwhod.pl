@@ -14,7 +14,7 @@ use JSON;
 use LWP::UserAgent;
 use Data::Dumper;
 
-my $notify_url = "http://equal.cluenet.org/~grawity/rwho/server.php";
+my $notify_url = "http://equal.cluenet.org/rwho/server.php";
 my $update_interval = 10*60;
 
 my $verbose = 0;
