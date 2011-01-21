@@ -1,20 +1,16 @@
 #!/usr/bin/php
 <?php
-namespace RWho;
-
 define("RWHO_LIB", true);
 require __DIR__."/rwho.lib.php";
 
-function finger_handle() {
-	$input = fgets(STDIN)
-		or die();
+function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
-	list ($q_user, $q_host) = parse_query($query);
-	$data = retrieve($q_user, $q_host);
+	list ($q_user, $q_host) = RWho\parse_query($query);
+	$data = RWho\retrieve($q_user, $q_host);
 	if (!count($data))
 		die("Nobody is logged in.\r\n");
 	if (!$detailed)
-		$data = summarize($data);
+		$data = RWho\summarize($data);
 	output($data, $detailed);
 }
 
@@ -39,7 +35,7 @@ function output($data, $detailed=false) {
 	$last = array("user" => null);
 	foreach ($data as $row) {
 		$flag = "";
-		if (is_stale($row["updated"]))
+		if (RWho\is_stale($row["updated"]))
 			$flag = "?";
 		elseif ($row["uid"] == 0)
 			$flag = "#";
@@ -49,11 +45,18 @@ function output($data, $detailed=false) {
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$flag,
-			$detailed ? $row["host"] : strip_domain($row["host"]),
+			$detailed ? $row["host"] : RWho\strip_domain($row["host"]),
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
 			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
 	}
 }
 
-finger_handle();
+if (isset($_SERVER["REQUEST_URI"])) {
+	header("Content-Type: text/plain");
+	$input = $_SERVER["QUERY_STRING"];
+} else {
+	$input = fgets(STDIN)
+		or die();
+}
+finger_handle_query($input);
