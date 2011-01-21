@@ -55,6 +55,7 @@ function output($data, $detailed=false) {
 if (isset($_SERVER["REQUEST_URI"])) {
 	header("Content-Type: text/plain");
 	$input = $_SERVER["QUERY_STRING"];
+	$input = urldecode($input);
 } else {
 	$input = fgets(STDIN)
 		or die();
