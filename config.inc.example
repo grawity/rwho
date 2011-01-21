@@ -3,6 +3,3 @@
 const DB_PATH = "mysql:FIXME";
 const DB_USER = "";
 const DB_PASS = "";
-
-# Use LIBIDENT/libident.php if defined
-#const LIBIDENT = "/home/grawity/lib";

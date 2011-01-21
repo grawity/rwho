@@ -6,23 +6,11 @@ header("Content-Type: text/plain; charset=utf-8");
 require __DIR__."/config.inc";
 openlog("rwho-server", null, LOG_DAEMON);
 
-if (defined("LIBIDENT")
-and (@include LIBIDENT.DIRECTORY_SEPARATOR."libident.php")) {
-	\Ident\Ident::$timeout = 4;
-	$ident = \Ident\query_cgiremote();
-} else {
-	$ident = null;
-}
-
-function putlog($host, $ident, $msg) {
+function putlog($host, $msg) {
 	$unsafe = "\000..\037";
-	if ($ident and $ident->success and strlen($ident->userid))
-		$user = $ident->userid;
-	else
-		$user = "";
 	$host = addcslashes($host, $unsafe);
 	$user = addcslashes($user, $unsafe);
-	$msg = "addr={$_SERVER["REMOTE_ADDR"]} host=$host ident=$user $msg";
+	$msg = "addr={$_SERVER["REMOTE_ADDR"]} host=$host $msg";
 	syslog(LOG_INFO, $msg);
 }
 
@@ -141,7 +129,7 @@ else
 if (isset($_REQUEST["action"])) {
 	$action = $_REQUEST["action"];
 	if (isset($actions[$action])) {
-		putlog($host, $ident, "action=$action data=".strlen($_POST["utmp"]));
+		putlog($host, "action=$action data=".strlen($_POST["utmp"]));
 		$actions[$action]();
 	} else {
 		die("Unknown action\n");
