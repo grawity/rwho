@@ -9,7 +9,6 @@ openlog("rwho-server", null, LOG_DAEMON);
 function putlog($host, $msg) {
 	$unsafe = "\000..\037";
 	$host = addcslashes($host, $unsafe);
-	$user = addcslashes($user, $unsafe);
 	$msg = "addr={$_SERVER["REMOTE_ADDR"]} host=$host $msg";
 	syslog(LOG_INFO, $msg);
 }
