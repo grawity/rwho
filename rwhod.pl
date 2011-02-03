@@ -267,6 +267,8 @@ Print informative messages.
 
 =head1 DEPENDENCIES
 
+Perl 5.10, apparently.
+
 B<C<getaddrinfo>>: C<Socket::GetAddrInfo>, C<Net::addrinfo>, or the C<getent> binary.
 
 B<C<utmp> access>: C<Sys::Utmp> or C<User::Utmp>
