@@ -174,8 +174,11 @@ $SIG{TERM} = \&cleanup;
 
 chdir "/";
 
+$0 = "rwhod";
+
 if ($do_single) {
 	debug("doing single update");
+	$0 = "rwhod: single update";
 	update();
 	if ($do_fork) {
 		warn "warning: --fork ignored in single mode\n";
