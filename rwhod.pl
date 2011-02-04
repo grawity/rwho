@@ -26,7 +26,7 @@ my $my_hostname;
 my $my_fqdn;
 my $pid_periodic;
 
-sub canon_hostname($) {
+sub canon_hostname {
 	my $host = shift;
 	if (eval {require Socket::GetAddrInfo}) {
 		debug("canon_hostname: using Socket::GetAddrInfo");
@@ -60,7 +60,7 @@ sub forked(&) {
 }
 
 # Read the utmp file
-sub ut_dump() {
+sub ut_dump {
 	my @utmp = ();
 	if (eval {require User::Utmp}) {
 		debug("ut_dump: using User::Utmp");
@@ -98,7 +98,7 @@ sub ut_dump() {
 }
 
 # "utmp changed" handler
-sub update() {
+sub update {
 	my @data = ut_dump();
 	for (@data) {
 		$_->{uid} = scalar getpwnam $_->{user};
@@ -112,7 +112,7 @@ sub update() {
 }
 
 # Upload data to server
-sub upload($$) {
+sub upload {
 	my ($action, $data) = @_;
 	my $ua = LWP::UserAgent->new;
 	my %data = (
@@ -128,7 +128,7 @@ sub upload($$) {
 	debug("upload: ".$resp->status_line);
 }
 
-sub watch() {
+sub watch {
 	my $inotify = Linux::Inotify2->new();
 	$inotify->watch(PATH_UTMP, IN_MODIFY, sub {update});
 	debug("watch: idling");
