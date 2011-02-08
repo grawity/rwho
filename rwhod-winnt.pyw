@@ -1,10 +1,9 @@
+from __future__ import print_function
 import os, sys
 import socket
 import time
 import ctypes	as c
 import json
-from urllib import urlencode
-import urllib2
 import servicemanager	as sm
 from win32con import *
 from win32gui import *
@@ -180,25 +179,25 @@ class RWhoMonitor(Monitor):
 	def OnResume(self):
 		update()
 	def OnShutdown(self):
-		print "Shutdown"
+		print("Shutdown")
 		cleanup()
 	def OnTimer(self):
-		print "Timer"
+		print("Timer")
 		self.tid = SetTimer(self.hWnd, self.tid, self.periodic_timeout*1000)
 		update()
 	def OnSession(self, event, session):
 		event = {
-			WTS_CONSOLE_CONNECT			: "connected to console",
+			WTS_CONSOLE_CONNECT		: "connected to console",
 			WTS_CONSOLE_DISCONNECT		: "disconnected from console",
-			WTS_REMOTE_CONNECT			: "connected remotely",
+			WTS_REMOTE_CONNECT		: "connected remotely",
 			WTS_REMOTE_DISCONNECT		: "disconnected remotely",
-			WTS_SESSION_LOGON				: "logged on",
-			WTS_SESSION_LOGOFF			: "logged off",
-			WTS_SESSION_LOCK				: "locked",
-			WTS_SESSION_UNLOCK			: "unlocked",
+			WTS_SESSION_LOGON		: "logged on",
+			WTS_SESSION_LOGOFF		: "logged off",
+			WTS_SESSION_LOCK		: "locked",
+			WTS_SESSION_UNLOCK		: "unlocked",
 			WTS_SESSION_REMOTE_CONTROL	: "remote control"
 		}.get(event, "unknown %d" % event)
-		print "TSEvent: Session %d %s" % (session, event)
+		print("TSEvent: Session %d %s" % (session, event))
 		update()
 
 def collect_session_info():
@@ -206,14 +205,14 @@ def collect_session_info():
 	#hServer = WTSOpenServer("digit.cluenet.org")
 	#hServer = WTSOpenServer("snow")
 	for sess in WTSEnumerateSessions(hServer):
-		print "Session:", sess
+		print("Session:", sess)
 		if sess["State"] != WTSActive:
 			# skip inactive sessions (disconnected)
 			continue
 		sessionId = sess["SessionId"]
 		user = WTSQuerySessionInformation(hServer, sessionId, WTSUserName)
 		if not user:
-			print "skipping (user)"
+			print("skipping (user)")
 			continue
 		entry = {}
 		entry["user"] = user
@@ -239,15 +238,21 @@ def cleanup():
 	upload([])
 
 def upload(sdata):
-	print "Uploading %d items" % len(sdata)
+	print("Uploading %d items" % len(sdata))
 	data = {
 		"host": socket.gethostname().lower(),
 		"fqdn": socket.getfqdn().lower(),
 		"action": "put",
 		"utmp": json.dumps(sdata),
 	}
-	resp = urllib2.urlopen(SERVER_URL, urlencode(data))
-	print resp.read()
+	try:
+		from urllib import urlencode
+		from urllib2 import urlopen
+	except ImportError:
+		from urllib.parse import urlencode
+		from urllib.request import urlopen
+	resp = urlopen(SERVER_URL, urlencode(data))
+	print(resp.read())
 
 class RWhoService(win32serviceutil.ServiceFramework):
 	_svc_name_ = "rwhod"
