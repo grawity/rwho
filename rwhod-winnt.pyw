@@ -13,48 +13,48 @@ import win32service
 import win32serviceutil
 
 # generic types
-UINT							= c.c_uint
-WORD							= c.c_uint16
-DWORD							= c.c_uint32
-WCHAR							= c.c_wchar
-HWND							= DWORD
+UINT				= c.c_uint
+WORD				= c.c_uint16
+DWORD				= c.c_uint32
+WCHAR				= c.c_wchar
+HWND				= DWORD
 
 # window messages
 WM_WTSSESSION_CHANGE		= 0x2B1
 
 # WM_WTSSESSION_CHANGE events
-WTS_CONSOLE_CONNECT			= 0x1
+WTS_CONSOLE_CONNECT		= 0x1
 WTS_CONSOLE_DISCONNECT		= 0x2
-WTS_REMOTE_CONNECT			= 0x3
+WTS_REMOTE_CONNECT		= 0x3
 WTS_REMOTE_DISCONNECT		= 0x4
-WTS_SESSION_LOGON				= 0x5
-WTS_SESSION_LOGOFF			= 0x6
-WTS_SESSION_LOCK				= 0x7
-WTS_SESSION_UNLOCK			= 0x8
+WTS_SESSION_LOGON		= 0x5
+WTS_SESSION_LOGOFF		= 0x6
+WTS_SESSION_LOCK		= 0x7
+WTS_SESSION_UNLOCK		= 0x8
 WTS_SESSION_REMOTE_CONTROL	= 0x9
 
 # http://msdn.microsoft.com/en-us/library/aa383860(v=vs.85).aspx
-WTS_CONNECTSTATE_CLASS		= DWORD
-WTSActive			= 0
+WTS_CONNECTSTATE_CLASS	= DWORD
+WTSActive		= 0
 WTSConnected		= 1
-WTSConnectQuery	= 2
-WTSShadow			= 3
+WTSConnectQuery		= 2
+WTSShadow		= 3
 WTSDisconnected		= 4
-WTSIdle				= 5
-WTSListen			= 6
-WTSReset			= 7
+WTSIdle			= 5
+WTSListen		= 6
+WTSReset		= 7
 WTSDown			= 8
-WTSInit				= 9
+WTSInit			= 9
 
 # http://msdn.microsoft.com/en-us/library/aa383861(v=vs.85).aspx
 WTS_INFO_CLASS		= DWORD
-WTSSessionInfo             = 24
+WTSSessionInfo		= 24
 
 # include <winsta.h>
 # http://msdn.microsoft.com/en-us/library/cc248871(PROT.10).aspx
 WINSTATIONNAME_LENGTH		= 32
-USERNAME_LENGTH				= 20
-DOMAIN_LENGTH					= 17
+USERNAME_LENGTH			= 20
+DOMAIN_LENGTH			= 17
 
 class LARGE_INTEGER(c.Structure):
 	_fields_ = (
@@ -69,22 +69,22 @@ class FILETIME(c.Structure):
 class WTSINFO(c.Structure):
 	# http://msdn.microsoft.com/en-us/library/bb736370(v=vs.85).aspx
 	_fields_ = (
-		("State",						WTS_CONNECTSTATE_CLASS),
-		("SessionId",					DWORD),
-		("IncomingBytes",				DWORD),
-		("OutgoingBytes",				DWORD),
-		("IncomingFrames",			DWORD),
-		("OutgoingFrames",			DWORD),
+		("State",			WTS_CONNECTSTATE_CLASS),
+		("SessionId",			DWORD),
+		("IncomingBytes",		DWORD),
+		("OutgoingBytes",		DWORD),
+		("IncomingFrames",		DWORD),
+		("OutgoingFrames",		DWORD),
 		("IncomingCompressedBytes",	DWORD),
 		("OutgoingCompressedBytes",	DWORD),
-		("WinStationName",			WCHAR * (WINSTATIONNAME_LENGTH+1)),
-		("Domain",					WCHAR * (DOMAIN_LENGTH+1)),
-		("UserName",				WCHAR * (USERNAME_LENGTH+1)),
-		("ConnectTime",				FILETIME),
-		("DisconnectTime",			FILETIME),
-		("LastInputTime",				FILETIME),
-		("LogonTime",				FILETIME),
-		("CurrentTime",				FILETIME),
+		("WinStationName",		WCHAR * (WINSTATIONNAME_LENGTH+1)),
+		("Domain",			WCHAR * (DOMAIN_LENGTH+1)),
+		("UserName",			WCHAR * (USERNAME_LENGTH+1)),
+		("ConnectTime",			FILETIME),
+		("DisconnectTime",		FILETIME),
+		("LastInputTime",		FILETIME),
+		("LogonTime",			FILETIME),
+		("CurrentTime",			FILETIME),
 	)
 
 #def displayStruct(structure):
