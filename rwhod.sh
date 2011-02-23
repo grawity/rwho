@@ -17,9 +17,16 @@ fi
 ctl() {
 	case $1 in
 	start)
+		if [[ -f $PIDFILE ]]; then
+			echo "error: pidfile '$PIDFILE' already exists" >&2
+			exit 1
+		fi
+
+		exec {fd}>"$PIDFILE"
+		flock -x $fd
 		"$RWHOD_DIR/rwhod.pl" "${RWHOD_OPTIONS[@]}" & pid=$!
-		echo $pid > "$PIDFILE"
-		kill -0 $pid
+		echo $pid >&$fd
+		exec {fd}>&-
 		;;
 	stop)
 		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
