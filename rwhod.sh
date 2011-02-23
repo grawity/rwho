@@ -28,24 +28,29 @@ ctl() {
 		ctl stop
 		ctl start
 		;;
+	reload)
+		ctl restart
+		;;
+	force-reload)
+		ctl restart
+		;;
 	update)
 		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
-			ctl stop
-			ctl start
+			ctl restart
 		fi
 		;;
 	status)
 		if [[ -f $PIDFILE ]] && pid=$(< "$PIDFILE"); then
 			if kill -0 $pid 2>/dev/null; then
-				echo "running: pid $pid"
+				echo "running (pid $pid)"
 				return 0
 			else
-				echo "unsure: pid $pid but can't signal"
-				return 2
+				echo "unsure (pid $pid does not respond to signals)"
+				return 1
 			fi
 		else
 			echo "not running or no pidfile at '$PIDFILE'"
-			return 1
+			return 3
 		fi
 	esac
 }
