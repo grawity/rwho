@@ -21,12 +21,8 @@ ctl() {
 			echo "error: pidfile '$PIDFILE' already exists" >&2
 			exit 1
 		fi
-
-		exec {fd}>"$PIDFILE"
-		flock -x $fd
 		"$RWHOD_DIR/rwhod.pl" "${RWHOD_OPTIONS[@]}" & pid=$!
-		echo $pid >&$fd
-		exec {fd}>&-
+		echo $pid >"$PIDFILE"
 		;;
 	stop)
 		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
