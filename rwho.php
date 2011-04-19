@@ -27,6 +27,32 @@ class html {
 
 function H($str) { return htmlspecialchars($str); }
 
+function build_query($items) {
+	$query = array();
+	foreach ($items as $key => $value) {
+		if ($value === null or !strlen($value))
+			$query[] = urlencode($key);
+		else
+			$query[] = urlencode($key)."=".urlencode($value);
+	}
+	return implode("&", $query);
+}
+
+function mangle_query($add, $remove=null) {
+	parse_str($_SERVER["QUERY_STRING"], $query);
+
+	if ($add !== null)
+		foreach ($add as $key => $value)
+			$query[$key] = $value;
+
+	if ($remove !== null)
+		foreach ($remove as $key)
+			unset($query[$key]);
+
+	return build_query($query);
+}
+
+
 function output_json($data) {
 	foreach ($data as &$row)
 		unset($row["rowid"]);
@@ -194,10 +220,13 @@ html::header("address", 40);
 <?php if (strlen(query::$user) or strlen(query::$host)): ?>
 		<a href="?">Back to all sessions</a>
 <?php elseif (query::$detailed): ?>
-		<a href="?">Normal view</a>
+		<a href="?">Back to normal view</a>
 <?php else: ?>
-		<a href="?full">Expanded view</a>, <a href="?fmt=json">JSON</a>, <a href="?fmt=xml">XML</a>
+		<a href="?full">Expanded view</a>
 <?php endif; ?>
+		or output as
+		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
+		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>
 	</td>
 </tfoot>
 
@@ -207,7 +236,6 @@ html::header("address", 40);
 <?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
 <p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>
 <?php } ?>
-
 
 <?php else: ?>
 <!-- error message -->
