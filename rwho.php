@@ -12,6 +12,19 @@ class query {
 	static $format;
 }
 
+class html {
+	static $columns = 0;
+
+	static function header($title, $width=0) {
+		if ($width)
+			echo "\t<th style=\"min-width: {$width}ex\">$title</th>\n";
+		else
+			echo "\t<th>$title</th>\n";
+
+		self::$columns++;
+	}
+}
+
 function H($str) { return htmlspecialchars($str); }
 
 function output_json($data) {
@@ -72,7 +85,7 @@ function output_xml($data) {
 function pretty_html($data) {
 	if (!count($data)) {
 		print "<tr>\n";
-		print "\t<td colspan=\"4\" style=\"font-style: italic\">"
+		print "\t<td colspan=\"".html::$columns."\" style=\"font-style: italic\">"
 			."Nobody is logged in."
 			."</td>\n";
 		print "</tr>\n";
@@ -88,6 +101,7 @@ function pretty_html($data) {
 	foreach ($byuser as $data) {
 		foreach ($data as $k => $row) {
 			$user = htmlspecialchars($row["user"]);
+			$uid = intval($row["uid"]);
 			$fqdn = htmlspecialchars($row["host"]);
 			$host = strip_domain($fqdn);
 			$line = htmlspecialchars($row["line"]);
@@ -100,11 +114,19 @@ function pretty_html($data) {
 			else
 				print "<tr>\n";
 
-			if ($k == 0)
-				print "\t<td rowspan=\"".count($data)."\">"
+			if (query::$detailed) {
+				print "\t<td>"
 					.(strlen(query::$user) ? $user
 						: "<a href=\"?user=$user\">$user</a>")
 					."</td>\n";
+				print "\t<td>$uid</td>\n";
+			} else {
+				if ($k == 0)
+					print "\t<td rowspan=\"".count($data)."\">"
+						.(strlen(query::$user) ? $user
+							: "<a href=\"?user=$user\">$user</a>")
+						."</td>\n";
+			}
 
 			print "\t<td>"
 				.(strlen(query::$host) ? $host
@@ -157,22 +179,26 @@ echo strlen(query::$host)
 
 <table id="sessions">
 <thead>
-	<th style="min-width: 15ex">user</th>
-	<th style="min-width: 10ex">host</th>
-	<th style="min-width: 8ex">line</th>
-	<th style="min-width: 40ex">address</th>
+<?php
+html::header("user", 15);
+if (query::$detailed)
+	html::header("uid", 5);
+html::header("host", 10);
+html::header("line", 8);
+html::header("address", 40);
+?>
 </thead>
 
 <tfoot>
+	<td colspan="<?php echo html::$columns ?>">
 <?php if (strlen(query::$user) or strlen(query::$host)): ?>
-	<td colspan="4">
 		<a href="?">Back to all sessions</a>
-	</td>
-<?php elseif (!query::$detailed): ?>
-	<td colspan="4">
+<?php elseif (query::$detailed): ?>
+		<a href="?">Normal view</a>
+<?php else: ?>
 		<a href="?full">Expanded view</a>, <a href="?fmt=json">JSON</a>, <a href="?fmt=xml">XML</a>
-	</td>
 <?php endif; ?>
+	</td>
 </tfoot>
 
 <?php pretty_html($data); ?>
