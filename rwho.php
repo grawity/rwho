@@ -170,7 +170,7 @@ echo strlen(query::$host)
 	</td>
 <?php elseif (!query::$detailed): ?>
 	<td colspan="4">
-		<a href="?full">Expanded view</a>
+		<a href="?full">Expanded view</a>, <a href="?fmt=json">JSON</a>, <a href="?fmt=xml">XML</a>
 	</td>
 <?php endif; ?>
 </tfoot>
