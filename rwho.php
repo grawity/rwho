@@ -108,7 +108,7 @@ function pretty_html($data) {
 
 			print "\t<td>"
 				.(strlen(query::$host) ? $host
-					: "<a href=\"?host=$fqdn\">$host</a>")
+					: "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>")
 				."</td>\n";
 			print "\t<td>"
 				.($row["is_summary"] ? "($line ttys)" : $line)
