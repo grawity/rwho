@@ -34,6 +34,10 @@ table#sessions th {
 	text-align: left;
 }
 
+table#sessions .comment {
+	font-style: italic;
+}
+
 tr.stale td {
 	color: #aaa;
 	font-style: italic;

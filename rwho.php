@@ -111,7 +111,7 @@ function output_xml($data) {
 function pretty_html($data) {
 	if (!count($data)) {
 		print "<tr>\n";
-		print "\t<td colspan=\"".html::$columns."\" style=\"font-style: italic\">"
+		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
 			."Nobody is logged in."
 			."</td>\n";
 		print "</tr>\n";
@@ -185,9 +185,20 @@ if (query::$format == "html") {
 <head>
 	<title>Users logged in</title>
 	<meta charset="utf-8">
+	<!--
 	<meta http-equiv="Refresh" content="10">
+	-->
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
+
+	<script type="text/javascript">
+	var update_interval = 1500;
+
+	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
+	var json_url = location.href.substr(0, location.href.indexOf("?")+1) + json_args;
+	var html_columns = <?php echo html::$columns ?>;
+	</script>
+	<script type="text/javascript" src="rwho-xhr.js"></script>
 </head>
 
 <?php if ($data !== false): ?>
