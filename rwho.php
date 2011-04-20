@@ -185,7 +185,9 @@ if (query::$format == "html") {
 <head>
 	<title>Users logged in</title>
 	<meta charset="utf-8">
-	<meta http-equiv="Refresh" content="10">
+	<noscript>
+		<meta http-equiv="Refresh" content="10">
+	</noscript>
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
 
