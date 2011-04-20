@@ -251,7 +251,8 @@ def upload(sdata):
 	except ImportError:
 		from urllib.parse import urlencode
 		from urllib.request import urlopen
-	resp = urlopen(SERVER_URL, urlencode(data))
+	data = urlencode(data).encode("utf-8")
+	resp = urlopen(SERVER_URL, data)
 	print(resp.read())
 
 class RWhoService(win32serviceutil.ServiceFramework):
