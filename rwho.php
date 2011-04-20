@@ -185,9 +185,7 @@ if (query::$format == "html") {
 <head>
 	<title>Users logged in</title>
 	<meta charset="utf-8">
-	<!--
 	<meta http-equiv="Refresh" content="10">
-	-->
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
 
@@ -252,14 +250,10 @@ html::header("address", 40);
 <!-- error message -->
 
 <p>Could not retrieve <code>rwho</code> information.</p>
-
 <?php endif; ?>
 
-<p class="footer">
-Refreshed on <?php echo strftime("%Y-%m-%d %H:%M:%S") ?>
-</p>
 <?php
-}
+} // query::$format == "html"
 elseif (query::$format == "json") {
 	output_json($data);
 }
