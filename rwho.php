@@ -193,9 +193,7 @@ if (query::$format == "html") {
 
 	<script type="text/javascript">
 	var update_interval = 1500;
-
 	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
-	var json_url = location.href.substr(0, location.href.indexOf("?")+1) + json_args;
 	var html_columns = <?php echo html::$columns ?>;
 	</script>
 	<script type="text/javascript" src="rwho-xhr.js"></script>

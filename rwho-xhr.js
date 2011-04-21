@@ -1,6 +1,9 @@
 var waiting = 0;
 
 function fetch_utmp() {
+	var p = location.href.indexOf("?");
+	var json_url = (p >= 0 ? location.href.substr(0, p) : location.href) + "?" + json_args;
+
 	var xhr = new XMLHttpRequest();
 	waiting++;
 	xhr.open('GET', json_url, true);
