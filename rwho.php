@@ -52,6 +52,17 @@ function mangle_query($add, $remove=null) {
 	return build_query($query);
 }
 
+function make_finger_addr() {
+	$q = (string) query::$user;
+	if (strlen(query::$host))
+		$q .= "@".query::$host;
+	$q .= "@".$_SERVER["SERVER_NAME"];
+	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
+		$q = "/W ".$q;
+	$q = (isset($_SERVER["HTTPS"])?"https":"http")."://nullroute.eu.org/finger/?q=".urlencode($q);
+	return $q;
+}
+
 
 function output_json($data) {
 	foreach ($data as &$row)
@@ -235,7 +246,8 @@ html::header("address", 40);
 <?php endif; ?>
 		or output as
 		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
-		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>
+		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
+		<a href="<?php echo H(make_finger_addr()) ?>">text</a>
 	</td>
 </tfoot>
 
