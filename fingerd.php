@@ -42,10 +42,15 @@ function output($data, $detailed=false) {
 		elseif ($row["uid"] < 25000)
 			$flag = "<";
 
+		if (!$detailed) {
+			$row["host"] = substr(RWho\strip_domain($row["host"]), 0, 12);
+			$row["rhost"] = substr($row["rhost"], 0, 40);
+		}
+
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$flag,
-			$detailed ? $row["host"] : RWho\strip_domain($row["host"]),
+			$row["host"],
 			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
 			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
