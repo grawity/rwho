@@ -21,10 +21,12 @@ my $verbose = 0;
 my $do_fork = 0;
 my $do_single = 0;
 my $hide_root = 1;
+my $pidfile;
+my $pidfile_h;
 
 my $my_hostname;
 my $my_fqdn;
-my $pid_periodic;
+my $poller_pid;
 
 sub canon_hostname {
 	my $host = shift;
@@ -128,21 +130,23 @@ sub upload {
 	debug("upload: ".$resp->status_line);
 }
 
-sub watch {
+sub watch_inotify {
+	$0 = "rwhod: inotify(".PATH_UTMP.")";
 	my $inotify = Linux::Inotify2->new();
-	$inotify->watch(PATH_UTMP, IN_MODIFY, sub {update});
+	$inotify->watch(PATH_UTMP, IN_MODIFY, sub { update(); });
 	debug("watch: idling");
-	1 while $inotify->poll;
+	while (1) {
+		$inotify->poll;
+	}
 }
 
-sub cleanup {
-	if (defined $pid_periodic) {
-		debug("cleanup: killing poller");
-		kill SIGTERM, $pid_periodic;
+sub watch_poll {
+	$0 = "rwhod: poll(${update_interval}s)";
+	debug("poll: updating every $update_interval seconds");
+	while (1) {
+		sleep $update_interval;
+		update();
 	}
-	debug("cleanup: removing all records");
-	upload("destroy", []);
-	exit;
 }
 
 sub debug {
@@ -150,15 +154,81 @@ sub debug {
 	$verbose and print "rwhod[$$]: @_\n";
 }
 
+sub daemonize {
+	chdir "/"
+		or die "can't chdir to /: $!";
+	open STDIN, "<", "/dev/null"
+		or die "can't read /dev/null: $!";
+	open STDOUT, ">", "/dev/null"
+		or die "can't write /dev/null: $!";
+
+	my $pid = fork;
+	if (!defined $pid) {
+		die "can't fork: $!";
+	} elsif ($pid) {
+		debug("forked to $pid");
+		exit;
+	} else {
+		if (POSIX::setsid() < 0) {
+			warn "setsid failed: $!";
+		}
+		debug("running in background");
+	}
+}
+
+sub reap {
+	my $pid = wait;
+	$SIG{CHLD} = \&reap;
+	debug("received SIGCHLD for $pid");
+}
+
+sub cleanup {
+	if (defined $poller_pid) {
+		debug("cleanup: killing poller");
+		$SIG{CHLD} = \&reap;
+		kill SIGTERM, $poller_pid;
+	}
+	debug("cleanup: removing all records");
+	upload("destroy", []);
+	exit;
+}
+
+sub fork_poller {
+	debug("starting poller");
+	$SIG{CHLD} = \&reap_poller;
+	return forked {
+		$SIG{INT} = "DEFAULT";
+		$SIG{TERM} = "DEFAULT";
+		$SIG{CHLD} = \&reap;
+		watch_poll();
+	};
+}
+
+sub reap_poller {
+	my $pid = wait;
+	$SIG{CHLD} = \&reap_poller;
+
+	if (defined $poller_pid and $pid == $poller_pid) {
+		debug("poller exited, restarting");
+		$poller_pid = fork_poller();
+	} else {
+		debug("received SIGCHLD for unknown pid $pid");
+	}
+}
+
+$0 = "rwhod";
+
 ## startup code
 GetOptions(
-	"fork" => \$do_fork,
-	"help" => sub { pod2usage(1); },
-	"i|interval=i" => \$update_interval,
-	"man" => sub { pod2usage(-exitstatus => 0, -verbose => 2); },
-	"root" => sub { $hide_root = 0; },
-	"single" => \$do_single,
-	"v|verbose" => \$verbose,
+	"fork"		=> \$do_fork,
+	"help"		=> sub { pod2usage(1); },
+	"i|interval=i"	=> \$update_interval,
+	"man"		=> sub { pod2usage(-exitstatus => 0,
+				-verbose => 2); },
+	"pidfile=s"	=> \$pidfile,
+	"root"		=> sub { $hide_root = 0; },
+	"single"	=> \$do_single,
+	"v|verbose"	=> \$verbose,
 ) or pod2usage(2);
 
 if (!defined $notify_url) {
@@ -166,64 +236,49 @@ if (!defined $notify_url) {
 }
 
 $my_hostname = hostname;
-$my_hostname =~ s/\..*$//;
 $my_fqdn = canon_hostname($my_hostname);
+$my_hostname =~ s/\..*$//;
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
 
-chdir "/";
-
-$0 = "rwhod";
-
 if ($do_single) {
-	debug("doing single update");
-	$0 = "rwhod: single update";
-	update();
 	if ($do_fork) {
 		warn "warning: --fork ignored in single mode\n";
 	}
+	debug("doing single update");
+	$0 = "rwhod: updating";
+	update();
 	exit();
 }
+
+if (defined $pidfile) {
+	open $pidfile_h, ">", $pidfile
+		or die "unable to open pidfile '$pidfile'\n";
+	print $pidfile_h "$$\n";
+}
+
+# chdir after opening pidfile
+chdir "/";
 
 debug("doing initial update");
 update();
 
 if ($do_fork) {
-	my $pid = fork;
-	if (!defined $pid) {
-		die "$!";
-	} elsif ($pid > 0) {
-		debug("forked to $pid");
-		print "$pid\n";
-		exit;
-	} elsif ($pid == 0) {
-		my $sid = POSIX::setsid;
-		if ($sid < 0) {
-			warn "setsid failed: $!";
-		}
-		debug("running in background");
-	}
+	daemonize();
+}
+
+if (defined $pidfile_h) {
+	print $pidfile_h "$$\n";
+	close $pidfile_h;
 }
 
 if ($update_interval) {
-	debug("starting poller");
-	$pid_periodic = forked {
-		$0 = "rwhod: periodic(${update_interval}s)";
-		$SIG{INT} = "DEFAULT";
-		$SIG{TERM} = "DEFAULT";
-		while (1) {
-			debug("poller: sleeping $update_interval seconds");
-			sleep $update_interval;
-			update();
-		}
-	};
+	$poller_pid = fork_poller();
 }
-
 debug("starting inotify watch");
-$0 = "rwhod: inotify(".PATH_UTMP.")";
-watch();
+watch_inotify();
 
 __END__
 
@@ -241,7 +296,7 @@ rwhod [options]
 
 =item B<--fork>
 
-Fork to background after initial update and print PID to stdout.
+Fork to background after initial update
 
 =item B<--help>
 
@@ -249,11 +304,15 @@ Obvious.
 
 =item B<-i I<seconds>>, B<--interval=I<seconds>>
 
-Periodic update every I<seconds> seconds (600 by default).
+Periodic update every I<seconds> seconds (600 by default). Zero to disable.
 
 =item B<--man>
 
 Display the manual page.
+
+=item B<--pidfile I<path>>
+
+Write PID to file.
 
 =item B<--root>
 

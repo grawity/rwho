@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 if (( $(id -u) > 0 )); then
 	[[ $PIDFILE ]] ||
-		export PIDFILE="$HOME/tmp/rwhod-$(hostname).pid"
+		export PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
 	[[ $PERL5LIB ]] ||
 		export PERL5LIB="$HOME/lib/perl5:$HOME/usr/lib/perl5"
 else
@@ -11,14 +11,11 @@ fi
 
 [[ $RWHOD_DIR ]] ||
 	RWHOD_DIR="$HOME/code/useless/rwho"
-[[ $RWHOD_OPTIONS ]] ||
-	RWHOD_OPTIONS=()
 
 ctl() {
 	case $1 in
 	start)
-		"$RWHOD_DIR/rwhod.pl" "${RWHOD_OPTIONS[@]}" & pid=$!
-		echo $pid >"$PIDFILE"
+		"$RWHOD_DIR/rwhod.pl" --fork --pidfile="$PIDFILE"
 		;;
 	stop)
 		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
