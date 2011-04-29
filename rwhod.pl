@@ -256,7 +256,6 @@ if ($do_single) {
 if (defined $pidfile) {
 	open $pidfile_h, ">", $pidfile
 		or die "unable to open pidfile '$pidfile'\n";
-	print $pidfile_h "$$\n";
 }
 
 # chdir after opening pidfile
