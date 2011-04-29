@@ -142,6 +142,7 @@ sub cleanup {
 	}
 	debug("cleanup: removing all records");
 	upload("destroy", []);
+	exit;
 }
 
 sub debug {
