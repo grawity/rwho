@@ -44,14 +44,15 @@ function output($data, $detailed=false) {
 
 		if (!$detailed) {
 			$row["host"] = substr(RWho\strip_domain($row["host"]), 0, 12);
-			$row["rhost"] = substr($row["rhost"], 0, 40);
+			if (strlen($row["rhost"]) > 40) 
+				$row["rhost"] = substr($row["rhost"], 0, 39)."|";
 		}
 
 		printf($fmt,
 			$row["user"] !== $last["user"] ? $row["user"] : "",
 			$flag,
 			$row["host"],
-			$row["is_summary"] ? "{".$row["line"]."}" : $row["line"],
+			$row["is_summary"] ? "[".$row["line"]."]" : $row["line"],
 			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
 	}
