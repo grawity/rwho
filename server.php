@@ -10,7 +10,8 @@ function putlog($host, $msg) {
 	$unsafe = "\000..\037";
 	$host = addcslashes($host, $unsafe);
 	$msg = "addr={$_SERVER["REMOTE_ADDR"]} host=$host $msg";
-	syslog(LOG_INFO, $msg);
+	if (USE_SYSLOG)
+		syslog(LOG_INFO, $msg);
 }
 
 function update_host($db, $host) {
