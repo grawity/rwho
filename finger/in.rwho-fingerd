@@ -1,7 +1,6 @@
 #!/usr/bin/php
 <?php
-define("RWHO_LIB", true);
-require __DIR__."/rwho.lib.php";
+require __DIR__."/../php/librwho.php";
 
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);

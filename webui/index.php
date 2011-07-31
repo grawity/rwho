@@ -2,8 +2,7 @@
 namespace RWho;
 error_reporting(E_ALL^E_NOTICE);
 
-define("RWHO_LIB", true);
-require __DIR__."/rwho.lib.php";
+require __DIR__."/php/librwho.php";
 
 class query {
 	static $user;
@@ -207,7 +206,7 @@ if (query::$format == "html") {
 	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
 	var html_columns = <?php echo html::$columns ?>;
 	</script>
-	<script type="text/javascript" src="rwho-xhr.js"></script>
+	<script type="text/javascript" src="xhr.js"></script>
 </head>
 
 <?php if ($data !== false): ?>

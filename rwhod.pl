@@ -5,18 +5,17 @@ use warnings;
 use strict;
 use constant PATH_UTMP => '/var/run/utmp';
 
+use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case bundling);
-use Pod::Usage;
-use POSIX qw(:errno_h :signal_h);
-use Linux::Inotify2;
-use Sys::Hostname;
 use JSON;
 use LWP::UserAgent;
-use Data::Dumper;
+use Linux::Inotify2;
+use POSIX qw(:errno_h :signal_h);
+use Pod::Usage;
+use Sys::Hostname;
 
 my $notify_url = "http://equal.cluenet.org/rwho/server.php";
 my $update_interval = 10*60;
-
 my $verbose = 0;
 my $do_fork = 0;
 my $do_single = 0;
@@ -216,24 +215,25 @@ sub reap_poller {
 	}
 }
 
-$0 = "rwhod";
-
 ## startup code
 GetOptions(
-	"fork"		=> \$do_fork,
+	"d|daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(1); },
 	"i|interval=i"	=> \$update_interval,
 	"man"		=> sub { pod2usage(-exitstatus => 0,
 				-verbose => 2); },
 	"pidfile=s"	=> \$pidfile,
 	"root"		=> sub { $hide_root = 0; },
+	"server=s"	=> \$notify_url,
 	"single"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
-) or pod2usage(2);
+) or pod2usage(1);
 
 if (!defined $notify_url) {
 	die "error: notify_url not specified\n";
 }
+
+$0 = "rwhod";
 
 $my_hostname = hostname;
 $my_fqdn = canon_hostname($my_hostname);
@@ -293,9 +293,9 @@ rwhod [options]
 
 =over 8
 
-=item B<--fork>
+=item B<-d>, B<--daemon>
 
-Fork to background after initial update
+Fork to background after initial update.
 
 =item B<--help>
 
@@ -316,6 +316,10 @@ Write PID to file.
 =item B<--root>
 
 Include root logins.
+
+=item B<--server I<url>>
+
+Use specified server URL.
 
 =item B<--single>
 

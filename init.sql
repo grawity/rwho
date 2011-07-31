@@ -1,10 +1,9 @@
 create table utmp (
-	rowid	integer			auto_increment primary key,
+	rowid	integer		auto_increment primary key,
 	host	varchar(255)	not null,
-	-- normally UT_NAMESIZE, but allow twice
-	-- as much for possible Windows madness
+	-- normally UT_NAMESIZE, but allow more for Windows
 	user	varchar(64),
-	uid		integer,
+	uid	integer,
 	-- UT_HOSTSIZE
 	rhost	varchar(256),
 	-- UT_LINESIZE
@@ -13,7 +12,7 @@ create table utmp (
 	updated	integer,
 );
 create table hosts (
-	hostid		integer			auto_increment primary key,
+	hostid		integer		auto_increment primary key,
 	host		varchar(255)	not null unique,
 	last_update	integer,
 	last_addr	varchar(63),

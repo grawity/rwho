@@ -1,7 +1,7 @@
 #!/usr/bin/env php
 <?php
 namespace RWho;
-require __DIR__."/config.inc";
+require __DIR__."/config.php";
 
 function cleanup() {
 	$max_age = 3600;

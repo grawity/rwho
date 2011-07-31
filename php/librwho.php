@@ -1,7 +1,7 @@
 <?php
 namespace RWho;
 
-require __DIR__."/config.inc";
+require __DIR__."../config.php";
 
 if (!defined("MAX_AGE"))
 	// maximum age before which the entry will be considered stale

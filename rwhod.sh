@@ -15,7 +15,7 @@ fi
 ctl() {
 	case $1 in
 	start)
-		"$RWHOD_DIR/rwhod.pl" --fork --pidfile="$PIDFILE" &
+		"$RWHOD_DIR/rwhod.pl" --daemon --pidfile="$PIDFILE" &
 		;;
 	stop)
 		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
