@@ -3,7 +3,7 @@ namespace RWho;
 
 header("Content-Type: text/plain; charset=utf-8");
 
-require __DIR__."/../config.php";
+require __DIR__."/config.php";
 openlog("rwho-server", null, LOG_DAEMON);
 
 function putlog($host, $msg) {
