@@ -98,30 +98,41 @@ sub ut_dump {
 	return @utmp;
 }
 
+# read uptime data
+sub get_uptime {
+	my $loadavg;
+	if (open(my $fh, "<", "/proc/loadavg")) {
+		chomp($loadavg = <$fh>);
+		close($fh);
+	}
+	return $loadavg;
+}
+
 # "utmp changed" handler
 sub update {
-	my @data = ut_dump();
-	for (@data) {
+	my @utmp = ut_dump();
+	for (@utmp) {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
 	}
 	if ($hide_root) {
-		@data = grep {$_->{user} ne "root"} @data;
+		@utmp = grep {$_->{user} ne "root"} @utmp;
 	}
-	debug("update: uploading ".scalar(@data)." items");
-	upload("put", \@data);
+	debug("update: uploading ".scalar(@utmp)." items");
+	upload("put", \@utmp);
 }
 
 # Upload data to server
 sub upload {
-	my ($action, $data) = @_;
-	my $ua = LWP::UserAgent->new;
+	my ($action, $utmp) = @_;
 	my %data = (
 		host => $my_hostname,
 		fqdn => $my_fqdn,
 		action => $action,
-		utmp => encode_json($data),
+		utmp => encode_json($utmp),
+		uptime => get_uptime(),
 	);
+	my $ua = LWP::UserAgent->new;
 	my $resp = $ua->post($notify_url, \%data);
 	if (!$resp->is_success) {
 		print "error: ".$resp->status_line."\n";
