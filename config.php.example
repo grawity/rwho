@@ -3,5 +3,3 @@
 const DB_PATH = "mysql:FIXME";
 const DB_USER = "";
 const DB_PASS = "";
-
-const USE_SYSLOG = false;
