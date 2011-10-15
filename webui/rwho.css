@@ -7,7 +7,8 @@ a {
 	text-decoration: none;
 }
 
-table#sessions {
+table#sessions,
+table#sessions * {
 	border-collapse: collapse;
 	font-size: 11pt;
 }
