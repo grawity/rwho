@@ -102,8 +102,7 @@ function retrieve_hosts() {
 		LEFT OUTER JOIN utmp
 		ON hosts.host = utmp.host
 		WHERE last_update >= $max_ts
-		GROUP BY host
-		ORDER BY last_update DESC";
+		GROUP BY host";
 
 	$st = $db->prepare($sql);
 	if (!$st->execute()) {
