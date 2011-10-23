@@ -274,6 +274,9 @@ elseif (query::$format == "json") {
 elseif (query::$format == "xml") {
 	output_xml($data);
 }
+elseif (query::$format == "html-xhr") {
+	pretty_html($data);
+}
 else {
 	header("Content-Type: text/plain; charset=utf-8", true, 406);
 	print "Unsupported output format.\n";
