@@ -112,6 +112,8 @@ function pretty_html($data) {
 		$fqdn = htmlspecialchars($row["host"]);
 		$host = strip_domain($fqdn);
 
+		print "<tr>\n";
+
 		print "\t<td>"
 			."<a href=\"./?host=$fqdn\" title=\"$fqdn\">$host</a>"
 			."</td>\n";
