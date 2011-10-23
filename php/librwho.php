@@ -88,6 +88,35 @@ function summarize($utmp) {
 	return $out;
 }
 
+function retrieve_hosts() {
+	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
+		or die("error: could not open rwho database\r\n");
+
+	$max_ts = time() - MAX_AGE;
+
+	$sql = "SELECT
+			hosts.*,
+			COUNT(DISTINCT utmp.user) AS users,
+			COUNT(utmp.user) AS entries
+		FROM hosts, utmp
+		WHERE hosts.host = utmp.host
+		AND last_update >= $max_ts
+		GROUP BY host
+		ORDER BY last_update DESC";
+
+	$st = $db->prepare($sql);
+	if (!$st->execute()) {
+		var_dump($st->errorInfo());
+		return null;
+	}
+
+	$data = array();
+	while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+		$data[] = $row;
+	}
+	return $data;
+}
+
 function is_stale($timestamp) {
 	return $timestamp < time() - MAX_AGE;
 }

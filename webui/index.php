@@ -202,7 +202,8 @@ if (query::$format == "html") {
 	<link rel="stylesheet" href="rwho.css">
 
 	<script type="text/javascript">
-	var update_interval = 1500;
+	var page = "utmp";
+	var update_interval = 1.5 * 1000;
 	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
 	var html_columns = <?php echo html::$columns ?>;
 	</script>
@@ -247,6 +248,8 @@ html::header("address", 40);
 		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
 		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
 		<a href="<?php echo H(make_finger_addr()) ?>">text</a>
+		or
+		<a href="hosts.php">list hosts</a>
 	</td>
 </tfoot>
 

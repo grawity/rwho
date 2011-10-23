@@ -1,6 +1,22 @@
 var waiting = 0;
 
-function fetch_utmp() {
+function interval(start) {
+	var end = (new Date()).getTime() / 1000;
+	var diff = Math.round(end - start);
+	var s = diff % 60; diff -= s; diff /= 60;
+	var m = diff % 60; diff -= m; diff /= 60;
+	var h = diff % 24; diff -= h; diff /= 24;
+	var d = diff;
+	switch (true) {
+		case d > 1:	return d+" days";
+		case h > 0:	return h+"h "+m+"m";
+		case m > 1:	return m+"m "+s+"s";
+		default:	return s+" secs";
+	}
+	return diff;
+}
+
+function fetch_data() {
 	var p = location.href.indexOf("?");
 	var json_url = (p >= 0 ? location.href.substr(0, p) : location.href) + "?" + json_args;
 
@@ -13,15 +29,24 @@ function fetch_utmp() {
 			if (xhr.status == 200) {
 				handle_data(xhr.responseText);
 			} else if (xhr.status) {
-				console.log("Error loading utmp data: "+xhr.status);
+				console.log("Error loading "+page+" data: "+xhr.status);
 			}
-			setTimeout(fetch_utmp, update_interval);
+			setTimeout(fetch_data, update_interval);
 		}
 	};
 	xhr.send(null);
 }
 
 function handle_data(data) {
+	switch (page) {
+		case "utmp":
+			return handle_utmp_data(data);
+		case "host":
+			return handle_host_data(data);
+	}
+}
+
+function handle_utmp_data(data) {
 	if (JSON.parse) {
 		data = JSON.parse(data);
 	} else {
@@ -111,6 +136,61 @@ function handle_data(data) {
 	htable.replaceChild(table, hbody[0]);
 }
 
+function handle_host_data(data) {
+	if (JSON.parse) {
+		data = JSON.parse(data);
+	} else {
+		data = eval("("+data+")");
+	}
+
+	var table = document.createElement("tbody");
+
+	if (!data.length) {
+		var trow = document.createElement("tr");
+		var cell = document.createElement("td");
+		cell.colSpan = html_columns;
+		cell.className = "comment";
+		cell.innerHTML = "No active hosts.";
+		trow.appendChild(cell);
+		table.appendChild(trow);
+	}
+
+	for (var i = 0; i < data.length; i++) {
+		var row = data[i];
+		var trow = document.createElement("tr");
+		var cell;
+
+		cell = document.createElement("td");
+		var link = document.createElement("a");
+		link.textContent = row.host.substr(0, row.host.indexOf("."));
+		link.href = "./?host="+row.host;
+		cell.appendChild(link);
+		trow.appendChild(cell);
+
+		cell = document.createElement("td");
+		cell.textContent = row.host;
+		trow.appendChild(cell);
+
+		cell = document.createElement("td");
+		cell.textContent = row.users;
+		trow.appendChild(cell);
+
+		cell = document.createElement("td");
+		cell.textContent = row.entries;
+		trow.appendChild(cell);
+
+		cell = document.createElement("td");
+		cell.textContent = interval(row.updated);
+		trow.appendChild(cell);
+
+		table.appendChild(trow);
+	}
+
+	var htable = document.getElementById("sessions");
+	var hbody = htable.getElementsByTagName("tbody");
+	htable.replaceChild(table, hbody[0]);
+}
+
 document.addEventListener("DOMContentLoaded", function (event) {
-	setTimeout(fetch_utmp, update_interval);
+	setTimeout(fetch_data, update_interval);
 }, true);
