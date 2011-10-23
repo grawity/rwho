@@ -98,9 +98,10 @@ function retrieve_hosts() {
 			hosts.*,
 			COUNT(DISTINCT utmp.user) AS users,
 			COUNT(utmp.user) AS entries
-		FROM hosts, utmp
-		WHERE hosts.host = utmp.host
-		AND last_update >= $max_ts
+		FROM hosts
+		LEFT OUTER JOIN utmp
+		ON hosts.host = utmp.host
+		WHERE last_update >= $max_ts
 		GROUP BY host
 		ORDER BY last_update DESC";
 
