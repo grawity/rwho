@@ -23,8 +23,10 @@ class html {
 
 function H($str) { return htmlspecialchars($str); }
 
-function interval($start) {
-	$diff = time() - $start;
+function interval($start, $end = null) {
+	if ($end === null)
+		$end = time();
+	$diff = $end - $start;
 	$diff -= $s = $diff % 60; $diff /= 60;
 	$diff -= $m = $diff % 60; $diff /= 60;
 	$diff -= $h = $diff % 24; $diff /= 24;
@@ -199,6 +201,8 @@ html::header("updated", 7);
 
 <?php pretty_html($data); ?>
 </table>
+
+<p>Hosts idle longer than <?php echo MAX_AGE ?> seconds are not shown.</p>
 
 <?php
 } // query::$format == "html"
