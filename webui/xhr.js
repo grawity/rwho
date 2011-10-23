@@ -1,8 +1,11 @@
 var waiting = 0;
 
+function now() {
+	return (new Date()).getTime() / 1000;
+}
+
 function interval(start) {
-	var end = (new Date()).getTime() / 1000;
-	var diff = Math.round(end - start);
+	var diff = Math.round(now() - start);
 	var s = diff % 60; diff -= s; diff /= 60;
 	var m = diff % 60; diff -= m; diff /= 60;
 	var h = diff % 24; diff -= h; diff /= 24;
@@ -77,6 +80,11 @@ function handle_utmp_data(data) {
 			var row = byuser[user][i];
 			var trow = document.createElement("tr");
 			var cell;
+
+			//if (row.updated < now()-data.maxage) {
+			if (row.stale) {
+				trow.className = "stale";
+			}
 
 			var user_cell = document.createElement("td");
 			if (data.query.user === null) {

@@ -64,8 +64,12 @@ function make_finger_addr() {
 
 
 function output_json($data) {
-	foreach ($data as &$row)
+	foreach ($data as &$row) {
 		unset($row["rowid"]);
+		if (is_stale($row["updated"])) {
+			$row["stale"] = true;
+		}
+	}
 
 	header("Content-Type: text/plain; charset=utf-8");
 	print json_encode(array(
@@ -74,6 +78,7 @@ function output_json($data) {
 			"host" => query::$host,
 			"summary" => !query::$detailed,
 		),
+		"maxage" => MAX_AGE,
 		"utmp" => $data,
 	))."\n";
 }
