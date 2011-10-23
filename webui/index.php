@@ -73,13 +73,14 @@ function output_json($data) {
 
 	header("Content-Type: text/plain; charset=utf-8");
 	print json_encode(array(
-		"query" => array(
-			"user" => query::$user,
-			"host" => query::$host,
-			"summary" => !query::$detailed,
+		"time"		=> time(),
+		"query"		=> array(
+			"user"		=> query::$user,
+			"host"		=> query::$host,
+			"summary"	=> !query::$detailed,
 		),
-		"maxage" => MAX_AGE,
-		"utmp" => $data,
+		"maxage"	=> MAX_AGE,
+		"utmp"		=> $data,
 	))."\n";
 }
 
@@ -90,6 +91,10 @@ function output_xml($data) {
 	$doc->formatOutput = true;
 
 	$root = $doc->appendChild($doc->createElement("rwho"));
+
+	$root->appendChild($doc->createAttribute("time"))
+		->appendChild($doc->createTextNode(date("c")));
+
 	if (strlen(query::$user))
 		$root->appendChild($doc->createAttribute("user"))
 			->appendChild($doc->createTextNode(query::$user));

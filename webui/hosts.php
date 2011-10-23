@@ -62,7 +62,11 @@ function output_json($data) {
 	}
 
 	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode($d)."\n";
+	print json_encode(array(
+		"time"		=> time(),
+		"maxage"	=> MAX_AGE,
+		"hosts"		=> $d,
+	))."\n";
 }
 
 function output_xml($data) {
@@ -72,6 +76,9 @@ function output_xml($data) {
 	$doc->formatOutput = true;
 
 	$root = $doc->appendChild($doc->createElement("rwho"));
+
+	$root->appendChild($doc->createAttribute("time"))
+		->appendChild($doc->createTextNode(date("c")));
 
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("host"));

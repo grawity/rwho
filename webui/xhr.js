@@ -4,8 +4,10 @@ function now() {
 	return (new Date()).getTime() / 1000;
 }
 
-function interval(start) {
-	var diff = Math.round(now() - start);
+function interval(start, end) {
+	if (typeof end == "undefined")
+		end = now();
+	var diff = Math.round(end - start);
 	var s = diff % 60; diff -= s; diff /= 60;
 	var m = diff % 60; diff -= m; diff /= 60;
 	var h = diff % 24; diff -= h; diff /= 24;
@@ -81,7 +83,7 @@ function handle_utmp_data(data) {
 			var trow = document.createElement("tr");
 			var cell;
 
-			//if (row.updated < now()-data.maxage) {
+			//if (row.updated < data.time-data.maxage) {
 			if (row.stale) {
 				trow.className = "stale";
 			}
@@ -153,7 +155,7 @@ function handle_host_data(data) {
 
 	var table = document.createElement("tbody");
 
-	if (!data.length) {
+	if (!data.hosts.length) {
 		var trow = document.createElement("tr");
 		var cell = document.createElement("td");
 		cell.colSpan = html_columns;
@@ -163,8 +165,8 @@ function handle_host_data(data) {
 		table.appendChild(trow);
 	}
 
-	for (var i = 0; i < data.length; i++) {
-		var row = data[i];
+	for (var i = 0; i < data.hosts.length; i++) {
+		var row = data.hosts[i];
 		var trow = document.createElement("tr");
 		var cell;
 
@@ -188,7 +190,7 @@ function handle_host_data(data) {
 		trow.appendChild(cell);
 
 		cell = document.createElement("td");
-		cell.textContent = interval(row.updated);
+		cell.textContent = interval(row.updated, data.time);
 		trow.appendChild(cell);
 
 		table.appendChild(trow);
