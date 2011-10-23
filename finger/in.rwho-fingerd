@@ -4,13 +4,22 @@ require __DIR__."/../php/librwho.php";
 
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
-	list ($q_user, $q_host) = RWho\parse_query($query);
-	$data = RWho\retrieve($q_user, $q_host);
-	if (!count($data))
-		die("Nobody is logged in.\r\n");
-	if (!$detailed)
-		$data = RWho\summarize($data);
-	output($data, $detailed);
+
+	if ($query == '*') {
+		$data = RWho\retrieve_hosts();
+		if (!count($data))
+			die("No active hosts.\r\n");
+		output_hosts($data);
+	}
+	else {
+		list ($q_user, $q_host) = RWho\parse_query($query);
+		$data = RWho\retrieve($q_user, $q_host);
+		if (!count($data))
+			die("Nobody is logged in.\r\n");
+		if (!$detailed)
+			$data = RWho\summarize($data);
+		output($data, $detailed);
+	}
 }
 
 function finger_parse($input) {
@@ -54,6 +63,20 @@ function output($data, $detailed=false) {
 			$row["is_summary"] ? "[".$row["line"]."]" : $row["line"],
 			strlen($row["rhost"]) ? $row["rhost"] : "-");
 		$last = $row;
+	}
+}
+
+function output_hosts($data) {
+	$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
+	printf($fmt, "HOST", "FULL NAME", "#USR", "#CON", "UPDATED");
+	foreach ($data as $row) {
+		printf($fmt,
+			substr(RWho\strip_domain($row["host"]), 0, 12),
+			$row["host"],
+			$row["users"],
+			$row["entries"],
+			RWho\interval($row["last_update"])
+		);
 	}
 }
 
