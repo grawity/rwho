@@ -131,4 +131,20 @@ function user_is_global($user) {
 	return $pwent ? $pwent["uid"] > 25000 : false;
 }
 
+function interval($start, $end = null) {
+	if ($end === null)
+		$end = time();
+	$diff = $end - $start;
+	$diff -= $s = $diff % 60; $diff /= 60;
+	$diff -= $m = $diff % 60; $diff /= 60;
+	$diff -= $h = $diff % 24; $diff /= 24;
+	$d = $diff;
+	switch (true) {
+		case $d > 1:		return "{$d} days";
+		case $h > 0:		return "{$h}h {$m}m";
+		case $m > 1:		return "{$m}m {$s}s";
+		default:		return "{$s} secs";
+	}
+}
+
 return true;
