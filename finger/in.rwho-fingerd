@@ -14,11 +14,19 @@ function finger_handle_query($input) {
 	else {
 		list ($q_user, $q_host) = RWho\parse_query($query);
 		$data = RWho\retrieve($q_user, $q_host);
-		if (!count($data))
+		$n_conns = count($data);
+		if (!$n_conns)
 			die("Nobody is logged in.\r\n");
-		if (!$detailed)
+		if (!$detailed) {
 			$data = RWho\summarize($data);
+			$n_users = count($data);
+		} else {
+			$n_users = RWho\count_users();
+		}
+		$n_hosts = RWho\count_hosts();
+
 		output($data, $detailed);
+		print("($n_users users over $n_conns connections on $n_hosts hosts.)\r\n");
 	}
 }
 

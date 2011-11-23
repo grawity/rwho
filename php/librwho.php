@@ -117,6 +117,59 @@ function retrieve_hosts() {
 	return $data;
 }
 
+// Internal use only:
+// __single_field_query(str $sql, str $field) -> mixed
+// Return a single column from the first field of a SQL SELECT result.
+// Useful for 'SELECT COUNT(x) AS count' kind of queries.
+
+function __single_field_query($sql, $field) {
+	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
+		or die("error: could not open rwho database\r\n");
+
+	$st = $db->prepare($sql);
+	if (!$st->execute()) {
+		var_dump($st->errorInfo());
+		return null;
+	}
+
+	while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+		return $row[$field];
+	}
+}
+
+// count_users() -> int
+// Count unique user names on all utmp records.
+
+function count_users() {
+	$max_ts = time() - MAX_AGE;
+	$sql = "SELECT COUNT(DISTINCT user) AS count
+		FROM utmp
+		WHERE updated >= $max_ts";
+	return __single_field_query($sql, "count");
+}
+
+// count_conns() -> int
+// Count all connections (utmp records).
+
+function count_conns() {
+	$max_ts = time() - MAX_AGE;
+	$sql = "SELECT COUNT(user) AS count
+		FROM utmp
+		WHERE updated >= $max_ts";
+	return __single_field_query($sql, "count");
+}
+
+// count_hosts() -> int
+// Count all currently active hosts, with or without users.
+
+function count_hosts() {
+	$max_ts = time() - MAX_AGE;
+	$sql = "SELECT COUNT(host) AS count
+		FROM hosts
+		WHERE last_update >= $max_ts";
+	return __single_field_query($sql, "count");
+}
+
 function is_stale($timestamp) {
 	return $timestamp < time() - MAX_AGE;
 }
