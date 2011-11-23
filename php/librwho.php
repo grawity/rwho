@@ -8,6 +8,9 @@ if (!defined("MAX_AGE"))
 	// default is 1 minute more than the rwhod periodic update time
 	define("MAX_AGE", 11*60);
 
+// parse_query(str? $query) -> str $user, str $host
+// Split a "user", "user@host", or "@host" query to components.
+
 function parse_query($query) {
 	$user = null;
 	$host = null;
@@ -21,6 +24,10 @@ function parse_query($query) {
 	}
 	return array($user, $host);
 }
+
+// retrieve(str? $user, str? $host) -> utmp_entry[]
+// Retrieve all currently known sessions for given query.
+// Both parameters optional.
 
 function retrieve($q_user, $q_host) {
 	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
@@ -50,6 +57,10 @@ function retrieve($q_user, $q_host) {
 	}
 	return $data;
 }
+
+// summarize(utmp_entry[] $data) -> utmp_entry[]
+// Sort utmp data by username and group by host. Resulting entries
+// will have no more than one entry for any user@host pair.
 
 function summarize($utmp) {
 	$out = array();
@@ -87,6 +98,9 @@ function summarize($utmp) {
 	}
 	return $out;
 }
+
+// retrieve_hosts() -> host_entry[]
+// Retrieve all currently active hosts, with user and connection counts.
 
 function retrieve_hosts() {
 	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
@@ -174,15 +188,28 @@ function is_stale($timestamp) {
 	return $timestamp < time() - MAX_AGE;
 }
 
+// strip_domain(str $fqdn) -> str $hostname
+// Return the leftmost component of a dotted domain name.
+
 function strip_domain($fqdn) {
 	$pos = strpos($fqdn, ".");
 	return $pos === false ? $fqdn : substr($fqdn, 0, $pos);
 }
 
+// Cluenet internal use only:
+// user_is_global(str $user) -> bool
+// Check whether given username belongs to the Cluenet UID range.
+// The name->uid conversion is done using system facilities.
+
 function user_is_global($user) {
 	$pwent = posix_getpwnam($user);
 	return $pwent ? $pwent["uid"] > 25000 : false;
 }
+
+// interval(unixtime $start, unixtime? $end) -> str
+// Convert the difference between two timestamps (in seconds), or
+// between given Unix timestamp and current time, to a human-readable
+// time interval: "X days", "Xh Ym", "Xm Ys", "X secs"
 
 function interval($start, $end = null) {
 	if ($end === null)
