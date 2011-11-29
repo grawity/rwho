@@ -19,10 +19,8 @@ function finger_handle_query($input) {
 			die("Nobody is logged in.\r\n");
 		if (!$detailed) {
 			$data = RWho\summarize($data);
-			$n_users = count($data);
-		} else {
-			$n_users = RWho\count_users();
 		}
+		$n_users = RWho\count_users();
 		$n_hosts = RWho\count_hosts();
 
 		output($data, $detailed);
