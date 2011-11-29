@@ -15,10 +15,12 @@ use Pod::Usage;
 use Sys::Hostname;
 
 my $notify_url = "http://equal.cluenet.org/rwho/server.php";
-my $update_interval = 10*60;
+my $update_interval;
 my $verbose = 0;
 my $do_fork = 0;
 my $do_single = 0;
+my $do_inotify = 1;
+my $do_poll = 1;
 my $hide_root = 1;
 my $pidfile;
 my $pidfile_h;
@@ -219,18 +221,28 @@ sub reap_poller {
 GetOptions(
 	"d|daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(1); },
+	"inotify!"	=> \$do_inotify,
 	"i|interval=i"	=> \$update_interval,
 	"man"		=> sub { pod2usage(-exitstatus => 0,
 				-verbose => 2); },
 	"pidfile=s"	=> \$pidfile,
 	"root"		=> sub { $hide_root = 0; },
 	"server=s"	=> \$notify_url,
-	"single"	=> \$do_single,
+	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
 ) or pod2usage(1);
 
 if (!defined $notify_url) {
 	die "error: notify_url not specified\n";
+}
+
+# use large interval if inotify is available
+$update_interval //= ($do_inotify ? 600 : 30);
+
+$do_poll = $update_interval > 0;
+
+unless ($do_inotify || $do_poll) {
+	die "error: cannot disable both poll and inotify\n";
 }
 
 $0 = "rwhod";
@@ -273,11 +285,17 @@ if (defined $pidfile_h) {
 	close $pidfile_h;
 }
 
-if ($update_interval) {
-	$poller_pid = fork_poller();
+if ($do_inotify) {
+	if ($do_poll) {
+		$poller_pid = fork_poller();
+	}
+	debug("starting inotify watch");
+	watch_inotify();
 }
-debug("starting inotify watch");
-watch_inotify();
+elsif ($do_poll) {
+	debug("starting poller");
+	watch_poll();
+}
 
 __END__
 
@@ -301,9 +319,13 @@ Fork to background after initial update.
 
 Obvious.
 
+=item B<--no-inotify>
+
+Turn off inotify and only use periodic updates.
+
 =item B<-i I<seconds>>, B<--interval=I<seconds>>
 
-Periodic update every I<seconds> seconds (600 by default). Zero to disable.
+Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
 
 =item B<--man>
 
