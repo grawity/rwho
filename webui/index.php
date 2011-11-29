@@ -213,7 +213,7 @@ if (query::$format == "html") {
 
 	<script type="text/javascript">
 	var page = "utmp";
-	var update_interval = 1.5 * 1000;
+	var update_interval = 3 * 1000;
 	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
 	var html_columns = <?php echo html::$columns ?>;
 	</script>
