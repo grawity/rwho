@@ -48,6 +48,17 @@ ctl() {
 			echo "not running or no pidfile at '$PIDFILE'"
 			return 3
 		fi
+		;;
+	build-dep)
+		perldeps=(
+			JSON
+			LWP::UserAgent
+			Linux::Inotify2
+			Socket::GetAddrInfo
+			Sys::Utmp
+		)
+		${CPAN:-cpanm} "${perldeps[@]}"
+		;;
 	esac
 }
 
