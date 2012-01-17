@@ -21,6 +21,11 @@ function interval(start, end) {
 	return diff;
 }
 
+function trim_host(fqdn) {
+	var pos = fqdn.indexOf(".");
+	return pos < 0 ? fqdn : fqdn.substr(0, pos);
+}
+
 function fetch_data() {
 	var p = location.href.indexOf("?");
 	var json_url = (p >= 0 ? location.href.substr(0, p) : location.href) + "?" + json_args;
@@ -114,10 +119,7 @@ function handle_utmp_data(data) {
 			}
 
 			cell = document.createElement("td");
-			//var hostname = data.query.summary
-			//	? row.host.substr(0, row.host.indexOf("."))
-			//	: row.host;
-			var hostname = row.host.substr(0, row.host.indexOf("."));
+			var hostname = trim_host(row.host);
 			if (data.query.host === null) {
 				var link = document.createElement("a");
 				link.textContent = hostname;
@@ -172,7 +174,7 @@ function handle_host_data(data) {
 
 		cell = document.createElement("td");
 		var link = document.createElement("a");
-		link.textContent = row.host.substr(0, row.host.indexOf("."));
+		link.textContent = trim_host(row.host);
 		link.href = "./?host="+row.host;
 		cell.appendChild(link);
 		trow.appendChild(cell);
