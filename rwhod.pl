@@ -37,13 +37,6 @@ sub canon_hostname {
 		# FIXME: print error messages when needed
 		return $err ? $host : ((shift @ai)->{canonname} // $host);
 	}
-	elsif (eval {require Net::addrinfo}) {
-		debug("canon_hostname: using Net::addrinfo");
-		my $hint = Net::addrinfo->new(
-			flags => Net::addrinfo->AI_CANONNAME);
-		my $ai = Net::addrinfo::getaddrinfo($host, undef, $hint);
-		return (ref $ai eq "Net::addrinfo") ? $ai->canonname : $host;
-	}
 	else {
 		debug("canon_hostname: using \"getent hosts\"");
 		open my $fd, "-|", "getent", "hosts", $host;
