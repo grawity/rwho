@@ -2,6 +2,7 @@
 # rwho data collector daemon
 use warnings;
 use strict;
+use 5.010;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use JSON;
 use LWP::UserAgent;
@@ -384,15 +385,19 @@ Print informative messages.
 
 =head1 DEPENDENCIES
 
-Perl 5.10, apparently.
+=over 4
 
-B<C<getaddrinfo>>: C<Socket::GetAddrInfo>, C<Net::addrinfo>, or the C<getent> binary.
+=item * Perl 5.10, apparently
 
-B<C<utmp> access>: C<Sys::Utmp> or C<User::Utmp>
+=item * C<JSON>
 
-B<C<inotify>>: C<Linux::Inotify2> for real-time C<utmp> monitoring.
+=item * C<Linux::Inotify2>
 
-B<HTTP>: C<JSON> and C<LWP::UserAgent>
+=item * C<LWP::UserAgent>
+
+=item * C<Socket::GetAddrInfo> (recommended) or the C<getent> binary
+
+=item * C<Sys::Utmp> or C<User::Utmp>
 
 =head1 BUGS
 
