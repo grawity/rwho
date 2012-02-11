@@ -25,6 +25,8 @@ my $pidfile_h;
 
 my $my_hostname;
 my $my_fqdn;
+my $my_hostid;
+my $my_bootid;
 
 my $main_pid;
 my $poller_pid;
@@ -108,6 +110,8 @@ sub upload {
 	my %data = (
 		host => $my_hostname,
 		fqdn => $my_fqdn,
+		hostid => $my_hostid,
+		bootid => $my_bootid,
 		action => $action,
 		utmp => encode_json($sessions),
 	);
@@ -127,6 +131,16 @@ sub debug {
 	$verbose and print "rwhod[$$]: @_\n";
 }
 
+sub readfile {
+	my ($file) = @_;
+
+	open(my $fh, "<", $file)
+		or die "$!";
+	grep {chomp} my @lines = <$fh>;
+	close($fh);
+	wantarray ? @lines : shift @lines;
+}
+
 sub getutmppath {
 	my @paths = qw(
 		/run/utmp
@@ -140,6 +154,36 @@ sub getutmppath {
 		die("getutmppath: utmp not found\n");
 	}
 	return $path;
+}
+
+sub gethostid {
+	my ($id, $idtype);
+	if (-f "/etc/machine-id") {
+		$id = readfile("/etc/machine-id");
+		$idtype = "systemd";
+	} elsif (-f "/var/lib/dbus/machine-id") {
+		$id = readfile("/var/lib/dbus/machine-id");
+		$idtype = "dbus-old";
+	} else {
+		warn "gethostid: static host ID not found, falling back to hostname\n";
+		$id = "name=".hostname();
+		$idtype = "fallback-hostname";
+	}
+	debug("gethostid: id=$id ($idtype)");
+	return $id;
+}
+
+sub getbootid {
+	my ($id, $idtype);
+	if (-f "/proc/sys/kernel/random/boot_id") {
+		$id = readfile("/proc/sys/kernel/random/boot_id");
+		$idtype = "linux"
+	} else {
+		$id = "none";
+		$idtype = "fallback";
+	}
+	debug("getbootid: id=$id ($idtype)");
+	return $id;
 }
 
 sub forked(&) {
@@ -269,6 +313,9 @@ if (!defined $notify_url) {
 	die "error: server URL not specified\n";
 }
 
+$my_bootid = getbootid() // "none";
+$my_hostid = gethostid() // "none";
+
 $my_hostname = hostname();
 $my_fqdn = canon_hostname($my_hostname);
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
@@ -307,6 +354,7 @@ $main_pid = $$;
 
 if (defined $pidfile_h) {
 	print $pidfile_h "$$\n";
+	print $pidfile_h "$my_bootid\n";
 	close $pidfile_h;
 }
 

@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
 
+bootid() {
+	if [[ -f /proc/sys/kernel/random/boot_id ]]; then
+		echo $(</proc/sys/kernel/random/boot_id)
+	else
+		echo none
+	fi
+}
+
 if (( $UID > 0 )); then
 	PIDFILE=${PIDFILE:-$HOME/tmp/rwhod-$HOSTNAME.pid}
 	PERL5LIB=$HOME/.local/lib/perl5
@@ -40,6 +48,11 @@ ctl() {
 		if ! read -r pid < "$PIDFILE"; then
 			echo "error (cannot read pidfile)"
 			return 1
+		fi
+
+		if [[ $(bootid) != "$bootid" ]]; then
+			echo "not running (pidfile has different boot ID)"
+			return 3
 		fi
 
 		if kill -0 $pid 2>/dev/null; then
