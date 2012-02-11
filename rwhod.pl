@@ -403,9 +403,7 @@ It's useless.
 
 C<inotify> requirement makes the script unportable outside Linux.
 
-Using C<getaddrinfo> just to find our own FQDN might be overkill when the rest of the world can use C<gethostbyaddr> on 127.0.0.1.
-
-Data submission URL is hardcoded.
+Using C<getaddrinfo> just to find our own FQDN might be overkill.
 
 Hosts are only identified by their FQDN, so it's possible to upload fake data.
 

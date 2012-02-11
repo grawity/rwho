@@ -41,6 +41,8 @@ ctl() {
 
 		if kill -0 $pid 2>/dev/null; then
 			echo "running (pid $pid)"
+			[[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]] &&
+				echo "out of date"
 			return 0
 		else
 			echo "unsure (pid $pid does not respond to signals)"
