@@ -152,9 +152,7 @@ sub daemonize {
 	chdir("/")
 		or die "can't chdir to /: $!";
 	open(STDIN, "<", "/dev/null")
-		or die "can't read /dev/null: $!";
-	open(STDOUT, ">", "/dev/null")
-		or die "can't write /dev/null: $!";
+		or die "can't open /dev/null: $!";
 
 	my $pid = fork;
 
