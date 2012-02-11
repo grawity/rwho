@@ -2,8 +2,6 @@
 # rwho data collector daemon
 use warnings;
 use strict;
-use constant PATH_UTMP => '/var/run/utmp';
-
 use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use JSON;
@@ -14,6 +12,7 @@ use Pod::Usage;
 use Sys::Hostname;
 
 my $notify_url = "http://equal.cluenet.org/rwho/server.php";
+my $utmp_path;
 my $poll_interval;
 my $verbose	= 0;
 my $do_fork	= 0;
@@ -58,6 +57,7 @@ sub enum_sessions {
 	my @utmp = ();
 	if (eval {require User::Utmp}) {
 		debug("enum_sessions: using User::Utmp");
+		User::Utmp::utmpxname($utmp_path);
 		while (my $ent = User::Utmp::getutxent()) {
 			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
 				push @utmp, {
@@ -72,7 +72,7 @@ sub enum_sessions {
 	}
 	elsif (eval {require Sys::Utmp}) {
 		debug("enum_sessions: using Sys::Utmp");
-		my $utmp = Sys::Utmp->new();
+		my $utmp = Sys::Utmp->new(Filename => $utmp_path);
 		while (my $ent = $utmp->getutent()) {
 			if ($ent->user_process) {
 				push @utmp, {
@@ -128,10 +128,11 @@ sub upload {
 # Main loops
 
 sub watch_inotify {
-	$0 = "rwhod: inotify(".PATH_UTMP.")";
+	$0 = "rwhod: inotify($utmp_path)";
 
 	my $inotify = Linux::Inotify2->new();
-	$inotify->watch(PATH_UTMP, IN_MODIFY, \&update);
+	$inotify->watch($utmp_path, IN_MODIFY, \&update);
+
 	debug("watch: idling");
 	while (1) {
 		$inotify->poll;
@@ -153,6 +154,21 @@ sub watch_poll {
 sub debug {
 	local $" = " ";
 	$verbose and print "rwhod[$$]: @_\n";
+}
+
+sub getutmppath {
+	my @paths = qw(
+		/run/utmp
+		/etc/utmp
+		/var/run/utmp
+	);
+	my ($path) = grep {-e} @paths;
+	if (defined $path) {
+		debug("getutmppath: path=$path");
+	} else {
+		die("getutmppath: utmp not found\n");
+	}
+	return $path;
 }
 
 sub forked(&) {
@@ -261,6 +277,8 @@ $my_fqdn = canon_hostname($my_hostname);
 $my_hostname =~ s/\..*$//;
 
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
+
+$utmp_path //= getutmppath();
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
