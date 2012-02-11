@@ -274,8 +274,6 @@ $0 = "rwhod";
 
 $my_hostname = hostname();
 $my_fqdn = canon_hostname($my_hostname);
-$my_hostname =~ s/\..*$//;
-
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
 
 $utmp_path //= getutmppath();
