@@ -1,16 +1,14 @@
 #!/usr/bin/env bash
-if (( $(id -u) > 0 )); then
-	[[ $PIDFILE ]] ||
-		export PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
-	[[ $PERL5LIB ]] ||
-		export PERL5LIB="$HOME/lib/perl5:$HOME/usr/lib/perl5"
+
+if (( $UID > 0 )); then
+	PIDFILE=${PIDFILE:-$HOME/tmp/rwhod-$HOSTNAME.pid}
+	PERL5LIB=$HOME/.local/lib/perl5
+	export PERL5LIB
 else
-	[[ $PIDFILE ]] ||
-		export PIDFILE="/var/run/rwhod.pid"
+	PIDFILE=${PIDFILE:-/run/rwhod.pid}
 fi
 
-[[ $RWHOD_DIR ]] ||
-	RWHOD_DIR="$HOME/code/useless/rwho"
+RWHOD_DIR=$(dirname "$0")
 
 ctl() {
 	case $1 in
@@ -30,23 +28,23 @@ ctl() {
 	force-reload)
 		ctl restart
 		;;
-	update)
-		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
-			ctl restart
-		fi
-		;;
 	status)
-		if [[ -f $PIDFILE ]] && pid=$(< "$PIDFILE"); then
-			if kill -0 $pid 2>/dev/null; then
-				echo "running (pid $pid)"
-				return 0
-			else
-				echo "unsure (pid $pid does not respond to signals)"
-				return 1
-			fi
-		else
+		if [[ ! -f $PIDFILE ]]; then
 			echo "not running or no pidfile at '$PIDFILE'"
 			return 3
+		fi
+
+		if ! pid=$(< "$PIDFILE"); then
+			echo "cannot read pidfile"
+			return 1
+		fi
+
+		if kill -0 $pid 2>/dev/null; then
+			echo "running (pid $pid)"
+			return 0
+		else
+			echo "unsure (pid $pid does not respond to signals)"
+			return 1
 		fi
 		;;
 	build-dep)
@@ -58,6 +56,17 @@ ctl() {
 			Sys::Utmp
 		)
 		${CPAN:-cpanm} "${perldeps[@]}"
+		;;
+	foreground)
+		exec "$RWHOD_DIR/rwhod.pl" --pidfile="$PIDFILE"
+		;;
+	update)
+		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
+			ctl restart
+		fi
+		;;
+	*)
+		echo "usage: $0 <start|stop|restart|foreground|update>"
 		;;
 	esac
 }
