@@ -13,7 +13,10 @@ RWHOD_DIR=$(dirname "$0")
 ctl() {
 	case $1 in
 	start)
-		"$RWHOD_DIR/rwhod.pl" --daemon --pidfile="$PIDFILE" &
+		"$RWHOD_DIR/rwhod.pl" --daemon --pidfile "$PIDFILE" &
+		;;
+	foreground)
+		exec "$RWHOD_DIR/rwhod.pl" --pidfile "$PIDFILE"
 		;;
 	stop)
 		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
@@ -30,12 +33,12 @@ ctl() {
 		;;
 	status)
 		if [[ ! -f $PIDFILE ]]; then
-			echo "not running or no pidfile at '$PIDFILE'"
+			echo "not running (no pidfile at '$PIDFILE')"
 			return 3
 		fi
 
 		if ! pid=$(< "$PIDFILE"); then
-			echo "cannot read pidfile"
+			echo "error (cannot read pidfile)"
 			return 1
 		fi
 
@@ -58,9 +61,6 @@ ctl() {
 			Sys::Utmp
 		)
 		${CPAN:-cpanm} "${perldeps[@]}"
-		;;
-	foreground)
-		exec "$RWHOD_DIR/rwhod.pl" --pidfile="$PIDFILE"
 		;;
 	update)
 		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
