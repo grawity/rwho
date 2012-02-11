@@ -19,7 +19,7 @@ ctl() {
 		exec "$RWHOD_DIR/rwhod.pl" --pidfile "$PIDFILE"
 		;;
 	stop)
-		pid=$(< "$PIDFILE") && kill $pid && rm "$PIDFILE"
+		read -r pid < "$PIDFILE" && kill $pid && rm "$PIDFILE"
 		;;
 	restart)
 		ctl stop
@@ -37,7 +37,7 @@ ctl() {
 			return 3
 		fi
 
-		if ! pid=$(< "$PIDFILE"); then
+		if ! read -r pid < "$PIDFILE"; then
 			echo "error (cannot read pidfile)"
 			return 1
 		fi
