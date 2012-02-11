@@ -1,5 +1,5 @@
 body {
-	font-family: "Tahoma", sans-serif;
+	font: 10pt sans-serif;
 }
 
 a {
@@ -7,40 +7,35 @@ a {
 	text-decoration: none;
 }
 
-table#sessions,
-table#sessions * {
+table {
 	border-collapse: collapse;
-	font-size: 11pt;
 }
 
-table#sessions thead,
-table#sessions tfoot {
+#sessions thead,
+#sessions tfoot {
 	background: #eee;
 }
 
-table#sessions tfoot {
+#sessions tfoot {
 	font-size: smaller;
 }
 
-table#sessions td,
-table#sessions th {
+#sessions td,
+#sessions th {
 	border-width: 1px 0;
 	border-style: solid;
 	border-color: #aaa;
 	padding: 3px;
+	text-align: left;
 	vertical-align: top;
 }
 
-table#sessions th {
-	text-align: left;
-}
-
-table#sessions .comment {
+#sessions .stale td {
+	color: #aaa;
 	font-style: italic;
 }
 
-tr.stale td {
-	color: #aaa;
+.comment {
 	font-style: italic;
 }
 
