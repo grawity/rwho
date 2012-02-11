@@ -2,7 +2,6 @@
 # rwho data collector daemon
 use warnings;
 use strict;
-use Data::Dumper;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use JSON;
 use LWP::UserAgent;
@@ -25,6 +24,8 @@ my $pidfile_h;
 
 my $my_hostname;
 my $my_fqdn;
+
+my $main_pid;
 my $poller_pid;
 
 sub canon_hostname {
@@ -125,30 +126,6 @@ sub upload {
 	}
 }
 
-# Main loops
-
-sub watch_inotify {
-	$0 = "rwhod: inotify($utmp_path)";
-
-	my $inotify = Linux::Inotify2->new();
-	$inotify->watch($utmp_path, IN_MODIFY, \&update);
-
-	debug("watch: idling");
-	while (1) {
-		$inotify->poll;
-	}
-}
-
-sub watch_poll {
-	$0 = "rwhod: poll(${poll_interval}s)";
-
-	debug("poll: updating every $poll_interval seconds");
-	while (1) {
-		sleep $poll_interval;
-		update();
-	}
-}
-
 # Utility functions
 
 sub debug {
@@ -203,13 +180,12 @@ sub daemonize {
 # Process management functions
 
 sub fork_poller {
-	debug("starting poller");
 	$SIG{CHLD} = \&sigchld_reap_poller;
 	return forked {
 		$SIG{INT} = "DEFAULT";
 		$SIG{TERM} = "DEFAULT";
 		$SIG{CHLD} = \&sigchld_reap_any;
-		watch_poll();
+		exit(mainloop_poller());
 	};
 }
 
@@ -221,7 +197,7 @@ sub cleanup {
 	}
 	debug("cleanup: removing sessions on server");
 	upload("destroy", []);
-	exit;
+	exit(0);
 }
 
 sub sigchld_reap_poller {
@@ -241,36 +217,65 @@ sub sigchld_reap_any {
 	debug("received SIGCHLD for $pid");
 }
 
+# Main loops
+
+sub mainloop_inotify {
+	$0 = "rwhod: inotify($utmp_path)";
+
+	my $inotify = Linux::Inotify2->new();
+	$inotify->watch($utmp_path, IN_MODIFY, \&update);
+
+	debug("inotify: waiting for changes");
+	while (1) {
+		$inotify->poll;
+	}
+	exit(0);
+}
+
+sub mainloop_poller {
+	$0 = "rwhod: poll(${poll_interval}s)";
+
+	debug("poll: updating every $poll_interval seconds");
+	while (1) {
+		sleep($poll_interval);
+		update();
+
+		if ($main_pid != $$ and !kill(0, $main_pid)) {
+			debug("poll: lost main process, exiting");
+			goto \&cleanup;
+		}
+	}
+	exit(0);
+}
+
 # Initialization code
 
 GetOptions(
-	"d|daemon"	=> \$do_fork,
-	"help"		=> sub { pod2usage(1); },
+	"daemon"	=> \$do_fork,
+	"help"		=> sub { pod2usage(-exitstatus => 0); },
 	"include-root!"	=> \$show_root,
 	"inotify!"	=> \$do_inotify,
 	"i|interval=i"	=> \$poll_interval,
-	"man"		=> sub { pod2usage(-exitstatus => 0,
-				-verbose => 2); },
+	"man"		=> sub { pod2usage(-exitstatus => 0, -verbose => 2); },
 	"pidfile=s"	=> \$pidfile,
 	"server-url=s"	=> \$notify_url,
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
-) or pod2usage(1);
+) or pod2usage(-exitstatus => 1);
 
-if (!defined $notify_url) {
-	die "error: notify_url not specified\n";
-}
+$0 = "rwhod: starting up";
 
-# use large interval if inotify is available
 $poll_interval //= ($do_inotify ? 600 : 30);
 
 $do_poll = $poll_interval > 0;
 
 unless ($do_inotify || $do_poll) {
-	die "error: cannot disable both poll and inotify\n";
+	die "error: cannot disable both polling and inotify\n";
 }
 
-$0 = "rwhod";
+if (!defined $notify_url) {
+	die "error: server URL not specified\n";
+}
 
 $my_hostname = hostname();
 $my_fqdn = canon_hostname($my_hostname);
@@ -278,48 +283,52 @@ debug("identifying as \"$my_fqdn\" ($my_hostname)");
 
 $utmp_path //= getutmppath();
 
+# Main code
+
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
 
-if ($do_single) {
-	if ($do_fork) {
-		warn "warning: --fork ignored in single-update mode\n";
-	}
-	debug("doing single update");
-	$0 = "rwhod: updating";
-	update();
-	exit();
-}
-
 if (defined $pidfile) {
-	open $pidfile_h, ">", $pidfile
-		or die "unable to open pidfile '$pidfile'\n";
+	if ($do_single) {
+		warn "warning: --pidfile ignored in single-update mode\n";
+	} else {
+		open $pidfile_h, ">", $pidfile
+			or die "unable to open pidfile '$pidfile'\n";
+	}
 }
 
-debug("doing initial update");
+debug("performing initial update");
+$0 = "rwhod: initial update";
 update();
 
 if ($do_fork) {
-	daemonize();
+	if ($do_single) {
+		warn "warning: --fork ignored in single-update mode\n";
+	} else {
+		daemonize();
+	}
 } else {
 	chdir("/");
 }
+
+$main_pid = $$;
 
 if (defined $pidfile_h) {
 	print $pidfile_h "$$\n";
 	close $pidfile_h;
 }
 
-if ($do_inotify) {
+if ($do_single) {
+	exit(0);
+}
+elsif ($do_inotify) {
 	if ($do_poll) {
 		$poller_pid = fork_poller();
 	}
-	debug("starting inotify watch");
-	watch_inotify();
+	exit(mainloop_inotify());
 }
 elsif ($do_poll) {
-	debug("starting poller");
-	watch_poll();
+	exit(mainloop_poller());
 }
 
 __END__
@@ -336,7 +345,7 @@ rwhod [options]
 
 =over 8
 
-=item B<-d>, B<--daemon>
+=item B<--daemon>
 
 Fork to background after initial update.
 
@@ -346,7 +355,8 @@ Obvious.
 
 =item B<--[no-]include-root>
 
-Include root logins. By default, disabled.
+Include or ignore root logins. Default is to ignore, for "security" reasons.
+(Those who run rwhod generally care little about security, however.)
 
 =item B<--[no-]inotify>
 
@@ -362,7 +372,8 @@ Display the manual page.
 
 =item B<--pidfile I<path>>
 
-Write PID to file.
+Write PID to file after performing initial update (and daemonizing, if enabled).
+Ignored in single-update mode.
 
 =item B<--server-url I<url>>
 
@@ -370,7 +381,7 @@ Use specified server URL.
 
 =item B<--single>
 
-Do a single update and exit.
+Do a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
 
 =item B<-v>, B<--verbose>
 
