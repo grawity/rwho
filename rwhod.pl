@@ -1,6 +1,5 @@
 #!/usr/bin/env perl
 # rwho data collector daemon
-
 use warnings;
 use strict;
 use constant PATH_UTMP => '/var/run/utmp';
@@ -15,13 +14,13 @@ use Pod::Usage;
 use Sys::Hostname;
 
 my $notify_url = "http://equal.cluenet.org/rwho/server.php";
-my $update_interval;
-my $verbose = 0;
-my $do_fork = 0;
-my $do_single = 0;
-my $do_inotify = 1;
-my $do_poll = 1;
-my $hide_root = 1;
+my $poll_interval;
+my $verbose	= 0;
+my $do_fork	= 0;
+my $do_single	= 0;
+my $do_inotify	= 1;
+my $do_poll	= 1;
+my $show_root	= 0;
 my $pidfile;
 my $pidfile_h;
 
@@ -54,19 +53,11 @@ sub canon_hostname {
 	}
 }
 
-# Run code in subprocess
-# $pid = forked { ... };
-sub forked(&) {
-	my $sub = shift;
-	my $pid = fork();
-	if ($pid) {return $pid} else {exit &$sub}
-}
-
 # Read the utmp file
-sub ut_dump {
+sub enum_sessions {
 	my @utmp = ();
 	if (eval {require User::Utmp}) {
-		debug("ut_dump: using User::Utmp");
+		debug("enum_sessions: using User::Utmp");
 		while (my $ent = User::Utmp::getutxent()) {
 			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
 				push @utmp, {
@@ -80,7 +71,7 @@ sub ut_dump {
 		User::Utmp::endutxent();
 	}
 	elsif (eval {require Sys::Utmp}) {
-		debug("ut_dump: using Sys::Utmp");
+		debug("enum_sessions: using Sys::Utmp");
 		my $utmp = Sys::Utmp->new();
 		while (my $ent = $utmp->getutent()) {
 			if ($ent->user_process) {
@@ -102,39 +93,45 @@ sub ut_dump {
 
 # "utmp changed" handler
 sub update {
-	my @data = ut_dump();
-	for (@data) {
+	my @sessions = enum_sessions();
+	for (@sessions) {
 		$_->{uid} = scalar getpwnam $_->{user};
 		$_->{host} =~ s/^::ffff://;
 	}
-	if ($hide_root) {
-		@data = grep {$_->{user} ne "root"} @data;
+	if (!$show_root) {
+		@sessions = grep {$_->{user} ne "root"} @sessions;
 	}
-	debug("update: uploading ".scalar(@data)." items");
-	upload("put", \@data);
+	debug("update: uploading ".scalar(@sessions)." items");
+	upload("put", \@sessions);
 }
 
 # Upload data to server
 sub upload {
-	my ($action, $data) = @_;
+	my ($action, $sessions) = @_;
 	my $ua = LWP::UserAgent->new;
+
 	my %data = (
 		host => $my_hostname,
 		fqdn => $my_fqdn,
 		action => $action,
-		utmp => encode_json($data),
+		utmp => encode_json($sessions),
 	);
 	my $resp = $ua->post($notify_url, \%data);
-	if (!$resp->is_success) {
-		print "error: ".$resp->status_line."\n";
+
+	if ($resp->is_success) {
+		debug("upload: ".$resp->status_line);
+	} else {
+		warn "upload error: ".$resp->status_line."\n";
 	}
-	debug("upload: ".$resp->status_line);
 }
+
+# Main loops
 
 sub watch_inotify {
 	$0 = "rwhod: inotify(".PATH_UTMP.")";
+
 	my $inotify = Linux::Inotify2->new();
-	$inotify->watch(PATH_UTMP, IN_MODIFY, sub { update(); });
+	$inotify->watch(PATH_UTMP, IN_MODIFY, \&update);
 	debug("watch: idling");
 	while (1) {
 		$inotify->poll;
@@ -142,28 +139,38 @@ sub watch_inotify {
 }
 
 sub watch_poll {
-	$0 = "rwhod: poll(${update_interval}s)";
-	debug("poll: updating every $update_interval seconds");
+	$0 = "rwhod: poll(${poll_interval}s)";
+
+	debug("poll: updating every $poll_interval seconds");
 	while (1) {
-		sleep $update_interval;
+		sleep $poll_interval;
 		update();
 	}
 }
+
+# Utility functions
 
 sub debug {
 	local $" = " ";
 	$verbose and print "rwhod[$$]: @_\n";
 }
 
+sub forked(&) {
+	my $sub = shift;
+	my $pid = fork();
+	if ($pid) {return $pid} else {exit &$sub}
+}
+
 sub daemonize {
-	chdir "/"
+	chdir("/")
 		or die "can't chdir to /: $!";
-	open STDIN, "<", "/dev/null"
+	open(STDIN, "<", "/dev/null")
 		or die "can't read /dev/null: $!";
-	open STDOUT, ">", "/dev/null"
+	open(STDOUT, ">", "/dev/null")
 		or die "can't write /dev/null: $!";
 
 	my $pid = fork;
+
 	if (!defined $pid) {
 		die "can't fork: $!";
 	} elsif ($pid) {
@@ -177,38 +184,33 @@ sub daemonize {
 	}
 }
 
-sub reap {
-	my $pid = wait;
-	$SIG{CHLD} = \&reap;
-	debug("received SIGCHLD for $pid");
+# Process management functions
+
+sub fork_poller {
+	debug("starting poller");
+	$SIG{CHLD} = \&sigchld_reap_poller;
+	return forked {
+		$SIG{INT} = "DEFAULT";
+		$SIG{TERM} = "DEFAULT";
+		$SIG{CHLD} = \&sigchld_reap_any;
+		watch_poll();
+	};
 }
 
 sub cleanup {
 	if (defined $poller_pid) {
 		debug("cleanup: killing poller");
-		$SIG{CHLD} = \&reap;
-		kill SIGTERM, $poller_pid;
+		$SIG{CHLD} = \&sigchld_reap_any;
+		kill(SIGTERM, $poller_pid);
 	}
-	debug("cleanup: removing all records");
+	debug("cleanup: removing sessions on server");
 	upload("destroy", []);
 	exit;
 }
 
-sub fork_poller {
-	debug("starting poller");
-	$SIG{CHLD} = \&reap_poller;
-	return forked {
-		$SIG{INT} = "DEFAULT";
-		$SIG{TERM} = "DEFAULT";
-		$SIG{CHLD} = \&reap;
-		watch_poll();
-	};
-}
-
-sub reap_poller {
+sub sigchld_reap_poller {
 	my $pid = wait;
-	$SIG{CHLD} = \&reap_poller;
-
+	$SIG{CHLD} = \&sigchld_reap_poller;
 	if (defined $poller_pid and $pid == $poller_pid) {
 		debug("poller exited, restarting");
 		$poller_pid = fork_poller();
@@ -217,17 +219,24 @@ sub reap_poller {
 	}
 }
 
-## startup code
+sub sigchld_reap_any {
+	my $pid = wait;
+	$SIG{CHLD} = \&sigchld_reap_any;
+	debug("received SIGCHLD for $pid");
+}
+
+# Initialization code
+
 GetOptions(
 	"d|daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(1); },
+	"include-root!"	=> \$show_root,
 	"inotify!"	=> \$do_inotify,
-	"i|interval=i"	=> \$update_interval,
+	"i|interval=i"	=> \$poll_interval,
 	"man"		=> sub { pod2usage(-exitstatus => 0,
 				-verbose => 2); },
 	"pidfile=s"	=> \$pidfile,
-	"root"		=> sub { $hide_root = 0; },
-	"server=s"	=> \$notify_url,
+	"server-url=s"	=> \$notify_url,
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
 ) or pod2usage(1);
@@ -237,9 +246,9 @@ if (!defined $notify_url) {
 }
 
 # use large interval if inotify is available
-$update_interval //= ($do_inotify ? 600 : 30);
+$poll_interval //= ($do_inotify ? 600 : 30);
 
-$do_poll = $update_interval > 0;
+$do_poll = $poll_interval > 0;
 
 unless ($do_inotify || $do_poll) {
 	die "error: cannot disable both poll and inotify\n";
@@ -247,9 +256,10 @@ unless ($do_inotify || $do_poll) {
 
 $0 = "rwhod";
 
-$my_hostname = hostname;
+$my_hostname = hostname();
 $my_fqdn = canon_hostname($my_hostname);
 $my_hostname =~ s/\..*$//;
+
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
 
 $SIG{INT} = \&cleanup;
@@ -257,7 +267,7 @@ $SIG{TERM} = \&cleanup;
 
 if ($do_single) {
 	if ($do_fork) {
-		warn "warning: --fork ignored in single mode\n";
+		warn "warning: --fork ignored in single-update mode\n";
 	}
 	debug("doing single update");
 	$0 = "rwhod: updating";
@@ -270,14 +280,13 @@ if (defined $pidfile) {
 		or die "unable to open pidfile '$pidfile'\n";
 }
 
-# chdir after opening pidfile
-chdir "/";
-
 debug("doing initial update");
 update();
 
 if ($do_fork) {
 	daemonize();
+} else {
+	chdir("/");
 }
 
 if (defined $pidfile_h) {
@@ -319,7 +328,11 @@ Fork to background after initial update.
 
 Obvious.
 
-=item B<--no-inotify>
+=item B<--[no-]include-root>
+
+Include root logins. By default, disabled.
+
+=item B<--[no-]inotify>
 
 Turn off inotify and only use periodic updates.
 
@@ -335,11 +348,7 @@ Display the manual page.
 
 Write PID to file.
 
-=item B<--root>
-
-Include root logins.
-
-=item B<--server I<url>>
+=item B<--server-url I<url>>
 
 Use specified server URL.
 
