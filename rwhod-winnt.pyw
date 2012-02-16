@@ -162,7 +162,7 @@ class WTSSessionEventMonitor():
 		elif message == WM_QUERYENDSESSION:
 			return True
 		else:
-			print("WndProc(%08x)" % message)
+			return DefWindowProc(hWnd, message, wParam, lParam)
 
 class RWhoMonitor(WTSSessionEventMonitor):
 	def __init__(self):
