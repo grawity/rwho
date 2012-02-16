@@ -12,6 +12,7 @@ if sys.platform != "win32":
 	raise RuntimeError("This script requires Windows NT with Terminal Services.")
 
 import servicemanager as sm
+import win32api as Api
 from win32con import *
 from win32gui import *
 from win32ts import *
@@ -159,16 +160,40 @@ class WTSSessionEventMonitor():
 			PostQuitMessage(0)
 		elif message == WM_QUERYENDSESSION:
 			return True
+		else:
+			print("WndProc(%08x)" % message)
 
 class RWhoMonitor(WTSSessionEventMonitor):
 	def __init__(self):
 		WTSSessionEventMonitor.__init__(self)
-		self.tid = 42
+
+		self.running = False
+		self.timerId = 42
 		self.periodic_timeout = 10*60
-	
+
 	def run(self):
-		self.OnTimer()
-		PumpMessages()
+		print("starting monitor")
+		try:
+			if Api.GetConsoleTitle():
+				Api.SetConsoleCtrlHandler(self.OnConsoleCtrlEvent, True)
+
+			self.running = True
+			self.OnTimer()
+			PumpMessages()
+		except:
+			self.running = False
+			raise
+
+	def stop(self):
+		print("stopping monitor")
+		try:
+			self.running = False
+
+			cleanup()
+			SendMessage(self.hWnd, WM_DESTROY, 0, 0)
+		except:
+			self.running = True
+			raise
 
 	def WndProc(self, hWnd, message, wParam, lParam):
 		DefWndProc = lambda: \
@@ -176,52 +201,84 @@ class RWhoMonitor(WTSSessionEventMonitor):
 
 		if message == WM_POWERBROADCAST:
 			if wParam == PBT_APMSUSPEND:
-				return self.OnSuspend()
+				self.OnSuspend()
 			elif wParam == PBT_APMRESUMESUSPEND:
-				return self.OnResume()
-			else:
-				return DefWndProc()
+				self.OnResume()
+			return DefWndProc()
 		elif message == WM_TIMER:
-			return self.OnTimer()
+			self.OnTimer()
 		elif message == WM_WTSSESSION_CHANGE:
-			return self.OnSession(wParam, lParam)
+			self.OnSession(wParam, lParam)
 		elif message == WM_ENDSESSION:
-			return self.OnShutdown()
-		elif message == WM_DESTROY:
 			self.OnShutdown()
+			return True
+		elif message == WM_DESTROY:
+			self.OnDestroy()
 			return DefWndProc()
 		else:
 			return DefWndProc()
 
+	def OnConsoleCtrlEvent(self, event):
+		print("* console CtrlEvent(%d)" % event)
+		if not self.running:
+			return
+
+		self.stop()
+
 	def OnSuspend(self):
-		# not sure if this even has a chance of cleaning anything up, but let's be nice
+		print("* suspend")
+		if not self.running:
+			return
+
 		cleanup()
 
 	def OnResume(self):
+		print("* resume")
+		if not self.running:
+			return
+
 		update()
 
 	def OnShutdown(self):
-		print("Shutdown")
+		print("* shutdown")
+		if not self.running:
+			return
+
+		cleanup()
+
+	def OnDestroy(self):
+		print("* destroy")
+		if not self.running:
+			return
+
 		cleanup()
 
 	def OnTimer(self):
-		print("Timer")
-		self.tid = SetTimer(self.hWnd, self.tid, self.periodic_timeout*1000)
+		print("* timer")
+		if not self.running:
+			return
+
+		self.timerId = SetTimer(self.hWnd, self.timerId,
+					self.periodic_timeout*1000)
 		update()
 
 	def OnSession(self, event, session):
-		event = {
-			WTS_CONSOLE_CONNECT		: "connected to console",
-			WTS_CONSOLE_DISCONNECT		: "disconnected from console",
-			WTS_REMOTE_CONNECT		: "connected remotely",
-			WTS_REMOTE_DISCONNECT		: "disconnected remotely",
-			WTS_SESSION_LOGON		: "logged on",
-			WTS_SESSION_LOGOFF		: "logged off",
-			WTS_SESSION_LOCK		: "locked",
-			WTS_SESSION_UNLOCK		: "unlocked",
-			WTS_SESSION_REMOTE_CONTROL	: "remote control"
+		if not self.running:
+			return
+
+		event_name = {
+			WTS_CONSOLE_CONNECT:		"connected to console",
+			WTS_CONSOLE_DISCONNECT:		"disconnected from console",
+			WTS_REMOTE_CONNECT:		"connected remotely",
+			WTS_REMOTE_DISCONNECT:		"disconnected remotely",
+			WTS_SESSION_LOGON:		"logged on",
+			WTS_SESSION_LOGOFF:		"logged off",
+			WTS_SESSION_LOCK:		"locked",
+			WTS_SESSION_UNLOCK:		"unlocked",
+			WTS_SESSION_REMOTE_CONTROL:	"remote control",
 		}.get(event, "unknown %d" % event)
-		print("TSEvent: Session %d %s" % (session, event))
+
+		print("* session %d %s" % (session, event_name))
 		update()
 
 class RWhoService(win32serviceutil.ServiceFramework):
@@ -244,7 +301,8 @@ def collect_session_info():
 	hServer = WTS_CURRENT_SERVER_HANDLE
 	#hServer = WTSOpenServer("...")
 	for sess in WTSEnumerateSessions(hServer):
-		print("Session:", sess)
+		print("session", sess)
+
 		if sess["State"] != WTSActive:
 			# skip inactive (disconnected) sessions
 			continue
@@ -268,7 +326,8 @@ def collect_session_info():
 
 		if hServer == WTS_CURRENT_SERVER_HANDLE:
 			uSid, uDom, acctType = LookupAccountName(None, user)
-			uSidAuthorities = [uSid.GetSubAuthority(i) for i in range(uSid.GetSubAuthorityCount())]
+			uSidAuthorities = [uSid.GetSubAuthority(i)
+						for i in range(uSid.GetSubAuthorityCount())]
 			entry["uid"] = uSidAuthorities[-1]
 		else:
 			entry["uid"] = 0
@@ -289,7 +348,7 @@ def upload(action, sdata):
 		from urllib.parse import urlencode
 		from urllib.request import urlopen
 
-	print("Uploading %d items" % len(sdata))
+	print("uploading %d items" % len(sdata))
 	data = {
 		"host": socket.gethostname().lower(),
 		"fqdn": socket.getfqdn().lower(),
@@ -298,11 +357,15 @@ def upload(action, sdata):
 	}
 	data = urlencode(data).encode("utf-8")
 	resp = urlopen(SERVER_URL, data)
-	print(resp.read())
+	print("server returned: %r" % resp.readline().strip())
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
 		win32serviceutil.HandleCommandLine(RWhoService)
 	else:
 		mon = RWhoMonitor()
-		mon.run()
+		try:
+			mon.run()
+		except KeyboardInterrupt:
+			# keyboard interrupts will be handled by monitor itself
+			pass
