@@ -360,12 +360,18 @@ def upload(action, sdata):
 	print("server returned: %r" % resp.readline().strip())
 
 if __name__ == '__main__':
-	if len(sys.argv) > 1:
-		win32serviceutil.HandleCommandLine(RWhoService)
-	else:
-		mon = RWhoMonitor()
-		try:
-			mon.run()
-		except KeyboardInterrupt:
-			# keyboard interrupts will be handled by monitor itself
-			pass
+	try:
+		if len(sys.argv) > 1:
+			win32serviceutil.HandleCommandLine(RWhoService)
+		else:
+			mon = RWhoMonitor()
+			try:
+				mon.run()
+			except KeyboardInterrupt:
+				# keyboard interrupts will be handled by monitor itself
+				pass
+	except BaseException as e:
+		path = os.path.expandvars("%TEMP%/rwho.log")
+		with open(path, "a") as log:
+			print(repr(e), file=log)
+		raise
