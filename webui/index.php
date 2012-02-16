@@ -220,7 +220,7 @@ if (query::$format == "html") {
 	<script type="text/javascript" src="xhr.js"></script>
 </head>
 
-<?php if ($data !== false): ?>
+<?php if ($data !== false) { ?>
 <!-- user session table -->
 
 <h1><?php
@@ -247,13 +247,13 @@ html::header("address", 40);
 
 <tfoot>
 	<td colspan="<?php echo html::$columns ?>">
-<?php if (strlen(query::$user) or strlen(query::$host)): ?>
+<?php if (strlen(query::$user) or strlen(query::$host)) { ?>
 		<a href="?">Back to all sessions</a>
-<?php elseif (query::$detailed): ?>
+<?php } elseif (query::$detailed) { ?>
 		<a href="?">Back to normal view</a>
-<?php else: ?>
+<?php } else { ?>
 		<a href="?full">Expanded view</a>
-<?php endif; ?>
+<?php } ?>
 		or output as
 		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
 		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
@@ -270,11 +270,9 @@ html::header("address", 40);
 <p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>
 <?php } ?>
 
-<?php else: ?>
-<!-- error message -->
-
+<?php } else { // data === false ?>
 <p>Could not retrieve <code>rwho</code> information.</p>
-<?php endif; ?>
+<?php }; ?>
 
 <?php @include "footer.html"; ?>
 
