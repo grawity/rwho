@@ -114,7 +114,7 @@ def _wtsapi_WTSQuerySessionInformation(hServer, sessionID, infoClass):
 	else:
 		return (0, 0)
 
-def WTSQuerySessionInfo(hServer, sessionId):
+def WTSQuerySessionInformation_SessionInfo(hServer, sessionId):
 	buf, bufsize = _wtsapi_WTSQuerySessionInformation(hServer, sessionId, WTSSessionInfo)
 	if bufsize:
 		return c.cast(buf.value, c.POINTER(WTSINFO)).contents
@@ -152,7 +152,7 @@ def collect_session_info():
 		entry["line"] = sess["WinStationName"]
 		entry["host"] = WTSQuerySessionInformation(hServer, sessionId, WTSClientName)
 
-		sessionInfo = WTSQuerySessionInfo(hServer, sessionId)
+		sessionInfo = WTSQuerySessionInformation_SessionInfo(hServer, sessionId)
 		if sessionInfo:
 			print("logonTime", sessionInfo.LogonTime)
 			entry["time"] = int(UnixTimeFromFileTime(sessionInfo.LogonTime))
