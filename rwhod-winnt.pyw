@@ -105,16 +105,21 @@ class WTSINFO(c.Structure):
 ## Windows native functions
 
 def _wtsapi_WTSQuerySessionInformation(hServer, sessionID, infoClass):
-	ppBuffer = c.c_int32()
-	pBytesReturned = c.c_int32()
-	if c.windll.wtsapi32.WTSQuerySessionInformationW(
-		c.c_int32(hServer), c.c_int32(sessionID), c.c_int32(infoClass),
-		c.byref(ppBuffer), c.byref(pBytesReturned)):
+	ppBuffer = DWORD(0)
+	pBytesReturned = DWORD(0)
+
+	res = c.windll.wtsapi32.WTSQuerySessionInformationW(
+		HANDLE(hServer), DWORD(sessionID), WTS_INFO_CLASS(infoClass),
+		c.byref(ppBuffer), c.byref(pBytesReturned))
+
+	if res:
 		return (ppBuffer, pBytesReturned)
 	else:
+		print("WTSQuerySessionInformationW: error %r" % Api.GetLastError())
 		return (0, 0)
 
 def WTSQuerySessionInformation_SessionInfo(hServer, sessionId):
+	# only supported starting with Server 2008 & Vista SP1
 	buf, bufsize = _wtsapi_WTSQuerySessionInformation(hServer, sessionId, WTSSessionInfo)
 	if bufsize:
 		return c.cast(buf.value, c.POINTER(WTSINFO)).contents
