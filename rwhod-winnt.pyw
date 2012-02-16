@@ -122,7 +122,7 @@ def WTSQuerySessionInformation_SessionInfo(hServer, sessionId):
 	# only supported starting with Server 2008 & Vista SP1
 	buf, bufsize = _wtsapi_WTSQuerySessionInformation(hServer, sessionId, WTSSessionInfo)
 	if bufsize:
-		return c.cast(buf.value, c.POINTER(WTSINFO)).contents
+		return buf, c.cast(buf.value, c.POINTER(WTSINFO)).contents
 	else:
 		return None
 
@@ -157,10 +157,12 @@ def collect_session_info():
 		entry["line"] = sess["WinStationName"]
 		entry["host"] = WTSQuerySessionInformation(hServer, sessionId, WTSClientName)
 
-		sessionInfo = WTSQuerySessionInformation_SessionInfo(hServer, sessionId)
+		ptr, sessionInfo = WTSQuerySessionInformation_SessionInfo(hServer, sessionId)
+		# only supported starting with Server 2008 & Vista SP1
 		if sessionInfo:
 			print("logonTime", sessionInfo.LogonTime)
 			entry["time"] = int(UnixTimeFromFileTime(sessionInfo.LogonTime))
+			c.windll.wtsapi32.WTSFreeMemory(ptr)
 		else:
 			entry["time"] = 0
 
