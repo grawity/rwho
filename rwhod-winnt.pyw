@@ -131,6 +131,71 @@ def SetTimer(hWnd, IDEvent, elapse):
 def UnixTimeFromFileTime(ftime):
 	return (((ftime.dwHighDateTime << 32) | ftime.dwLowDateTime) - 116444736000000000) / 10000000.0
 
+def collect_session_info():
+	hServer = WTS_CURRENT_SERVER_HANDLE
+	#hServer = WTSOpenServer("...")
+	for sess in WTSEnumerateSessions(hServer):
+		print("session", sess)
+
+		if sess["State"] != WTSActive:
+			# skip inactive (disconnected) sessions
+			continue
+
+		sessionId = sess["SessionId"]
+		user = WTSQuerySessionInformation(hServer, sessionId, WTSUserName)
+		if not user:
+			print("skipping (null user)")
+			continue
+
+		entry = {}
+		entry["user"] = user
+		entry["line"] = sess["WinStationName"]
+		entry["host"] = WTSQuerySessionInformation(hServer, sessionId, WTSClientName)
+
+		sessionInfo = WTSQuerySessionInfo(hServer, sessionId)
+		if sessionInfo:
+			print("logonTime", sessionInfo.LogonTime)
+			entry["time"] = int(UnixTimeFromFileTime(sessionInfo.LogonTime))
+		else:
+			entry["time"] = 0
+
+		if hServer == WTS_CURRENT_SERVER_HANDLE:
+			uSid, uDom, acctType = LookupAccountName(None, user)
+			uSidAuthorities = [uSid.GetSubAuthority(i)
+						for i in range(uSid.GetSubAuthorityCount())]
+			entry["uid"] = uSidAuthorities[-1]
+			entry["domain"] = uDom
+		else:
+			entry["uid"] = 0
+			entry["domain"] = None
+
+		yield entry
+
+def update():
+	upload("put", list(collect_session_info()))
+
+def cleanup():
+	upload("destroy", [])
+
+def upload(action, sdata):
+	try:
+		from urllib import urlencode
+		from urllib2 import urlopen
+	except ImportError:
+		from urllib.parse import urlencode
+		from urllib.request import urlopen
+
+	print("uploading %d items" % len(sdata))
+	data = {
+		"host": socket.gethostname().lower(),
+		"fqdn": socket.getfqdn().lower(),
+		"action": action,
+		"utmp": json.dumps(sdata),
+	}
+	data = urlencode(data).encode("utf-8")
+	resp = urlopen(SERVER_URL, data)
+	print("server returned: %r" % resp.readline().strip())
+
 class WTSSessionEventMonitor():
 	"""Windows Terminal Services session event monitor"""
 
@@ -305,70 +370,6 @@ class RWhoService(win32serviceutil.ServiceFramework):
 
 	def SvcDoRun(self):
 		m = RWhoMonitor()
-
-def collect_session_info():
-	hServer = WTS_CURRENT_SERVER_HANDLE
-	#hServer = WTSOpenServer("...")
-	for sess in WTSEnumerateSessions(hServer):
-		print("session", sess)
-
-		if sess["State"] != WTSActive:
-			# skip inactive (disconnected) sessions
-			continue
-
-		sessionId = sess["SessionId"]
-		user = WTSQuerySessionInformation(hServer, sessionId, WTSUserName)
-		if not user:
-			print("skipping (null user)")
-			continue
-
-		entry = {}
-		entry["user"] = user
-		entry["line"] = sess["WinStationName"]
-		entry["host"] = WTSQuerySessionInformation(hServer, sessionId, WTSClientName)
-
-		sessionInfo = WTSQuerySessionInfo(hServer, sessionId)
-		if sessionInfo:
-			entry["time"] = int(UnixTimeFromFileTime(sessionInfo.LogonTime))
-		else:
-			entry["time"] = 0
-
-		if hServer == WTS_CURRENT_SERVER_HANDLE:
-			uSid, uDom, acctType = LookupAccountName(None, user)
-			uSidAuthorities = [uSid.GetSubAuthority(i)
-						for i in range(uSid.GetSubAuthorityCount())]
-			entry["uid"] = uSidAuthorities[-1]
-			entry["domain"] = uDom
-		else:
-			entry["uid"] = 0
-			entry["domain"] = None
-
-		yield entry
-
-def update():
-	upload("put", list(collect_session_info()))
-
-def cleanup():
-	upload("destroy", [])
-
-def upload(action, sdata):
-	try:
-		from urllib import urlencode
-		from urllib2 import urlopen
-	except ImportError:
-		from urllib.parse import urlencode
-		from urllib.request import urlopen
-
-	print("uploading %d items" % len(sdata))
-	data = {
-		"host": socket.gethostname().lower(),
-		"fqdn": socket.getfqdn().lower(),
-		"action": action,
-		"utmp": json.dumps(sdata),
-	}
-	data = urlencode(data).encode("utf-8")
-	resp = urlopen(SERVER_URL, data)
-	print("server returned: %r" % resp.readline().strip())
 
 if __name__ == '__main__':
 	try:
