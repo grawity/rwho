@@ -67,6 +67,11 @@ ctl() {
 			ctl restart
 		fi
 		;;
+	git-update)
+		cd "$RWHOD_DIR" &&
+		git pull --quiet --ff-only &&
+		ctl update
+		;;
 	*)
 		echo "usage: $0 <start|stop|restart|foreground|update>"
 		;;
