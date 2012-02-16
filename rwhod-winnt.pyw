@@ -338,8 +338,10 @@ def collect_session_info():
 			uSidAuthorities = [uSid.GetSubAuthority(i)
 						for i in range(uSid.GetSubAuthorityCount())]
 			entry["uid"] = uSidAuthorities[-1]
+			entry["domain"] = uDom
 		else:
 			entry["uid"] = 0
+			entry["domain"] = None
 
 		yield entry
 
