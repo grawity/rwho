@@ -145,9 +145,10 @@ class WTSSessionEventMonitor():
 
 		self.classAtom = RegisterClass(wc)
 
-		style = 0
 		self.hWnd = CreateWindow(self.classAtom, self.wndName,
-			style, 0, 0, CW_USEDEFAULT, CW_USEDEFAULT,
+			# style, x, y, nWidth, nHeight,
+			0, 0, 0, CW_USEDEFAULT, CW_USEDEFAULT,
+			# hWndParent, hMenu, hInstance, lpParam
 			0, 0, wc.hInstance, None)
 		UpdateWindow(self.hWnd)
 
