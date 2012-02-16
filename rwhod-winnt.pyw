@@ -172,10 +172,17 @@ class RWhoMonitor(WTSSessionEventMonitor):
 		self.timerId = 42
 		self.periodic_timeout = 10*60
 
+		try:
+			Api.GetConsoleTitle()
+		except:
+			self.have_console = False
+		else:
+			self.have_console = True
+
 	def run(self):
 		print("starting monitor")
 		try:
-			if Api.GetConsoleTitle():
+			if self.have_console:
 				Api.SetConsoleCtrlHandler(self.OnConsoleCtrlEvent, True)
 
 			self.running = True
@@ -220,6 +227,7 @@ class RWhoMonitor(WTSSessionEventMonitor):
 			return DefWndProc()
 
 	def OnConsoleCtrlEvent(self, event):
+		# http://msdn.microsoft.com/en-us/library/ms683242%28v=vs.85%29.aspx
 		print("* console CtrlEvent(%d)" % event)
 		if not self.running:
 			return
