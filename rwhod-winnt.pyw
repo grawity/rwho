@@ -162,7 +162,7 @@ class WTSSessionEventMonitor():
 
 class RWhoMonitor(WTSSessionEventMonitor):
 	def __init__(self):
-		Monitor.__init__(self)
+		WTSSessionEventMonitor.__init__(self)
 		self.tid = 42
 		self.periodic_timeout = 10*60
 	
