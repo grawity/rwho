@@ -136,7 +136,13 @@ function handle_utmp_data(data) {
 			trow.appendChild(cell);
 
 			cell = document.createElement("td");
-			cell.textContent = row.rhost;
+			if (row.rhost.length) {
+				cell.textContent = row.rhost;
+			} else {
+				var note = document.createElement("i");
+				note.textContent = "(local)";
+				cell.appendChild(note);
+			}
 			trow.appendChild(cell);
 
 			table.appendChild(trow);
