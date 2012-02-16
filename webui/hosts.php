@@ -197,6 +197,8 @@ html::header("updated", 7);
 
 <p>Hosts idle longer than <?php echo MAX_AGE ?> seconds are not shown.</p>
 
+<?php @include "footer.html"; ?>
+
 <?php
 } // query::$format == "html"
 elseif (query::$format == "json") {

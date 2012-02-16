@@ -276,6 +276,8 @@ html::header("address", 40);
 <p>Could not retrieve <code>rwho</code> information.</p>
 <?php endif; ?>
 
+<?php @include "footer.html"; ?>
+
 <?php
 } // query::$format == "html"
 elseif (query::$format == "json") {

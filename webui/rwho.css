@@ -3,7 +3,7 @@ body {
 }
 
 a {
-	color: #44d;
+	color: blue;
 	text-decoration: none;
 }
 
@@ -41,5 +41,6 @@ table {
 
 .footer {
 	color: gray;
+	font-style: italic;
 	font-size: smaller;
 }
