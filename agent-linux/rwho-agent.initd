@@ -4,16 +4,16 @@ RWHO_DIR="$(dirname "$0")"
 RWHO_AGENT="$RWHO_DIR/rwho-agent"
 RWHO_ARGS=""
 
-if (( UID > 0 )); then
+if [ "$(whoami)" = "root" ]; then
+	RWHO_CONFIG="/etc/conf.d/rwho-agent"
+	RWHO_PIDFILE="/run/rwho-agent.pid"
+else
 	RWHO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/rwho/rwho-agent.conf"
 	RWHO_PIDFILE="${XDG_RUNTIME_DIR:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
 	OLD_PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
 	export PERL5LIB
-else
-	RWHO_CONFIG="/etc/conf.d/rwho-agent"
-	RWHO_PIDFILE="/run/rwho-agent.pid"
 fi
 
 if [ -e "$RWHO_CONFIG" ]; then
@@ -34,11 +34,11 @@ ctl() {
 		if [ -f "$OLD_PIDFILE" ]; then
 			read -r pid < "$OLD_PIDFILE" &&
 			kill "$pid" &&
-			rm "$OLD_PIDFILE"
+			rm -f "$OLD_PIDFILE"
 		elif [ -f "$RWHO_PIDFILE" ]; then
 			read -r pid < "$RWHO_PIDFILE" &&
 			kill "$pid" &&
-			rm "$RWHO_PIDFILE"
+			rm -f "$RWHO_PIDFILE"
 		else
 			echo "not running (pidfile not found)"
 		fi
