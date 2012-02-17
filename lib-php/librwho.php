@@ -74,9 +74,7 @@ function summarize($utmp) {
 			$updated = array();
 
 			foreach ($sessions as $entry) {
-				$from = $entry["rhost"];
-				$from = preg_replace('/:S\.\d+$/', '', $from);
-				#$from = preg_replace('/\..+$/', '', $from);
+				$from = normalize_host($entry["rhost"]);
 				@$byfrom[$from][] = $entry["line"];
 				@$updated[$from] = max($updated[$from], $entry["updated"]);
 				$uid = $entry["uid"];
@@ -204,6 +202,20 @@ function strip_domain($fqdn) {
 function user_is_global($user) {
 	$pwent = posix_getpwnam($user);
 	return $pwent ? $pwent["uid"] > 25000 : false;
+}
+
+// normalize_host(str $host) -> str
+// Normalize the "remote host" value for use as array key in summarize()
+
+function normalize_host($host) {
+	# strip .window from GNU Screen name
+	#$host = preg_replace('/(:S)\.\d+$/', '$1', $host);
+	$host = preg_replace('/^(.+):S\.\d+$/', '$1 (screen)', $host);
+
+	# strip .screen from X11 display
+	$host = preg_replace('/(:\d+)\.\d+$/', '$1', $host);
+
+	return $host;
 }
 
 // interval(unixtime $start, unixtime? $end) -> str
