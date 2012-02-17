@@ -1,6 +1,6 @@
 #!/usr/bin/php
 <?php
-require __DIR__."/../php/librwho.php";
+require __DIR__."/../lib-php/librwho.php";
 
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);

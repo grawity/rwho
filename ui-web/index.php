@@ -2,7 +2,7 @@
 namespace RWho;
 error_reporting(E_ALL^E_NOTICE);
 
-require __DIR__."/../php/librwho.php";
+require __DIR__."/../lib-php/librwho.php";
 
 class query {
 	static $user;

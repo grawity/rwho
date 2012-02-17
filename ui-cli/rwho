@@ -1,0 +1,83 @@
+#!/usr/bin/env bash
+# rwho - simple 'finger' client hardcoded to query a rwho-ng server
+
+[[ $DEBUG ]] && set -x
+
+## Defaults
+
+RWHO_DIR="/cluenet/rwho"
+
+: ${RWHO_HOST:=equal.cluenet.org}
+
+: ${RWHO_SERVICE:=finger}
+
+RWHO_URL="http://$RWHO_HOST/rwho/"
+
+rwho-fingerd() { "$RWHO_DIR/ui-finger/in.rwho-fingerd" "$@"; }
+
+## Functions
+
+usage() {
+	echo "Usage: ${0##*/} [-h] [-l] [user][@host]"
+	echo ""
+	echo "  -h  list all hosts"
+	echo "  -l  long output format"
+	echo ""
+	echo "HTTP interface is available at: $RWHO_URL"
+	echo ""
+	echo "This version of rwho was developed by grawity <grawity@gmail.com>"
+	exit 2
+}
+
+filter() {
+	perl -pe 's/\033/"^".chr(ord($&)+0100)/ge'
+}
+
+conn_remote() {
+	local request=$1 fd=
+	exec {fd}<>"/dev/tcp/$RWHO_HOST/$RWHO_SERVICE" || {
+		echo >&2 "rwho: connection failed ($?)"
+		return 1
+	}
+	printf >&$fd '%s\r\n' "$request"
+	filter <&$fd
+	exec {fd}>&-
+}
+
+conn_local() {
+	local request=$1
+	printf '%s\n' "$request" | rwho-fingerd
+}
+
+conn() {
+	if [[ $(hostname -f) == "$RWHO_HOST" ]]; then
+		conn_local "$@"
+	else
+		conn_remote "$@"
+	fi
+}
+
+hosts=false
+long=false
+
+while getopts ":hl" OPT; do
+	case $OPT in
+	'h')	hosts=true;;
+	'l')	long=true;;
+	'?')	echo "Unknown option '$OPTARG'" >&2;
+		usage;;
+	esac
+done
+shift $((OPTIND-1))
+
+if $hosts; then
+	query='*'
+else
+	query=$1
+fi
+
+if $long; then
+	conn "/W $query"
+else
+	conn "$query"
+fi
