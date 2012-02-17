@@ -1,0 +1,8 @@
+[Unit]
+
+[Service]
+Type=forking
+ExecStart=/usr/sbin/rwho-agent --daemon
+
+[Install]
+WantedBy=multi-user.target

@@ -1,0 +1,9 @@
+service finger
+{
+	id		= rwho
+	flags		= IPv6
+	socket_type	= stream
+	wait		= no
+	user		= nobody
+	server		= /usr/sbin/in.rwho-fingerd
+}
