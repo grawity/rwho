@@ -1,0 +1,412 @@
+#!/usr/bin/env perl
+# rwho data collector daemon
+use warnings;
+use strict;
+use 5.010;
+use Getopt::Long qw(:config no_ignore_case bundling);
+use JSON;
+use LWP::UserAgent;
+use Linux::Inotify2;
+use POSIX qw(:errno_h :signal_h);
+use Pod::Usage;
+use Sys::Hostname;
+
+my $notify_url = "http://equal.cluenet.org/rwho/server.php";
+my $utmp_path;
+my $poll_interval;
+my $verbose	= 0;
+my $do_fork	= 0;
+my $do_single	= 0;
+my $do_inotify	= 1;
+my $do_poll	= 1;
+my $show_root	= 0;
+my $pidfile;
+my $pidfile_h;
+
+my $my_hostname;
+my $my_fqdn;
+
+my $main_pid;
+my $poller_pid;
+
+sub canon_hostname {
+	my $host = shift;
+	if (eval {require Socket::GetAddrInfo}) {
+		debug("canon_hostname: using Socket::GetAddrInfo");
+		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
+		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, "", \%hint);
+		# FIXME: print error messages when needed
+		return $err ? $host : ((shift @ai)->{canonname} // $host);
+	}
+	else {
+		debug("canon_hostname: using \"getent hosts\"");
+		open my $fd, "-|", "getent", "hosts", $host;
+		my @ai = split(" ", <$fd>);
+		close $fd;
+		return $ai[1] // $host;
+	}
+}
+
+# Read the utmp file
+sub enum_sessions {
+	my @utmp = ();
+	if (eval {require User::Utmp}) {
+		debug("enum_sessions: using User::Utmp");
+		User::Utmp::utmpxname($utmp_path);
+		while (my $ent = User::Utmp::getutxent()) {
+			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
+				push @utmp, {
+					user => $ent->{ut_user},
+					line => $ent->{ut_line},
+					host => $ent->{ut_host},
+					time => $ent->{ut_time},
+				};
+			}
+		}
+		User::Utmp::endutxent();
+	}
+	elsif (eval {require Sys::Utmp}) {
+		debug("enum_sessions: using Sys::Utmp");
+		my $utmp = Sys::Utmp->new(Filename => $utmp_path);
+		while (my $ent = $utmp->getutent()) {
+			if ($ent->user_process) {
+				push @utmp, {
+					user => $ent->ut_user,
+					line => $ent->ut_line,
+					host => $ent->ut_host,
+					time => $ent->ut_time,
+				};
+			}
+		}
+		$utmp->endutent();
+	}
+	else {
+		die "error: either User::Utmp or Sys::Utmp required\n";
+	}
+	return @utmp;
+}
+
+# "utmp changed" handler
+sub update {
+	my @sessions = enum_sessions();
+	for (@sessions) {
+		$_->{uid} = scalar getpwnam $_->{user};
+		$_->{host} =~ s/^::ffff://;
+	}
+	if (!$show_root) {
+		@sessions = grep {$_->{user} ne "root"} @sessions;
+	}
+	debug("update: uploading ".scalar(@sessions)." items");
+	upload("put", \@sessions);
+}
+
+# Upload data to server
+sub upload {
+	my ($action, $sessions) = @_;
+	my $ua = LWP::UserAgent->new;
+
+	my %data = (
+		host => $my_hostname,
+		fqdn => $my_fqdn,
+		action => $action,
+		utmp => encode_json($sessions),
+	);
+	my $resp = $ua->post($notify_url, \%data);
+
+	if ($resp->is_success) {
+		debug("upload: ".$resp->status_line);
+	} else {
+		warn "upload error: ".$resp->status_line."\n";
+	}
+}
+
+# Utility functions
+
+sub debug {
+	local $" = " ";
+	$verbose and print "rwhod[$$]: @_\n";
+}
+
+sub getutmppath {
+	my @paths = qw(
+		/run/utmp
+		/etc/utmp
+		/var/run/utmp
+	);
+	my ($path) = grep {-e} @paths;
+	if (defined $path) {
+		debug("getutmppath: path=$path");
+	} else {
+		die("getutmppath: utmp not found\n");
+	}
+	return $path;
+}
+
+sub forked(&) {
+	my $sub = shift;
+	my $pid = fork();
+	if ($pid) {return $pid} else {exit &$sub}
+}
+
+sub daemonize {
+	chdir("/")
+		or die "can't chdir to /: $!";
+	open(STDIN, "<", "/dev/null")
+		or die "can't open /dev/null: $!";
+
+	my $pid = fork;
+
+	if (!defined $pid) {
+		die "can't fork: $!";
+	} elsif ($pid) {
+		debug("forked to $pid");
+		exit;
+	} else {
+		if (POSIX::setsid() < 0) {
+			warn "setsid failed: $!";
+		}
+		debug("running in background");
+	}
+}
+
+# Process management functions
+
+sub fork_poller {
+	$SIG{CHLD} = \&sigchld_reap_poller;
+	return forked {
+		$SIG{INT} = "DEFAULT";
+		$SIG{TERM} = "DEFAULT";
+		$SIG{CHLD} = \&sigchld_reap_any;
+		exit(mainloop_poller());
+	};
+}
+
+sub cleanup {
+	if (defined $poller_pid) {
+		debug("cleanup: killing poller");
+		$SIG{CHLD} = \&sigchld_reap_any;
+		kill(SIGTERM, $poller_pid);
+	}
+	debug("cleanup: removing sessions on server");
+	upload("destroy", []);
+	exit(0);
+}
+
+sub sigchld_reap_poller {
+	my $pid = wait;
+	$SIG{CHLD} = \&sigchld_reap_poller;
+	if (defined $poller_pid and $pid == $poller_pid) {
+		debug("poller exited, restarting");
+		$poller_pid = fork_poller();
+	} else {
+		debug("received SIGCHLD for unknown pid $pid");
+	}
+}
+
+sub sigchld_reap_any {
+	my $pid = wait;
+	$SIG{CHLD} = \&sigchld_reap_any;
+	debug("received SIGCHLD for $pid");
+}
+
+# Main loops
+
+sub mainloop_inotify {
+	$0 = "rwhod: inotify($utmp_path)";
+
+	my $inotify = Linux::Inotify2->new();
+	$inotify->watch($utmp_path, IN_MODIFY, \&update);
+
+	debug("inotify: waiting for changes");
+	while (1) {
+		$inotify->poll;
+	}
+	exit(0);
+}
+
+sub mainloop_poller {
+	$0 = "rwhod: poll(${poll_interval}s)";
+
+	debug("poll: updating every $poll_interval seconds");
+	while (1) {
+		sleep($poll_interval);
+		update();
+
+		if ($main_pid != $$ and !kill(0, $main_pid)) {
+			debug("poll: lost main process, exiting");
+			goto \&cleanup;
+		}
+	}
+	exit(0);
+}
+
+# Initialization code
+
+GetOptions(
+	"daemon"	=> \$do_fork,
+	"help"		=> sub { pod2usage(-exitstatus => 0); },
+	"include-root!"	=> \$show_root,
+	"inotify!"	=> \$do_inotify,
+	"i|interval=i"	=> \$poll_interval,
+	"man"		=> sub { pod2usage(-exitstatus => 0, -verbose => 2); },
+	"pidfile=s"	=> \$pidfile,
+	"server-url=s"	=> \$notify_url,
+	"single!"	=> \$do_single,
+	"v|verbose"	=> \$verbose,
+) or pod2usage(-exitstatus => 1);
+
+$0 = "rwhod: starting up";
+
+$poll_interval //= ($do_inotify ? 600 : 30);
+
+$do_poll = $poll_interval > 0;
+
+unless ($do_inotify || $do_poll) {
+	die "error: cannot disable both polling and inotify\n";
+}
+
+if (!defined $notify_url) {
+	die "error: server URL not specified\n";
+}
+
+$my_hostname = hostname();
+$my_fqdn = canon_hostname($my_hostname);
+debug("identifying as \"$my_fqdn\" ($my_hostname)");
+
+$utmp_path //= getutmppath();
+
+# Main code
+
+$SIG{INT} = \&cleanup;
+$SIG{TERM} = \&cleanup;
+
+if (defined $pidfile) {
+	if ($do_single) {
+		warn "warning: --pidfile ignored in single-update mode\n";
+	} else {
+		open $pidfile_h, ">", $pidfile
+			or die "unable to open pidfile '$pidfile'\n";
+	}
+}
+
+debug("performing initial update");
+$0 = "rwhod: initial update";
+update();
+
+if ($do_fork) {
+	if ($do_single) {
+		warn "warning: --fork ignored in single-update mode\n";
+	} else {
+		daemonize();
+	}
+} else {
+	chdir("/");
+}
+
+$main_pid = $$;
+
+if (defined $pidfile_h) {
+	print $pidfile_h "$$\n";
+	close $pidfile_h;
+}
+
+if ($do_single) {
+	exit(0);
+}
+elsif ($do_inotify) {
+	if ($do_poll) {
+		$poller_pid = fork_poller();
+	}
+	exit(mainloop_inotify());
+}
+elsif ($do_poll) {
+	exit(mainloop_poller());
+}
+
+__END__
+
+=head1 NAME
+
+rwhod - remote-who collector daemon
+
+=head1 SYNOPSIS
+
+rwhod [options]
+
+=head1 OPTIONS
+
+=over 8
+
+=item B<--daemon>
+
+Fork to background after initial update.
+
+=item B<--help>
+
+Obvious.
+
+=item B<--[no-]include-root>
+
+Include or ignore root logins. Default is to ignore, for "security" reasons.
+(Those who run rwhod generally care little about security, however.)
+
+=item B<--[no-]inotify>
+
+Turn off inotify and only use periodic updates.
+
+=item B<-i I<seconds>>, B<--interval=I<seconds>>
+
+Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
+
+=item B<--man>
+
+Display the manual page.
+
+=item B<--pidfile I<path>>
+
+Write PID to file after performing initial update (and daemonizing, if enabled).
+Ignored in single-update mode.
+
+=item B<--server-url I<url>>
+
+Use specified server URL.
+
+=item B<--single>
+
+Do a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
+
+=item B<-v>, B<--verbose>
+
+Print informative messages.
+
+=back
+
+=head1 DEPENDENCIES
+
+=over 4
+
+=item * Perl 5.10, apparently
+
+=item * C<JSON>
+
+=item * C<Linux::Inotify2>
+
+=item * C<LWP::UserAgent>
+
+=item * C<Socket::GetAddrInfo> (recommended) or the C<getent> binary
+
+=item * C<Sys::Utmp> or C<User::Utmp>
+
+=head1 BUGS
+
+It's useless.
+
+C<inotify> requirement makes the script unportable outside Linux.
+
+Using C<getaddrinfo> just to find our own FQDN might be overkill.
+
+Hosts are only identified by their FQDN, so it's possible to upload fake data.
+
+Incremental updates are not yet implemented (server-side support exists).
+
+=cut

@@ -1,25 +1,42 @@
 #!/usr/bin/env bash
 
-if (( $UID > 0 )); then
-	PIDFILE=${PIDFILE:-$HOME/tmp/rwhod-$HOSTNAME.pid}
-	PERL5LIB=$HOME/.local/lib/perl5
+RWHO_DIR="$(dirname "$0")"
+RWHO_AGENT="$RWHO_DIR/agent-linux/rwhod"
+RWHO_ARGS=""
+
+if (( UID > 0 )); then
+	RWHO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/rwho/rwhod.conf"
+	RWHO_PIDFILE="${XDG_RUNTIME_DIR:-$HOME/.cache}/rwho/rwhod-$HOSTNAME.pid"
+	OLD_PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
+
+	PERL5LIB="$HOME/.local/lib/perl5"
 	export PERL5LIB
 else
-	PIDFILE=${PIDFILE:-/run/rwhod.pid}
+	RWHO_CONFIG="/etc/conf.d/rwhod"
+	RWHO_PIDFILE="/run/rwhod.pid"
 fi
-
-RWHOD_DIR=$(dirname "$0")
 
 ctl() {
 	case $1 in
 	start)
-		"$RWHOD_DIR/rwhod.pl" --daemon --pidfile "$PIDFILE" &
+		mkdir -p "$(dirname "$RWHO_PIDFILE")"
+		exec "$RWHO_AGENT" --pidfile="$RWHO_PIDFILE" --daemon $RWHO_ARGS
 		;;
 	foreground)
-		exec "$RWHOD_DIR/rwhod.pl" --pidfile "$PIDFILE"
+		exec "$RWHO_AGENT" --pidfile="$RWHO_PIDFILE" $RWHO_ARGS
 		;;
 	stop)
-		read -r pid < "$PIDFILE" && kill $pid && rm "$PIDFILE"
+		if [ -f "$OLD_PIDFILE" ]; then
+			read -r pid < "$OLD_PIDFILE" &&
+			kill "$pid" &&
+			rm "$OLD_PIDFILE"
+		elif [ -f "$RWHO_PIDFILE" ]; then
+			read -r pid < "$RWHO_PIDFILE" &&
+			kill "$pid" &&
+			rm "$RWHO_PIDFILE"
+		else
+			echo "not running (pidfile not found)"
+		fi
 		;;
 	restart)
 		ctl stop
@@ -32,48 +49,46 @@ ctl() {
 		ctl restart
 		;;
 	status)
-		if [[ ! -f $PIDFILE ]]; then
-			echo "not running (no pidfile at '$PIDFILE')"
+		if [ ! -f "$RWHO_PIDFILE" ]; then
+			echo "stopped (no pidfile)"
 			return 3
 		fi
 
-		if ! read -r pid < "$PIDFILE"; then
-			echo "error (cannot read pidfile)"
+		if ! read -r pid <"$RWHO_PIDFILE"; then
+			echo "unknown (cannot read pidfile)"
 			return 1
 		fi
 
-		if kill -0 $pid 2>/dev/null; then
+		if kill -0 "$pid" 2>/dev/null; then
 			echo "running (pid $pid)"
-			[[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]] &&
-				echo "out of date"
 			return 0
 		else
-			echo "unsure (pid $pid does not respond to signals)"
+			echo "unknown (pid $pid does not respond to signals)"
 			return 1
 		fi
 		;;
 	build-dep)
-		perldeps=(
-			JSON
-			LWP::UserAgent
-			Linux::Inotify2
-			Socket::GetAddrInfo
-			Sys::Utmp
-		)
-		${CPAN:-cpanm} "${perldeps[@]}"
+		perldeps='
+		JSON
+		LWP::UserAgent
+		Linux::Inotify2
+		Socket::GetAddrInfo
+		Sys::Utmp
+		'
+		${CPAN:-cpanm} $perldeps
 		;;
 	update)
-		if [[ $RWHOD_DIR/rwhod.pl -nt $PIDFILE ]]; then
+		if [ "$RWHO_AGENT" -nt "$RWHO_PIDFILE" ]; then
 			ctl restart
 		fi
 		;;
 	git-update)
-		cd "$RWHOD_DIR" &&
+		cd "$RWHO_PATH" &&
 		git pull --quiet --ff-only &&
 		ctl update
 		;;
 	*)
-		echo "usage: $0 <start|stop|restart|foreground|update>"
+		echo "usage: $0 <start|stop|restart|foreground|status|update>"
 		;;
 	esac
 }
