@@ -16,6 +16,10 @@ else
 	RWHO_PIDFILE="/run/rwho-agent.pid"
 fi
 
+if [ -e "$RWHO_CONFIG" ]; then
+	. "$RWHO_CONFIG"
+fi
+
 ctl() {
 	case $1 in
 	start)
