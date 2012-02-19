@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-RWHO_DIR="$(dirname "$0")"
-RWHO_AGENT="$RWHO_DIR/rwho-agent"
+RWHO_DIR="$(dirname "$0")/.."
+RWHO_AGENT="$RWHO_DIR/agent-linux/rwho-agent"
 RWHO_ARGS=""
 
 if [ "$(whoami)" = "root" ]; then
@@ -9,7 +9,7 @@ if [ "$(whoami)" = "root" ]; then
 	RWHO_PIDFILE="/run/rwho-agent.pid"
 else
 	RWHO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/rwho/rwho-agent.conf"
-	RWHO_PIDFILE="${XDG_RUNTIME_DIR:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
+	RWHO_PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
 	OLD_PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
@@ -86,11 +86,6 @@ ctl() {
 		if [ "$RWHO_AGENT" -nt "$RWHO_PIDFILE" ]; then
 			ctl restart
 		fi
-		;;
-	git-update)
-		cd "$RWHO_PATH" &&
-		git pull --quiet --ff-only &&
-		ctl update
 		;;
 	*)
 		echo "usage: $0 <start|stop|restart|foreground|status|update>"
