@@ -17,6 +17,7 @@ my $poll_interval;
 my $verbose	= 0;
 my $do_fork	= 0;
 my $do_single	= 0;
+my $do_cleanup	= 0;
 my $do_inotify	= 1;
 my $do_poll	= 1;
 my $show_root	= 0;
@@ -29,29 +30,9 @@ my $my_fqdn;
 my $main_pid;
 my $poller_pid;
 
-sub canon_hostname {
-	my $host = shift;
-	if (eval {require Socket::GetAddrInfo}) {
-		debug("canon_hostname: using Socket::GetAddrInfo");
-		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
-		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, "", \%hint);
-		# FIXME: print error messages when needed
-		return $err ? $host : ((shift @ai)->{canonname} // $host);
-	}
-	else {
-		debug("canon_hostname: using \"getent hosts\"");
-		open my $fd, "-|", "getent", "hosts", $host;
-		my @ai = split(" ", <$fd>);
-		close $fd;
-		return $ai[1] // $host;
-	}
-}
-
-# Read the utmp file
 sub enum_sessions {
 	my @utmp = ();
 	if (eval {require User::Utmp}) {
-		debug("enum_sessions: using User::Utmp");
 		User::Utmp::utmpxname($utmp_path);
 		while (my $ent = User::Utmp::getutxent()) {
 			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
@@ -66,7 +47,6 @@ sub enum_sessions {
 		User::Utmp::endutxent();
 	}
 	elsif (eval {require Sys::Utmp}) {
-		debug("enum_sessions: using Sys::Utmp");
 		my $utmp = Sys::Utmp->new(Filename => $utmp_path);
 		while (my $ent = $utmp->getutent()) {
 			if ($ent->user_process) {
@@ -96,7 +76,6 @@ sub update {
 	if (!$show_root) {
 		@sessions = grep {$_->{user} ne "root"} @sessions;
 	}
-	debug("update: uploading ".scalar(@sessions)." items");
 	upload("put", \@sessions);
 }
 
@@ -112,11 +91,9 @@ sub upload {
 		utmp => encode_json($sessions),
 	);
 	my $resp = $ua->post($notify_url, \%data);
-
-	if ($resp->is_success) {
-		debug("upload: ".$resp->status_line);
-	} else {
-		warn "upload error: ".$resp->status_line."\n";
+	debug("upload: sending ".(scalar @$sessions)." entries");
+	if (!$resp->is_success) {
+		warn "upload: error: '".$resp->status_line."'\n";
 	}
 }
 
@@ -124,14 +101,15 @@ sub upload {
 
 sub debug {
 	local $" = " ";
-	$verbose and print "rwhod[$$]: @_\n";
+	$verbose and print "rwho-agent[$$]: @_\n";
 }
 
 sub getutmppath {
 	my @paths = qw(
 		/run/utmp
-		/etc/utmp
 		/var/run/utmp
+		/etc/utmp
+		/var/adm/utmp
 	);
 	my ($path) = grep {-e} @paths;
 	return $path;
@@ -160,6 +138,24 @@ sub daemonize {
 			warn "daemonize: setsid failed: $!\n";
 		}
 		debug("running in background");
+	}
+}
+
+sub canon_hostname {
+	my $host = shift;
+	if (eval {require Socket::GetAddrInfo}) {
+		debug("canon_hostname: using Socket::GetAddrInfo");
+		my %hint = (flags => Socket::GetAddrInfo->AI_CANONNAME);
+		my ($err, @ai) = Socket::GetAddrInfo::getaddrinfo($host, "", \%hint);
+		# FIXME: print error messages when needed
+		return $err ? $host : ((shift @ai)->{canonname} // $host);
+	}
+	else {
+		debug("canon_hostname: using \"getent hosts\"");
+		open(my $fd, "-|", "getent", "hosts", $host);
+		my @ai = split(" ", <$fd>);
+		close $fd;
+		return $ai[1] // $host;
 	}
 }
 
@@ -225,7 +221,6 @@ sub mainloop_poller {
 	while (1) {
 		sleep($poll_interval);
 		update();
-
 		if ($main_pid != $$ and !kill(0, $main_pid)) {
 			warn "poller: lost main process, exiting\n";
 			goto \&cleanup;
@@ -236,27 +231,32 @@ sub mainloop_poller {
 
 # Initialization code
 
+$0 = "rwho-agent";
+
 GetOptions(
+	"cleanup!"	=> \$do_cleanup,
 	"daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(-exitstatus => 0); },
 	"include-root!"	=> \$show_root,
 	"inotify!"	=> \$do_inotify,
-	"i|interval=i"	=> \$poll_interval,
 	"man"		=> sub { pod2usage(-exitstatus => 0, -verbose => 2); },
+	"poll=i"	=> \$poll_interval,
+	"no-poll"	=> sub { $poll_interval = 0; },
 	"pidfile=s"	=> \$pidfile,
 	"server-url=s"	=> \$notify_url,
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
-) or pod2usage(-exitstatus => 1);
-
-$0 = "rwhod: starting up";
+) or pod2usage(-exitstatus => 1, -verbose => 0);
 
 $poll_interval //= ($do_inotify ? 600 : 30);
-
 $do_poll = $poll_interval > 0;
-
 unless ($do_inotify || $do_poll) {
 	die "error: cannot disable both polling and inotify\n";
+}
+
+$utmp_path //= getutmppath();
+if (!defined $utmp_path) {
+	die "error: utmp file not found\n";
 }
 
 if (!defined $notify_url) {
@@ -265,12 +265,7 @@ if (!defined $notify_url) {
 
 $my_hostname = hostname();
 $my_fqdn = canon_hostname($my_hostname);
-debug("identifying as \"$my_fqdn\" ($my_hostname)");
-
-$utmp_path //= getutmppath();
-if (!defined $utmp_path) {
-	die "error: utmp file not found\n";
-}
+debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
 
 # Main code
 
@@ -278,16 +273,21 @@ $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
 
 if (defined $pidfile) {
-	if ($do_single) {
+	if ($do_single || $do_cleanup) {
 		warn "warning: --pidfile ignored in single-update mode\n";
 	} else {
-		open $pidfile_h, ">", $pidfile
+		open($pidfile_h, ">", $pidfile)
 			or die "unable to open pidfile '$pidfile'\n";
 	}
 }
 
+if ($do_cleanup) {
+	debug("sending empty update");
+	cleanup();
+	exit(0);
+}
+
 debug("performing initial update");
-$0 = "rwhod: initial update";
 update();
 
 if ($do_fork) {
@@ -303,20 +303,18 @@ if ($do_fork) {
 $main_pid = $$;
 
 if (defined $pidfile_h) {
-	print $pidfile_h "$$\n";
+	print $pidfile_h "$main_pid\n";
 	close $pidfile_h;
 }
 
 if ($do_single) {
 	exit(0);
-}
-elsif ($do_inotify) {
+} elsif ($do_inotify) {
 	if ($do_poll) {
 		$poller_pid = fork_poller();
 	}
 	exit(mainloop_inotify());
-}
-elsif ($do_poll) {
+} elsif ($do_poll) {
 	exit(mainloop_poller());
 }
 
@@ -333,6 +331,10 @@ rwhod [options]
 =head1 OPTIONS
 
 =over 8
+
+=item B<--cleanup>
+
+Send an empty update and exit. (See also B<--single> for notes.) 
 
 =item B<--daemon>
 
@@ -351,26 +353,26 @@ Include or ignore root logins. Default is to ignore, for "security" reasons.
 
 Turn off inotify and only use periodic updates.
 
-=item B<-i I<seconds>>, B<--interval=I<seconds>>
-
-Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
-
 =item B<--man>
 
 Display the manual page.
 
-=item B<--pidfile I<path>>
+=item B<--pidfile=I<path>>
 
 Write PID to file after performing initial update (and daemonizing, if enabled).
 Ignored in single-update mode.
 
-=item B<--server-url I<url>>
+=item B<--poll=I<seconds>>, B<--no-poll>
+
+Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
+
+=item B<--server-url=I<url>>
 
 Use specified server URL.
 
 =item B<--single>
 
-Do a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
+Send a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
 
 =item B<-v>, B<--verbose>
 
@@ -393,6 +395,8 @@ Print informative messages.
 =item * C<Socket::GetAddrInfo> (recommended) or the C<getent> binary
 
 =item * C<Sys::Utmp> or C<User::Utmp>
+
+=back
 
 =head1 BUGS
 
