@@ -134,11 +134,6 @@ sub getutmppath {
 		/var/run/utmp
 	);
 	my ($path) = grep {-e} @paths;
-	if (defined $path) {
-		debug("getutmppath: path=$path");
-	} else {
-		die("getutmppath: utmp not found\n");
-	}
 	return $path;
 }
 
@@ -150,20 +145,19 @@ sub forked(&) {
 
 sub daemonize {
 	chdir("/")
-		or die "can't chdir to /: $!";
+		or die "daemonize: cannot chdir to /: $!\n";
 	open(STDIN, "<", "/dev/null")
-		or die "can't open /dev/null: $!";
+		or die "daemonize: cannot open /dev/null: $!\n";
 
 	my $pid = fork;
 
 	if (!defined $pid) {
-		die "can't fork: $!";
+		die "daemonize: cannot fork: $!\n";
 	} elsif ($pid) {
-		debug("forked to $pid");
 		exit;
 	} else {
 		if (POSIX::setsid() < 0) {
-			warn "setsid failed: $!";
+			warn "daemonize: setsid failed: $!\n";
 		}
 		debug("running in background");
 	}
@@ -212,12 +206,12 @@ sub sigchld_reap_any {
 # Main loops
 
 sub mainloop_inotify {
-	$0 = "rwhod: inotify($utmp_path)";
+	$0 = "rwho-agent: inotify";
 
 	my $inotify = Linux::Inotify2->new();
 	$inotify->watch($utmp_path, IN_MODIFY, \&update);
 
-	debug("inotify: waiting for changes");
+	debug("inotify: watching $utmp_path");
 	while (1) {
 		$inotify->poll;
 	}
@@ -225,15 +219,15 @@ sub mainloop_inotify {
 }
 
 sub mainloop_poller {
-	$0 = "rwhod: poll(${poll_interval}s)";
+	$0 = "rwho-agent: poller";
 
-	debug("poll: updating every $poll_interval seconds");
+	debug("poller: updating every $poll_interval seconds");
 	while (1) {
 		sleep($poll_interval);
 		update();
 
 		if ($main_pid != $$ and !kill(0, $main_pid)) {
-			debug("poll: lost main process, exiting");
+			warn "poller: lost main process, exiting\n";
 			goto \&cleanup;
 		}
 	}
@@ -274,6 +268,9 @@ $my_fqdn = canon_hostname($my_hostname);
 debug("identifying as \"$my_fqdn\" ($my_hostname)");
 
 $utmp_path //= getutmppath();
+if (!defined $utmp_path) {
+	die "error: utmp file not found\n";
+}
 
 # Main code
 
@@ -295,7 +292,7 @@ update();
 
 if ($do_fork) {
 	if ($do_single) {
-		warn "warning: --fork ignored in single-update mode\n";
+		warn "warning: --daemon ignored in single-update mode\n";
 	} else {
 		daemonize();
 	}
