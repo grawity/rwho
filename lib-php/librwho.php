@@ -224,10 +224,11 @@ function normalize_host($host) {
 // time interval: "X days", "Xh Ym", "Xm Ys", "X secs"
 
 function interval($start, $end = null) {
-	if ($end === null) {
-		$end = $start;
-		$start = time();
-	}
+	if ($end === null)
+		$end = time();
+	if ($start > $end)
+		list($start, $end) = array($end, $start);
+
 	$diff = $end - $start;
 	$diff -= $s = $diff % 60; $diff /= 60;
 	$diff -= $m = $diff % 60; $diff /= 60;
