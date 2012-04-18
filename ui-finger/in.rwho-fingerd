@@ -41,16 +41,25 @@ function finger_parse($input) {
 }
 
 function output($data, $detailed=false) {
-	$fmt = $detailed
-		? "%-12s %1s %-22s %-10s %s\r\n"
-		: "%-12s %1s %-12s %-10s %s\r\n";
-	printf($fmt, "USER", "", "HOST", "LINE", "FROM");
+	if ($detailed) {
+		$fmt = "%-12s %1s %-22s %-10s %s\r\n";
+		$headers = ["USER", "", "HOST", "LINE", "FROM"];
+	} else {
+		$fmt = "%-12s %-12s %-10s %s\r\n";
+		$headers = ["USER", "HOST", "LINE", "FROM"];
+	}
+
+	vprintf($fmt, $headers);
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
 		$flag = "";
-		if (RWho\is_stale($row["updated"]))
-			$flag = "?";
+		if (RWho\is_stale($row["updated"])) {
+			if ($detailed)
+				$flag = "?";
+			else
+				continue;
+		}
 		elseif ($row["uid"] == 0)
 			$flag = "#";
 		elseif ($row["uid"] < 25000)
@@ -62,12 +71,15 @@ function output($data, $detailed=false) {
 				$row["rhost"] = substr($row["rhost"], 0, 39)."|";
 		}
 
-		printf($fmt,
-			$row["user"] !== $last["user"] ? $row["user"] : "",
-			$flag,
-			$row["host"],
-			$row["is_summary"] ? "[".$row["line"]."]" : $row["line"],
-			strlen($row["rhost"]) ? $row["rhost"] : "-");
+		$line = [];
+		$line[] = $row["user"] === $last["user"] ? "" : $row["user"];
+		if ($detailed)
+			$line[] = $flag;
+		$line[] = $row["host"];
+		$line[] = $row["is_summary"] ? "{".$row["line"]."}" : $row["line"];
+		$line[] = strlen($row["rhost"]) ? $row["rhost"] : "-";
+		vprintf($fmt, $line);
+
 		$last = $row;
 	}
 }
