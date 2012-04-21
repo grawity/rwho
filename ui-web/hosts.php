@@ -79,7 +79,7 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function pretty_html($data) {
+function output_html($data) {
 	if (!count($data)) {
 		print "<tr>\n";
 		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
@@ -166,7 +166,7 @@ html::header("updated", 7);
 	</td>
 </tfoot>
 
-<?php pretty_html($data); ?>
+<?php output_html($data); ?>
 </table>
 
 <p>Hosts idle longer than <?php echo MAX_AGE ?> seconds are not shown.</p>
@@ -182,7 +182,7 @@ elseif (query::$format == "xml") {
 	output_xml($data);
 }
 elseif (query::$format == "html-xhr") {
-	pretty_html($data);
+	output_html($data);
 }
 else {
 	header("Content-Type: text/plain; charset=utf-8", true, 406);

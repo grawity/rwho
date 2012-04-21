@@ -37,7 +37,6 @@ function make_finger_addr() {
 	return $q;
 }
 
-
 function output_json($data) {
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
@@ -103,7 +102,7 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function pretty_html($data) {
+function output_html($data) {
 	if (!count($data)) {
 		print "<tr>\n";
 		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
@@ -238,7 +237,7 @@ html::header("address", 40);
 	</td>
 </tfoot>
 
-<?php pretty_html($data); ?>
+<?php output_html($data); ?>
 </table>
 
 <?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
@@ -260,7 +259,7 @@ elseif (query::$format == "xml") {
 	output_xml($data);
 }
 elseif (query::$format == "html-xhr") {
-	pretty_html($data);
+	output_html($data);
 }
 else {
 	header("Content-Type: text/plain; charset=utf-8", true, 406);
