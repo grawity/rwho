@@ -184,14 +184,6 @@ if (query::$format == "html") {
 	</noscript>
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
-
-	<script type="text/javascript">
-	var page = "utmp";
-	var update_interval = 3 * 1000;
-	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
-	var html_columns = <?php echo html::$columns ?>;
-	</script>
-	<script type="text/javascript" src="xhr.js"></script>
 </head>
 
 <?php if ($data !== false) { ?>
@@ -239,6 +231,16 @@ html::header("address", 40);
 
 <?php output_html($data); ?>
 </table>
+
+<script type="text/javascript">
+var settings = {
+	page: "utmp",
+	interval: 3,
+	args: "<?= addslashes(mangle_query(["fmt" => "json"])) ?>",
+	html_columns: <?= html::$columns ?>,
+};
+</script>
+<script type="text/javascript" src="xhr.js"></script>
 
 <?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
 <p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>

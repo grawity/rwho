@@ -26,9 +26,14 @@ function trim_host(fqdn) {
 	return pos < 0 ? fqdn : fqdn.substr(0, pos);
 }
 
+function set_timer() {
+	setTimeout(fetch_data, settings.interval * 1000);
+}
+
 function fetch_data() {
 	var p = location.href.indexOf("?");
-	var json_url = (p >= 0 ? location.href.substr(0, p) : location.href) + "?" + json_args;
+	var json_url = (p >= 0 ? location.href.substr(0, p) : location.href) +
+			"?" + settings.args;
 
 	var xhr = new XMLHttpRequest();
 	waiting++;
@@ -39,16 +44,21 @@ function fetch_data() {
 			if (xhr.status == 200) {
 				handle_data(xhr.responseText);
 			} else if (xhr.status) {
-				console.log("Error loading "+page+" data: "+xhr.status);
+				console.log("Error loading data: "+xhr.status);
 			}
-			setTimeout(fetch_data, update_interval);
+			set_timer();
 		}
 	};
 	xhr.send(null);
 }
 
 function handle_data(data) {
-	switch (page) {
+	if (JSON.parse)
+		data = JSON.parse(data);
+	else
+		data = eval("("+data+")");
+
+	switch (settings.page) {
 		case "utmp":
 			return handle_utmp_data(data);
 		case "host":
@@ -57,18 +67,12 @@ function handle_data(data) {
 }
 
 function handle_utmp_data(data) {
-	if (JSON.parse) {
-		data = JSON.parse(data);
-	} else {
-		data = eval("("+data+")");
-	}
-
 	var table = document.createElement("tbody");
 	
 	if (!data.utmp.length) {
 		var trow = document.createElement("tr");
 		var cell = document.createElement("td");
-		cell.colSpan = html_columns;
+		cell.colSpan = settings.html_columns;
 		cell.className = "comment";
 		cell.innerHTML = "Nobody is logged in.";
 		trow.appendChild(cell);
@@ -88,7 +92,6 @@ function handle_utmp_data(data) {
 			var trow = document.createElement("tr");
 			var cell;
 
-			//if (row.updated < data.time-data.maxage) {
 			if (row.stale) {
 				trow.className = "stale";
 			}
@@ -155,18 +158,12 @@ function handle_utmp_data(data) {
 }
 
 function handle_host_data(data) {
-	if (JSON.parse) {
-		data = JSON.parse(data);
-	} else {
-		data = eval("("+data+")");
-	}
-
 	var table = document.createElement("tbody");
 
 	if (!data.hosts.length) {
 		var trow = document.createElement("tr");
 		var cell = document.createElement("td");
-		cell.colSpan = html_columns;
+		cell.colSpan = settings.html_columns;
 		cell.className = "comment";
 		cell.innerHTML = "No active hosts.";
 		trow.appendChild(cell);
@@ -209,6 +206,4 @@ function handle_host_data(data) {
 	htable.replaceChild(table, hbody[0]);
 }
 
-document.addEventListener("DOMContentLoaded", function (event) {
-	setTimeout(fetch_data, update_interval);
-}, true);
+document.addEventListener("DOMContentLoaded", set_timer, true);

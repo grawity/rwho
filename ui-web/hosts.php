@@ -134,14 +134,6 @@ if (query::$format == "html") {
 	</noscript>
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
-
-	<script type="text/javascript">
-	var page = "host";
-	var update_interval = 5 * 1000;
-	var json_args = "<?php echo addslashes(mangle_query(array("fmt" => "json"))) ?>";
-	var html_columns = <?php echo html::$columns ?>;
-	</script>
-	<script type="text/javascript" src="xhr.js"></script>
 </head>
 
 <h1>Active hosts</h1>
@@ -169,7 +161,17 @@ html::header("updated", 7);
 <?php output_html($data); ?>
 </table>
 
-<p>Hosts idle longer than <?php echo MAX_AGE ?> seconds are not shown.</p>
+<p>Hosts idle longer than <?= MAX_AGE ?> seconds are not shown.</p>
+
+<script type="text/javascript">
+var settings = {
+	page: "host",
+	interval: 5,
+	args: "<?= addslashes(mangle_query(["fmt" => "json"])) ?>",
+	html_columns: <?= html::$columns ?>,
+};
+</script>
+<script type="text/javascript" src="xhr.js"></script>
 
 <?php @include "footer.html"; ?>
 
