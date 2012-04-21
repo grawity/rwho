@@ -26,31 +26,6 @@ class html {
 
 function H($str) { return htmlspecialchars($str); }
 
-function build_query($items) {
-	$query = array();
-	foreach ($items as $key => $value) {
-		if ($value === null or !strlen($value))
-			$query[] = urlencode($key);
-		else
-			$query[] = urlencode($key)."=".urlencode($value);
-	}
-	return implode("&", $query);
-}
-
-function mangle_query($add, $remove=null) {
-	parse_str($_SERVER["QUERY_STRING"], $query);
-
-	if ($add !== null)
-		foreach ($add as $key => $value)
-			$query[$key] = $value;
-
-	if ($remove !== null)
-		foreach ($remove as $key)
-			unset($query[$key]);
-
-	return build_query($query);
-}
-
 function make_finger_addr() {
 	$q = (string) query::$user;
 	if (strlen(query::$host))
