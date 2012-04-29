@@ -63,31 +63,44 @@ function output($data, $detailed=false) {
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
+		$line = [];
 		$flag = "";
+
 		if (RWho\is_stale($row["updated"])) {
-			if ($detailed)
-				$flag = "?";
-			else
+			if (!$detailed)
 				continue;
+			$flag = "?";
 		}
 		elseif ($row["uid"] == 0)
 			$flag = "#";
 		elseif ($row["uid"] < 25000)
 			$flag = "<";
 
-		if (!$detailed) {
-			$row["host"] = substr(RWho\strip_domain($row["host"]), 0, 12);
-			if (strlen($row["rhost"]) > 40) 
-				$row["rhost"] = substr($row["rhost"], 0, 39)."|";
-		}
+		$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
 
-		$line = [];
-		$line[] = $row["user"] === $last["user"] ? "" : $row["user"];
 		if ($detailed)
 			$line[] = $flag;
-		$line[] = $row["host"];
-		$line[] = $row["is_summary"] ? "{".$row["line"]."}" : $row["line"];
-		$line[] = strlen($row["rhost"]) ? $row["rhost"] : "-";
+
+		$line[] = $detailed
+				? $row["host"]
+				: substr(RWho\strip_domain($row["host"]), 0, 12);
+
+		$line[] = $row["is_summary"]
+				? "{".$row["line"]."}"
+				: $row["line"];
+
+		if ($detailed)
+			$line[] = $row["rhost"];
+		else {
+			$len = strlen($row["rhost"]);
+			if ($len > 40)
+				$line[] = substr($row["rhost"], 0, 39).">";
+			elseif ($len > 0)
+				$line[] = $row["rhost"];
+			else
+				$line[] = "-";
+		}
+
 		vprintf($fmt, $line);
 
 		$last = $row;
@@ -96,7 +109,10 @@ function output($data, $detailed=false) {
 
 function output_hosts($data) {
 	$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
-	printf($fmt, "HOST", "FULL NAME", "#USR", "#CON", "UPDATED");
+	$headers = ["HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED"];
+
+	vprintf($fmt, $headers);
+
 	foreach ($data as $row) {
 		printf($fmt,
 			substr(RWho\strip_domain($row["host"]), 0, 12),
