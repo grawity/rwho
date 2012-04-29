@@ -18,10 +18,10 @@ rwho-fingerd() { "$RWHO_DIR/ui-finger/in.rwho-fingerd" "$@"; }
 ## Functions
 
 usage() {
-	echo "Usage: ${0##*/} [-h] [-l] [user][@host]"
+	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
 	echo ""
-	echo "  -h  list all hosts"
-	echo "  -l  long output format"
+	echo "  -l  list hosts"
+	echo "  -v  verbose output"
 	echo ""
 	echo "HTTP interface is available at: $RWHO_URL"
 	echo ""
@@ -60,10 +60,10 @@ conn() {
 hosts=false
 long=false
 
-while getopts ":hl" OPT; do
+while getopts ":lv" OPT; do
 	case $OPT in
-	'h')	hosts=true;;
-	'l')	long=true;;
+	'l')	hosts=true;;
+	'v')	long=true;;
 	'?')	echo "Unknown option '$OPTARG'" >&2;
 		usage;;
 	esac
