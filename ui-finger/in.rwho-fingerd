@@ -5,26 +5,36 @@ require __DIR__."/../lib-php/librwho.php";
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
-	if ($query == '*') {
+	if ($query === '*') {
 		$data = RWho\retrieve_hosts();
 		if (!count($data))
 			die("No active hosts.\r\n");
 		output_hosts($data);
+		if ($detailed) {
+			$n_users = RWho\count_users();
+			$n_conns = RWho\count_conns();
+			$n_hosts = count($data);
+			print("\r\n");
+			printf("(%d users over %d connections on %d hosts.)\r\n",
+				$n_users, $n_conns, $n_hosts);
+		}
 	}
 	else {
 		list ($q_user, $q_host) = RWho\parse_query($query);
 		$data = RWho\retrieve($q_user, $q_host);
-		$n_conns = count($data);
-		if (!$n_conns)
+		if (!count($data))
 			die("Nobody is logged in.\r\n");
-		if (!$detailed) {
+		if (!$detailed)
 			$data = RWho\summarize($data);
-		}
-		$n_users = RWho\count_users();
-		$n_hosts = RWho\count_hosts();
-
 		output($data, $detailed);
-		print("($n_users users over $n_conns connections on $n_hosts hosts.)\r\n");
+		if ($detailed) {
+			$n_users = RWho\count_users();
+			$n_conns = count($data);
+			$n_hosts = RWho\count_hosts();
+			print("\r\n");
+			printf("(%d users over %d connections on %d hosts.)\r\n",
+				$n_users, $n_conns, $n_hosts);
+		}
 	}
 }
 
