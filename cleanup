@@ -4,7 +4,7 @@ namespace RWho;
 require __DIR__."/config.php";
 
 function cleanup() {
-	$max_age = 3600;
+	$max_age = 7200;
 
 	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
 		or die("error: could not open rwho database\n");
