@@ -28,12 +28,17 @@ function finger_handle_query($input) {
 			$data = RWho\summarize($data);
 		output($data, $detailed);
 		if ($detailed) {
-			$n_users = RWho\count_users();
-			$n_conns = count($data);
-			$n_hosts = RWho\count_hosts();
-			print("\r\n");
-			printf("(%d users over %d connections on %d hosts.)\r\n",
-				$n_users, $n_conns, $n_hosts);
+			if ($q_user === '') {
+				$n_users = RWho\count_users();
+				$n_conns = count($data);
+				$n_hosts = RWho\count_hosts();
+				print("\r\n");
+				printf("(%d users over %d connections on %d hosts.)\r\n",
+					$n_users, $n_conns, $n_hosts);
+			} else {
+				print("\r\n");
+				output_plan($q_user, $q_host);
+			}
 		}
 	}
 }
@@ -121,6 +126,35 @@ function output_hosts($data) {
 			$row["entries"],
 			RWho\interval($row["last_update"])
 		);
+	}
+}
+
+function output_plan($user, $host) {
+	if (!function_exists("posix_getpwnam"))
+		return;
+
+	$pw = @posix_getpwnam($user);
+	if (!$pw || ($pw["uid"] < 25000 && $pw["uid"] != 0))
+		return;
+
+	$dir = $pw["dir"];
+
+	$path_plan = @realpath("$dir/.plan");
+
+	if (!$path_plan || !@is_file($path_plan) || !@is_readable($path_plan)) {
+		print("No plan.\r\n");
+		return;
+	}
+
+	$fplan = @fopen($path_plan, "r");
+	if ($fplan) {
+		$lines = 0;
+		print("Plan:\r\n");
+		while (++$lines < 100 && ($line = fgets($fplan, 4096)) !== false) {
+			$line = rtrim($line, "\n");
+			print("$line\r\n");
+		}
+		fclose($fplan);
 	}
 }
 
