@@ -201,6 +201,7 @@ echo strlen(query::$host)
 
 <table id="sessions">
 <thead>
+<tr>
 <?php
 html::header("user", 15);
 if (query::$detailed)
@@ -209,9 +210,11 @@ html::header("host", 10);
 html::header("line", 8);
 html::header("address", 40);
 ?>
+</tr>
 </thead>
 
 <tfoot>
+<tr>
 	<td colspan="<?php echo html::$columns ?>">
 <?php if (strlen(query::$user) or strlen(query::$host)) { ?>
 		<a href="?">Back to all sessions</a>
@@ -227,6 +230,7 @@ html::header("address", 40);
 		or
 		<a href="hosts.php">list hosts</a>
 	</td>
+</tr>
 </tfoot>
 
 <?php output_html($data); ?>
