@@ -57,12 +57,13 @@ conn() {
 	fi
 }
 
+opt_l=false
 hosts=false
 long=false
 
 while getopts ":lv" OPT; do
 	case $OPT in
-	'l')	hosts=true;;
+	'l')	opt_l=true;;
 	'v')	long=true;;
 	'?')	echo "Unknown option '$OPTARG'" >&2;
 		usage;;
@@ -70,10 +71,18 @@ while getopts ":lv" OPT; do
 done
 shift $((OPTIND-1))
 
+query=$1
+
+if $opt_l; then
+	if [[ $query ]]; then
+		long=true
+	else
+		hosts=true
+	fi
+fi
+
 if $hosts; then
 	query='*'
-else
-	query=$1
 fi
 
 if $long; then
