@@ -124,7 +124,7 @@ def WTSQuerySessionInformation_SessionInfo(hServer, sessionId):
 	if bufsize:
 		return buf, c.cast(buf.value, c.POINTER(WTSINFO)).contents
 	else:
-		return None
+		return None, None
 
 def SetTimer(hWnd, IDEvent, elapse):
 	IDEvent = UINT(IDEvent)
