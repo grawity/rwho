@@ -240,7 +240,7 @@ html::header("address", 40);
 var settings = {
 	page: "utmp",
 	interval: 3,
-	args: "<?= addslashes(mangle_query(["fmt" => "json"])) ?>",
+	args: "<?= addslashes(mangle_query(array("fmt" => "json"))) ?>",
 	html_columns: <?= html::$columns ?>,
 };
 </script>

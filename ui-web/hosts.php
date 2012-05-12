@@ -171,7 +171,7 @@ html::header("updated", 7);
 var settings = {
 	page: "host",
 	interval: 5,
-	args: "<?= addslashes(mangle_query(["fmt" => "json"])) ?>",
+	args: "<?= addslashes(mangle_query(array("fmt" => "json"))) ?>",
 	html_columns: <?= html::$columns ?>,
 };
 </script>
