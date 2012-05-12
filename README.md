@@ -15,12 +15,12 @@ Uses `/run/utmp`, with inotify and/or periodic updates. Requires only read acces
 
 Dependencies:
 
-  * Perl
-      * JSON
-      * LWP::UserAgent
-      * Linux::Inotify2
-      * Socket::GetAddrInfo
-      * Sys::Utmp
+  * Perl 5.10 or later
+  * use `JSON`
+  * use `LWP::UserAgent`
+  * use `Linux::Inotify2`
+  * use `Socket::GetAddrInfo`
+  * use `Sys::Utmp`
 
 ### agent-windows -- Windows NT agent
 
