@@ -1,6 +1,7 @@
-create table utmp (
-	rowid	integer		auto_increment primary key,
-	host	varchar(255)	not null,
+DROP TABLE IF EXISTS utmp;
+CREATE TABLE utmp (
+	rowid	integer		AUTO_INCREMENT PRIMARY KEY,
+	host	varchar(255)	NOT NULL,
 	-- normally UT_NAMESIZE, but allow more for Windows
 	user	varchar(64),
 	uid	integer,
@@ -9,11 +10,13 @@ create table utmp (
 	-- UT_LINESIZE
 	line	varchar(32),
 	time	integer,
-	updated	integer,
+	updated	integer
 );
-create table hosts (
-	hostid		integer		auto_increment primary key,
-	host		varchar(255)	not null unique,
+
+DROP TABLE IF EXISTS hosts;
+CREATE TABLE hosts (
+	hostid		integer		AUTO_INCREMENT PRIMARY KEY,
+	host		varchar(255)	NOT NULL UNIQUE,
 	last_update	integer,
-	last_addr	varchar(63),
+	last_addr	varchar(63)
 );
