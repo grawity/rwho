@@ -231,22 +231,24 @@ sub mainloop_poller {
 
 # Initialization code
 
+my $pod = "$0.1.pod";
+
 $0 = "rwho-agent";
 
 GetOptions(
 	"cleanup!"	=> \$do_cleanup,
 	"daemon"	=> \$do_fork,
-	"help"		=> sub { pod2usage(-exitstatus => 0); },
+	"help"		=> sub { pod2usage(-input => $pod, -exitstatus => 0); },
 	"include-root!"	=> \$show_root,
 	"inotify!"	=> \$do_inotify,
-	"man"		=> sub { pod2usage(-exitstatus => 0, -verbose => 2); },
+	"man"		=> sub { pod2usage(-input => $pod, -exitstatus => 0, -verbose => 2); },
 	"poll=i"	=> \$poll_interval,
 	"no-poll"	=> sub { $poll_interval = 0; },
 	"pidfile=s"	=> \$pidfile,
 	"server-url=s"	=> \$notify_url,
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
-) or pod2usage(-exitstatus => 1, -verbose => 0);
+) or pod2usage(-input => $pod, -exitstatus => 1, -verbose => 0);
 
 $poll_interval //= ($do_inotify ? 600 : 30);
 $do_poll = $poll_interval > 0;
@@ -317,97 +319,3 @@ if ($do_single) {
 } elsif ($do_poll) {
 	exit(mainloop_poller());
 }
-
-__END__
-
-=head1 NAME
-
-rwhod - remote-who collector daemon
-
-=head1 SYNOPSIS
-
-rwhod [options]
-
-=head1 OPTIONS
-
-=over 8
-
-=item B<--cleanup>
-
-Send an empty update and exit. (See also B<--single> for notes.) 
-
-=item B<--daemon>
-
-Fork to background after initial update.
-
-=item B<--help>
-
-Obvious.
-
-=item B<--[no-]include-root>
-
-Include or ignore root logins. Default is to ignore, for "security" reasons.
-(Those who run rwhod generally care little about security, however.)
-
-=item B<--[no-]inotify>
-
-Turn off inotify and only use periodic updates.
-
-=item B<--man>
-
-Display the manual page.
-
-=item B<--pidfile=I<path>>
-
-Write PID to file after performing initial update (and daemonizing, if enabled).
-Ignored in single-update mode.
-
-=item B<--poll=I<seconds>>, B<--no-poll>
-
-Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
-
-=item B<--server-url=I<url>>
-
-Use specified server URL.
-
-=item B<--single>
-
-Send a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
-
-=item B<-v>, B<--verbose>
-
-Print informative messages.
-
-=back
-
-=head1 DEPENDENCIES
-
-=over 4
-
-=item * Perl 5.10, apparently
-
-=item * C<JSON>
-
-=item * C<Linux::Inotify2>
-
-=item * C<LWP::UserAgent>
-
-=item * C<Socket::GetAddrInfo> (recommended) or the C<getent> binary
-
-=item * C<Sys::Utmp> or C<User::Utmp>
-
-=back
-
-=head1 BUGS
-
-It's useless.
-
-C<inotify> requirement makes the script unportable outside Linux.
-
-Using C<getaddrinfo> just to find our own FQDN might be overkill.
-
-Hosts are only identified by their FQDN, so it's possible to upload fake data.
-
-Incremental updates are not yet implemented (server-side support exists).
-
-=cut
