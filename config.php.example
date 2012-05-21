@@ -1,5 +1,9 @@
-<?php
+<?php // vim: ft=php
+
 # See http://php.net/manual/en/pdo.drivers.php
-const DB_PATH = "mysql:FIXME";
+const DB_PATH = "mysql:host=localhost;dbname=rwho";
 const DB_USER = "";
 const DB_PASS = "";
+
+# For linking from ui-web
+const FINGER_HOST = "localhost";

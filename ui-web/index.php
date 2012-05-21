@@ -27,10 +27,13 @@ class html {
 function H($str) { return htmlspecialchars($str); }
 
 function make_finger_addr() {
+	$host = defined("FINGER_HOST")
+		? constant("FINGER_HOST")
+		: $_SERVER["SERVER_NAME"];
 	$q = (string) query::$user;
 	if (strlen(query::$host))
 		$q .= "@".query::$host;
-	$q .= "@".$_SERVER["SERVER_NAME"];
+	$q .= "@".$host;
 	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
 		$q = "/W ".$q;
 	$q = (isset($_SERVER["HTTPS"])?"https":"http")."://nullroute.eu.org/finger/?q=".urlencode($q);
