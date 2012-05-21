@@ -36,8 +36,7 @@ function make_finger_addr() {
 	$q .= "@".$host;
 	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
 		$q = "/W ".$q;
-	$q = (isset($_SERVER["HTTPS"])?"https":"http")."://nullroute.eu.org/finger/?q=".urlencode($q);
-	return $q;
+	return "//nullroute.eu.org/finger/?q=".urlencode($q);
 }
 
 function output_json($data) {
