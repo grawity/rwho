@@ -27,13 +27,12 @@ class html {
 function H($str) { return htmlspecialchars($str); }
 
 function make_finger_addr() {
-	$host = defined("FINGER_HOST")
-		? constant("FINGER_HOST")
-		: $_SERVER["SERVER_NAME"];
+	if (!defined("FINGER_HOST"))
+		return null;
 	$q = (string) query::$user;
 	if (strlen(query::$host))
 		$q .= "@".query::$host;
-	$q .= "@".$host;
+	$q .= "@".constant("FINGER_HOST");
 	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
 		$q = "/W ".$q;
 	return "//nullroute.eu.org/finger/?q=".urlencode($q);
@@ -228,7 +227,9 @@ html::header("address", 40);
 		or output as
 		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
 		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
-		<a href="<?php echo H(make_finger_addr()) ?>">text</a>
+<?php if (defined("FINGER_HOST")) { ?>
+		<a href="<?php echo H(make_finger_addr()) ?>">text</a>,
+<?php } ?>
 		or
 		<a href="hosts.php">list hosts</a>
 	</td>
