@@ -273,4 +273,38 @@ function mangle_query($add, $remove=null) {
 	return http_build_query($query);
 }
 
+// canonicalize_utmp_user(utmp_entry& $entry) -> utmp_entry
+// canonicalize_user(str $user, int $uid, str $host) -> str $user
+// Strip off the sssd @domain suffix, for summaries.
+
+function canonicalize_utmp_user(&$entry) {
+	$entry['user'] = canonicalize_user($entry['user'],
+					$entry['uid'], $entry['host']);
+	return $entry;
+}
+
+function canonicalize_user($user, $uid, $host) {
+	$pos = strpos($user, "@");
+	if ($pos !== false)
+		$user = substr($user, 0, $pos);
+	/*
+	if (false)		;
+	elseif ($uid > 42000)	$user = stripsuffix($user, "@nullroute");
+	elseif ($uid > 25999)	;
+	elseif ($uid > 25000)	$user = stripsuffix($user, "@cluenet");
+	*/
+	return $user;
+}
+
+// stripsuffix(str $str, str $suffix) -> str
+// Remove an exact suffix if present.
+
+function stripsuffix($str, $suffix) {
+	$len = -strlen($suffix);
+	if (substr_compare($str, $suffix, $len) === 0)
+		return substr($str, 0, $len);
+	else
+		return $str;
+}
+
 return true;

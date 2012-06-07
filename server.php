@@ -3,7 +3,8 @@ namespace RWho;
 
 header("Content-Type: text/plain; charset=utf-8");
 
-require __DIR__."/config.php";
+require __DIR__."/lib-php/librwho.php";
+#require __DIR__."/config.php";
 openlog("rwho-server", null, LOG_DAEMON);
 
 class DB {
@@ -41,13 +42,15 @@ function host_delete($host) {
 // User session information
 
 function utmp_insert($host, $entry) {
+	$user = canonicalize_user($entry->user, $entry->uid, $entry->host);
 	$dbh = DB::connect();
 	$st = $dbh->prepare('
-		INSERT INTO utmp (host, user, uid, rhost, line, time, updated)
-		VALUES (:host, :user, :uid, :rhost, :line, :time, :updated)
+		INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
+		VALUES (:host, :user, :rawuser, :uid, :rhost, :line, :time, :updated)
 		');
 	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $entry->user);
+	$st->bindValue(":user", $user);
+	$st->bindValue(":rawuser", $entry->user);
 	$st->bindValue(":uid", $entry->uid);
 	$st->bindValue(":rhost", $entry->host);
 	$st->bindValue(":line", $entry->line);
@@ -58,7 +61,10 @@ function utmp_insert($host, $entry) {
 
 function utmp_delete($host, $entry) {
 	$dbh = DB::connect();
-	$st = $dbh->prepare('DELETE FROM utmp WHERE host=:host AND user=:user AND line=:line');
+	$st = $dbh->prepare('DELETE FROM utmp
+			     WHERE host=:host
+			     AND rawuser=:user
+			     AND line=:line');
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":line", $entry->line);
@@ -67,7 +73,8 @@ function utmp_delete($host, $entry) {
 
 function utmp_delete_host($host) {
 	$dbh = DB::connect();
-	$st = $dbh->prepare('DELETE FROM utmp WHERE host=:host');
+	$st = $dbh->prepare('DELETE FROM utmp
+			     WHERE host=:host');
 	$st->bindValue(":host", $host);
 	return $st->execute();
 }
