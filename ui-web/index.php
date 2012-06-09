@@ -4,12 +4,6 @@ error_reporting(E_ALL^E_NOTICE);
 
 require __DIR__."/../lib-php/librwho.php";
 
-if (@constant("REQUIRE_LOGIN")) {
-	require_once("/home/grawity/lib/cluesso/libwebauth.php");
-	if (!\Webauth\verify_session())
-		\Webauth\redirect_login();
-}
-
 class query {
 	static $user;
 	static $host;
