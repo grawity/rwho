@@ -70,6 +70,7 @@ sub update {
 	my @sessions = enum_sessions();
 	for (@sessions) {
 		$_->{uid} = scalar getpwnam $_->{user};
+		$_->{host} //= "(unknown)";
 		$_->{host} =~ s/^::ffff://;
 	}
 	if (!$show_root) {
