@@ -210,7 +210,7 @@ sub mainloop_monitor_kqueue {
 	$kq->EV_SET(fileno($ut), &EVFILT_VNODE,
 		&EV_ADD | &EV_CLEAR, &NOTE_WRITE, 5);
 
-	debug("kqueue: watching $utmp_path");
+	debug("monitor/kqueue: watching $utmp_path");
 	while (1) {
 		$kq->kevent;
 		update();
@@ -223,7 +223,7 @@ sub mainloop_monitor_inotify {
 	my $inotify = Linux::Inotify2->new;
 	$inotify->watch($utmp_path, &IN_MODIFY, \&update);
 
-	debug("inotify: watching $utmp_path");
+	debug("monitor/inotify: watching $utmp_path");
 	while (1) {
 		$inotify->poll;
 	}
@@ -234,10 +234,14 @@ sub mainloop_monitor {
 	$0 = "rwho-agent: monitor";
 
 	given ($^O) {
-		when ("freebsd") {goto &mainloop_monitor_kqueue}
-		when ("linux") {goto &mainloop_monitor_inotify}
+		when ("freebsd") {
+			goto &mainloop_monitor_kqueue
+		}
+		when ("linux") {
+			goto &mainloop_monitor_inotify
+		}
 		default {
-			die "error: mainloop_monitor: not supported on $^O\n";
+			die "error: monitor mode not supported on $^O\n";
 		}
 	}
 }
