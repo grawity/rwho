@@ -104,11 +104,12 @@ sub debug {
 }
 
 sub getutmppath {
-	my @paths = qw(
-		/run/utmp
-		/var/run/utmp
-		/etc/utmp
-		/var/adm/utmp
+	my @paths = (
+		"/run/utmp",		# Linux
+		"/var/run/utmp",	# Linux (old)
+		"/var/run/utx.active",	# FreeBSD
+		"/var/adm/utmp",
+		"/etc/utmp",
 	);
 	my ($path) = grep {-e} @paths;
 	return $path;
