@@ -27,9 +27,9 @@ Obvious.
 Include or ignore root logins. Default is to ignore, for "security" reasons.
 (Those who run rwhod generally care little about security, however.)
 
-=item B<--[no-]inotify>
+=item B<--[no-]monitor>
 
-Turn off inotify and only use periodic updates.
+Monitor for changes using I<inotify(7)> on Linux or I<kqueue(2)> on FreeBSD. Enabled by default.
 
 =item B<--man>
 
@@ -42,7 +42,7 @@ Ignored in single-update mode.
 
 =item B<--poll=I<seconds>>, B<--no-poll>
 
-Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if inotify is disabled). Zero to disable.
+Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if monitor is disabled). Zero to disable.
 
 =item B<--server-url=I<url>>
 
@@ -66,7 +66,9 @@ Print informative messages.
 
 =item * C<JSON>
 
-=item * C<Linux::Inotify2>
+=item * C<IO::KQueue> (FreeBSD)
+
+=item * C<Linux::Inotify2> (Linux)
 
 =item * C<LWP::UserAgent>
 
@@ -79,8 +81,6 @@ Print informative messages.
 =head1 BUGS
 
 It's useless.
-
-C<inotify> requirement makes the script unportable outside Linux.
 
 Using C<getaddrinfo> just to find our own FQDN might be overkill.
 

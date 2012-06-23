@@ -81,6 +81,10 @@ ctl() {
 		'
 
 		case `uname` in
+		FreeBSD)
+			perldeps+='
+			IO::KQueue
+			';;
 		Linux)
 			perldeps+='
 			Linux::Inotify2

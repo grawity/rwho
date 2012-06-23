@@ -17,7 +17,7 @@ my $verbose	= 0;
 my $do_fork	= 0;
 my $do_single	= 0;
 my $do_cleanup	= 0;
-my $do_inotify	= 1;
+my $do_monitor	= 1;
 my $do_poll	= 1;
 my $show_root	= 0;
 my $pidfile;
@@ -202,7 +202,23 @@ sub sigchld_reap_any {
 
 # Main loops
 
-sub mainloop_inotify_linux {
+sub mainloop_monitor_kqueue {
+	IO::KQueue->import;
+	open(my $ut, "<", $utmp_path)
+		or die "error: cannot open utmp: $!\n";
+	my $kq = IO::KQueue->new;
+	$kq->EV_SET(fileno($ut), &EVFILT_VNODE,
+		&EV_ADD | &EV_CLEAR, &NOTE_WRITE, 5);
+
+	debug("kqueue: watching $utmp_path");
+	while (1) {
+		$kq->kevent;
+		update();
+	}
+	exit(0);
+}
+
+sub mainloop_monitor_inotify {
 	Linux::Inotify2->import;
 	my $inotify = Linux::Inotify2->new;
 	$inotify->watch($utmp_path, &IN_MODIFY, \&update);
@@ -214,13 +230,14 @@ sub mainloop_inotify_linux {
 	exit(0);
 }
 
-sub mainloop_inotify {
-	$0 = "rwho-agent: inotify";
+sub mainloop_monitor {
+	$0 = "rwho-agent: monitor";
 
 	given ($^O) {
-		when ("linux") {goto &mainloop_inotify_linux}
+		when ("freebsd") {goto &mainloop_monitor_kqueue}
+		when ("linux") {goto &mainloop_monitor_inotify}
 		default {
-			die "error: mainloop_inotify: not supported on $^O\n";
+			die "error: mainloop_monitor: not supported on $^O\n";
 		}
 	}
 }
@@ -251,8 +268,9 @@ GetOptions(
 	"daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(-input => $pod, -exitstatus => 0); },
 	"include-root!"	=> \$show_root,
-	"inotify!"	=> \$do_inotify,
+	"inotify!"	=> \$do_monitor,
 	"man"		=> sub { pod2usage(-input => $pod, -exitstatus => 0, -verbose => 2); },
+	"monitor!"	=> \$do_monitor,
 	"poll=i"	=> \$poll_interval,
 	"no-poll"	=> sub { $poll_interval = 0; },
 	"pidfile=s"	=> \$pidfile,
@@ -263,25 +281,28 @@ GetOptions(
 
 # modules
 
-if ($do_inotify) {
+if ($do_monitor) {
 	given ($^O) {
+		when ("freebsd") {
+			eval {require IO::KQueue}
+			or die "error: monitor enabled but IO::KQueue missing\n";
+		}
 		when ("linux") {
-			if (!eval {require Linux::Inotify2}) {
-				die "error: inotify enabled but Linux::Inotify2 missing\n";
-			}
+			eval {require Linux::Inotify2}
+			or die "error: monitor enabled but Linux::Inotify2 missing\n";
 		}
 		default {
-			die "error: inotify enabled but OS '$^O' not supported\n";
+			die "error: monitor enabled but OS '$^O' not supported\n";
 		}
 	}
 }
 
 # init
 
-$poll_interval //= ($do_inotify ? 600 : 30);
+$poll_interval //= ($do_monitor ? 600 : 30);
 $do_poll = $poll_interval > 0;
-unless ($do_inotify || $do_poll) {
-	die "error: cannot disable both polling and inotify\n";
+unless ($do_monitor || $do_poll) {
+	die "error: cannot disable both polling and monitor\n";
 }
 
 $utmp_path //= getutmppath();
@@ -339,11 +360,11 @@ if (defined $pidfile_h) {
 
 if ($do_single) {
 	exit(0);
-} elsif ($do_inotify) {
+} elsif ($do_monitor) {
 	if ($do_poll) {
 		$poller_pid = fork_poller();
 	}
-	exit(mainloop_inotify());
+	exit(mainloop_monitor());
 } elsif ($do_poll) {
 	exit(mainloop_poller());
 }

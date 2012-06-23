@@ -9,7 +9,7 @@ A hack to centrally display all users logged in to a bunch of servers.
 
 ## Contents
 
-### agent-linux -- Linux agent
+### agent-linux -- Linux/BSD agent
 
 Uses `/run/utmp`, with inotify and/or periodic updates. Requires only read access to the `utmp` database; in other words, a standard account.
 
@@ -18,9 +18,13 @@ Dependencies:
   * Perl 5.10 or later
   * use `JSON`
   * use `LWP::UserAgent`
-  * use `Linux::Inotify2`
   * use `Socket::GetAddrInfo`
   * use `Sys::Utmp`
+
+For change monitoring:
+
+  * use `Linux::Inotify2` if Linux
+  * use `IO::KQueue` if FreeBSD
 
 ### agent-windows -- Windows NT agent
 
