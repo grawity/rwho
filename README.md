@@ -23,8 +23,8 @@ Dependencies:
 
 For change monitoring:
 
-  * use `Linux::Inotify2` if Linux
-  * use `IO::KQueue` if FreeBSD
+  * use `Linux::Inotify2` (inotify: Linux)
+  * use `IO::KQueue` (kqueue: FreeBSD, NetBSD)
 
 ### agent-windows -- Windows NT agent
 

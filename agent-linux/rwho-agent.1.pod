@@ -29,7 +29,7 @@ Include or ignore root logins. Default is to ignore, for "security" reasons.
 
 =item B<--[no-]monitor>
 
-Monitor for changes using I<inotify(7)> on Linux or I<kqueue(2)> on FreeBSD. Enabled by default.
+Monitor for changes using I<inotify(7)> or I<kqueue(2)>. Enabled by default.
 
 =item B<--man>
 
@@ -66,9 +66,9 @@ Print informative messages.
 
 =item * C<JSON>
 
-=item * C<IO::KQueue> (FreeBSD)
+=item * C<IO::KQueue> (kqueue)
 
-=item * C<Linux::Inotify2> (Linux)
+=item * C<Linux::Inotify2> (inotify)
 
 =item * C<LWP::UserAgent>
 
