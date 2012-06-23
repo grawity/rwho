@@ -76,11 +76,18 @@ ctl() {
 		perldeps='
 		JSON
 		LWP::UserAgent
-		Linux::Inotify2
 		Socket::GetAddrInfo
 		Sys::Utmp
 		'
-		${CPAN:-cpanm} $perldeps
+
+		case `uname` in
+		Linux)
+			perldeps+='
+			Linux::Inotify2
+			';;
+		esac
+
+		${CPAN:-echo} $perldeps
 		;;
 	update)
 		if [ "$RWHO_AGENT" -nt "$RWHO_PIDFILE" ]; then
