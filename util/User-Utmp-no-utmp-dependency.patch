@@ -1,0 +1,198 @@
+https://rt.cpan.org/Public/Bug/Display.html?id=75509
+http://80386.nl/pub/user-utmp.txt
+
+--- User-Utmp-1.8-old/Utmp.pm	2006-03-27 02:20:05.000000000 +0200
++++ User-Utmp-1.8/Utmp.pm	2012-03-03 19:28:13.000000000 +0100
+@@ -17,7 +17,7 @@
+ @EXPORT_OK = qw(setutent  getut  putut  utmpname
+ 		setutxent endutxent getutxid getutxline getutxent pututxline
+ 		utmpxname getutx
+-		HAS_UTMPX
++		HAS_UTMP HAS_UTMPX
+ 		UTMP_FILE UTMPX_FILE WTMP_FILE WTMPX_FILE
+ 		BOOT_TIME
+ 		DEAD_PROCESS
+@@ -32,7 +32,7 @@
+ %EXPORT_TAGS = (utmp  => [qw(getut putut utmpname)],
+ 		utmpx => [qw(setutxent endutxent getutxid getutxline getutxent
+ 			     pututxline utmpxname getutx)],
+-		constants => [qw(HAS_UTMPX
++		constants => [qw(HAS_UTMP HAS_UTMPX
+ 				 UTMP_FILE UTMPX_FILE WTMP_FILE WTMPX_FILE
+ 				 BOOT_TIME
+ 				 DEAD_PROCESS
+@@ -290,6 +290,10 @@
+ 
+ =over 4
+ 
++=item HAS_UTMP
++
++True if User::Utmp was built with support for utmp.
++
+ =item HAS_UTMPX
+ 
+ True if User::Utmp was built with support for utmpx.
+--- User-Utmp-1.8-old/Utmp.xs	2006-03-27 02:20:05.000000000 +0200
++++ User-Utmp-1.8/Utmp.xs	2012-03-03 19:52:41.000000000 +0100
+@@ -10,7 +10,9 @@
+ }
+ #endif
+ 
++#ifdef HAS_UTMP
+ #include <utmp.h>
++#endif
+ 
+ /* Handle older Linux versions with UT_UNKNOWN instead of EMPTY */
+ #ifndef EMPTY
+@@ -79,12 +81,15 @@
+ #endif
+ 	 break;
+       case 'H':
+-	 if (strEQ(name, "HAS_UTMPX"))
++#ifdef HAS_UTMP
++	 if (strEQ(name, "HAS_UTMP"))
++	    return 1;
++#endif
+ #ifdef HAS_UTMPX
++	 if (strEQ(name, "HAS_UTMPX"))
+ 	    return 1;
+-#else
+-	 return 0;
+ #endif
++	 return 0;
+ 	    case 'I':
+    if (strEQ(name, "INIT_PROCESS"))
+ #ifdef INIT_PROCESS
+@@ -143,6 +148,7 @@
+ }
+ 
+ 
++#ifdef HAS_UTMP
+ SV *utent2perl(struct utmp *entry)
+ {
+    HV *perl_hash;
+@@ -183,6 +189,7 @@
+ 
+    return newRV_noinc((SV *) perl_hash);
+ }
++#endif
+ 
+ #ifdef HAS_UTMPX
+ SV *utxent2perl(struct utmpx *entry)
+@@ -263,6 +270,7 @@
+ }
+ #endif
+ 
++#ifdef HAS_UTMP
+ void perl2utent(HV *entry, struct utmp *utent)
+ {
+    HE    *hashentry;
+@@ -356,6 +364,7 @@
+ #endif
+    }
+ }
++#endif
+ 
+ #ifdef HAS_UTMPX
+ void perl2utxent(HV *entry, struct utmpx *utent)
+@@ -409,7 +418,7 @@
+ 	 char* c_val;
+ 	    
+ 	 c_val = SvPV(val, strlen);
+-	 strncpy(utent->ut_name, c_val, sizeof(utent->ut_name));
++	 strncpy(utent->ut_user, c_val, sizeof(utent->ut_user));
+       }
+       else if (strEQ(key, "ut_id"))
+       {
+@@ -429,15 +438,11 @@
+       {
+ 	 if (SvOK(val))
+ 	    utent->ut_pid = (pid_t) SvIV(val);
+-	 else
+-	    utent->ut_pid = (pid_t) NULL;
+       }
+       else if (strEQ(key, "ut_type"))
+       {
+ 	 if (SvOK(val))
+ 	    utent->ut_type = (short) SvIV(val);
+-	 else
+-	    utent->ut_type = (short) NULL;
+       }
+       else if (strEQ(key, "ut_tv"))
+       {
+@@ -602,6 +607,8 @@
+ 
+ #endif
+ 
++#ifdef HAS_UTMP
++
+ void
+ setutent()
+    CODE:
+@@ -723,6 +730,7 @@
+    OUTPUT:
+      RETVAL
+ 
++#endif
+ 
+ #ifdef HAS_UTMPX
+ void
+diff -ur User-Utmp-1.8-old/test.pl User-Utmp-1.8/test.pl
+--- User-Utmp-1.8-old/test.pl	2006-02-26 01:30:20.000000000 +0100
++++ User-Utmp-1.8/test.pl	2012-03-03 19:50:21.000000000 +0100
+@@ -23,33 +23,40 @@
+ 
+ $test = 2;
+ 
+-unless (UTMP_FILE && -z UTMP_FILE)
++if (User::Utmp::HAS_UTMP())
+ {
+-   @utmp = User::Utmp::getut();
++   unless (UTMP_FILE && -z UTMP_FILE)
++   {
++      @utmp = User::Utmp::getut();
+ 
+-   $found = 0;
++      $found = 0;
+ 
+-   foreach $entry (@utmp)
+-   {
+-      if ($entry->{ut_type} == USER_PROCESS)
++      foreach $entry (@utmp)
+       {
+-	 $found++ if $entry->{ut_user} eq $user;
+-	 $found++ if $entry->{ut_line} =~ $term;
++         if ($entry->{ut_type} == USER_PROCESS)
++         {
++             $found++ if $entry->{ut_user} eq $user;
++             $found++ if $entry->{ut_line} =~ $term;
++         }
+       }
+-   }
+ 
+-   print $found ? "" : "not ", "ok 2 ";
++      print $found ? "" : "not ", "ok 2 ";
+ 
+-   if (not $found)
++      if (not $found)
++      {
++         print "(Could not find utmp entry for user $user and/or line $term)";
++      }
++
++      print "\n";
++   }
++   else
+    {
+-      print "(Could not find utmp entry for user $user and/or line $term)";
++      print "skipped $test (empty utmp file)\n";
+    }
+-
+-   print "\n";
+ }
+ else
+ {
+-   print "skipped $test (empty utmp file)\n";
++   print "skipped $test (utmp not available on this system)\n";
+ }
+ 
+ ###############################################################################
