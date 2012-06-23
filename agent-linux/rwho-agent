@@ -6,7 +6,6 @@ use 5.010;
 use Getopt::Long qw(:config no_ignore_case bundling);
 use JSON;
 use LWP::UserAgent;
-use Linux::Inotify2;
 use POSIX qw(:errno_h :signal_h);
 use Pod::Usage;
 use Sys::Hostname;
@@ -201,17 +200,27 @@ sub sigchld_reap_any {
 
 # Main loops
 
-sub mainloop_inotify {
-	$0 = "rwho-agent: inotify";
-
-	my $inotify = Linux::Inotify2->new();
-	$inotify->watch($utmp_path, IN_MODIFY, \&update);
+sub mainloop_inotify_linux {
+	Linux::Inotify2->import;
+	my $inotify = Linux::Inotify2->new;
+	$inotify->watch($utmp_path, &IN_MODIFY, \&update);
 
 	debug("inotify: watching $utmp_path");
 	while (1) {
 		$inotify->poll;
 	}
 	exit(0);
+}
+
+sub mainloop_inotify {
+	$0 = "rwho-agent: inotify";
+
+	given ($^O) {
+		when ("linux") {goto &mainloop_inotify_linux}
+		default {
+			die "error: mainloop_inotify: not supported on $^O\n";
+		}
+	}
 }
 
 sub mainloop_poller {
@@ -249,6 +258,23 @@ GetOptions(
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
 ) or pod2usage(-input => $pod, -exitstatus => 1, -verbose => 0);
+
+# modules
+
+if ($do_inotify) {
+	given ($^O) {
+		when ("linux") {
+			if (!eval {require Linux::Inotify2}) {
+				die "error: inotify enabled but Linux::Inotify2 missing\n";
+			}
+		}
+		default {
+			die "error: inotify enabled but OS '$^O' not supported\n";
+		}
+	}
+}
+
+# init
 
 $poll_interval //= ($do_inotify ? 600 : 30);
 $do_poll = $poll_interval > 0;
