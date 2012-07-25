@@ -215,6 +215,10 @@ function normalize_host($host) {
 	# strip .screen from X11 display
 	$host = preg_replace('/(:\d+)\.\d+$/', '$1', $host);
 
+	# strip [pid] from mosh name
+	$host = preg_replace('/^mosh \[\d+\]$/', '(mosh)', $host);
+	$host = preg_replace('/ via mosh \[\d+\]$/', ' (mosh)', $host);
+
 	return $host;
 }
 
