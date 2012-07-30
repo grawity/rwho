@@ -139,13 +139,7 @@ function handle_utmp_data(data) {
 			trow.appendChild(cell);
 
 			cell = document.createElement("td");
-			if (row.rhost.length) {
-				cell.textContent = row.rhost;
-			} else {
-				var note = document.createElement("i");
-				note.textContent = "(local)";
-				cell.appendChild(note);
-			}
+			cell.textContent = row.rhost.length ? row.rhost : "(local");
 			trow.appendChild(cell);
 
 			table.appendChild(trow);

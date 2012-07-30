@@ -128,7 +128,7 @@ function output_html($data) {
 			$line = htmlspecialchars($row["line"]);
 			$rhost = strlen($row["rhost"])
 				? htmlspecialchars($row["rhost"])
-				: "<i>(local)</i>";
+				: "(local)";
 
 			if (is_stale($row["updated"]))
 				print "<tr class=\"stale\">\n";
