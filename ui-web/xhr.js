@@ -139,7 +139,7 @@ function handle_utmp_data(data) {
 			trow.appendChild(cell);
 
 			cell = document.createElement("td");
-			cell.textContent = row.rhost.length ? row.rhost : "(local");
+			cell.textContent = row.rhost.length ? row.rhost : "(local)";
 			trow.appendChild(cell);
 
 			table.appendChild(trow);
