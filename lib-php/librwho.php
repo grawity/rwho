@@ -22,6 +22,10 @@ function parse_query($query) {
 			$user = $query;
 		}
 	}
+	if ($user === null)
+		$user = '';
+	if ($host === null)
+		$host = '';
 	return array($user, $host);
 }
 
