@@ -142,7 +142,7 @@ function find_user_plan($user, $host, $file=".plan") {
 	if ($path && @is_file($path) && @is_readable($path))
 		return $path;
 
-	$path = "/var/plan/{$pw["name"]}";
+	$path = "/var/lib/plan/{$pw["name"]}";
 	if ($path && @is_file($path) && @is_readable($path))
 		return $path;
 
