@@ -58,17 +58,17 @@ function finger_parse($input) {
 function output($data, $detailed=false) {
 	if ($detailed) {
 		$fmt = "%-12s %1s %-22s %-10s %s\r\n";
-		$headers = ["USER", "", "HOST", "LINE", "FROM"];
+		$headers = array("USER", "", "HOST", "LINE", "FROM");
 	} else {
 		$fmt = "%-12s %-12s %-10s %s\r\n";
-		$headers = ["USER", "HOST", "LINE", "FROM"];
+		$headers = array("USER", "HOST", "LINE", "FROM");
 	}
 
 	vprintf($fmt, $headers);
 
 	$last = array("user" => null);
 	foreach ($data as $row) {
-		$line = [];
+		$line = array();
 		$flag = "";
 
 		if (RWho\is_stale($row["updated"])) {
@@ -114,7 +114,7 @@ function output($data, $detailed=false) {
 
 function output_hosts($data) {
 	$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
-	$headers = ["HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED"];
+	$headers = array("HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED");
 
 	vprintf($fmt, $headers);
 
