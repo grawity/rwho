@@ -7,6 +7,11 @@ A hack to centrally display all users logged in to a bunch of servers.
   * Has a simple web UI, with HTML, JSON, and XML interfaces
   * Updates are sent instantly
 
+See it in action via [HTTP][ex-http] or [Finger][ex-finger].
+
+[ex-http]: http://rwho.cluenet.org/
+[ex-finger]: http://nullroute.eu.org/finger/?q=%2Fw+grawity%40cluenet.org
+
 ## Contents
 
 ### agent-linux -- Linux/BSD agent
