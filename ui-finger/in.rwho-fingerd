@@ -129,24 +129,34 @@ function output_hosts($data) {
 	}
 }
 
-function output_plan($user, $host) {
+function find_user_plan($user, $host, $file=".plan") {
 	if (!function_exists("posix_getpwnam"))
-		return;
+		return null;
 
 	$pw = @posix_getpwnam($user);
 	if (!$pw || ($pw["uid"] < 25000 && $pw["uid"] != 0))
-		return;
+		return null;
 
 	$dir = $pw["dir"];
+	$path = @realpath("$dir/.plan");
+	if ($path && @is_file($path) && @is_readable($path))
+		return $path;
 
-	$path_plan = @realpath("$dir/.plan");
+	$path = "/var/plan/{$pw["name"]}";
+	if ($path && @is_file($path) && @is_readable($path))
+		return $path;
 
-	if (!$path_plan || !@is_file($path_plan) || !@is_readable($path_plan)) {
+	return null;
+}
+
+function output_plan($user, $host) {
+	$path = find_user_plan($user, $host);
+
+	if ($path === null) {
 		print("No plan.\r\n");
-		return;
 	}
 
-	$fplan = @fopen($path_plan, "r");
+	$fplan = @fopen($path, "r");
 	if ($fplan) {
 		$lines = 0;
 		print("Plan:\r\n");
