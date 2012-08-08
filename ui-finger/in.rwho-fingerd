@@ -23,26 +23,39 @@ function finger_handle_query($input) {
 
 	list ($q_user, $q_host) = RWho\parse_query($query);
 
-	$data = RWho\retrieve($q_user, $q_host);
-	if (!$detailed)
-		$data = RWho\summarize($data);
+	$has_user = strlen($q_user);
+	$has_host = strlen($q_host);
 
-	if ($q_user === "") {
-		if (count($data)) {
-			output($data, $detailed);
-			$n_users = RWho\count_users();
-			$n_conns = count($data);
-			$n_hosts = RWho\count_hosts();
-			print("\r\n");
-			printf("(%d users over %d connections on %d hosts.)\r\n",
-				$n_users, $n_conns, $n_hosts);
-		} else
-			print("finger: Nobody is logged in.\r\n");
+	$data = RWho\retrieve($q_user, $q_host);
+
+	if (count($data)) {
+		if (!$detailed)
+			$data = RWho\summarize($data);
+		output($data, $detailed);
 	} else {
-		if (count($data))
-			output($data, $detailed);
+		if ($has_user && $has_host)
+			printf("finger: '%s' is not logged in to %s.\r\n",
+				$q_user, $q_host);
+		elseif ($has_user)
+			printf("finger: '%s' is not logged in.\r\n",
+				$q_user);
+		elseif ($has_host)
+			printf("finger: Nobody is logged in to %s.\r\n",
+				$q_host);
 		else
-			printf("finger: %s is not logged in.\r\n", $q_user);
+			print("finger: Nobody is logged in.\r\n");
+	}
+
+	if ($detailed && !$has_user && !$has_host) {
+		$n_users = RWho\count_users();
+		$n_conns = count($data);
+		$n_hosts = RWho\count_hosts();
+		print("\r\n");
+		printf("(%d users over %d connections on %d hosts)\r\n",
+			$n_users, $n_conns, $n_hosts);
+	}
+
+	if ($has_user) {
 		print("\r\n");
 		output_plan($q_user, $q_host);
 	}
