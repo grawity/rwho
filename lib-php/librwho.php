@@ -315,4 +315,30 @@ function stripsuffix($str, $suffix) {
 		return $str;
 }
 
+// find_user_plan(str $user, str $host) -> str?
+// Find the .plan file for a global user:
+// * Will return null if user doesn't exist or has 0 < uid < 25000.
+// * Will look for ~USER/.plan and /var/lib/plan/$USER in that order.
+// $host is ignored in current implementation.
+
+function find_user_plan($user, $host) {
+	if (!function_exists("posix_getpwnam"))
+		return null;
+
+	$pw = @posix_getpwnam($user);
+	if (!$pw || ($pw["uid"] < 25000 && $pw["uid"] != 0))
+		return null;
+
+	$dir = $pw["dir"];
+	$path = @realpath("$dir/.plan");
+	if ($path && @is_file($path) && @is_readable($path))
+		return $path;
+
+	$path = "/var/lib/plan/{$pw["name"]}";
+	if (@is_file($path) && @is_readable($path))
+		return $path;
+
+	return null;
+}
+
 return true;
