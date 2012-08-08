@@ -15,7 +15,7 @@ function finger_handle_query($input) {
 			$n_conns = RWho\count_conns();
 			$n_hosts = count($data);
 			print("\r\n");
-			printf("(%d users over %d connections on %d hosts.)\r\n",
+			printf("(%d users over %d connections on %d hosts)\r\n",
 				$n_users, $n_conns, $n_hosts);
 		}
 		return;
