@@ -5,7 +5,7 @@ require __DIR__."/../lib-php/librwho.php";
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
-	if ($query === '*') {
+	if ($query === "*") {
 		$data = RWho\retrieve_hosts();
 		if (!count($data))
 			die("No active hosts.\r\n");
@@ -18,28 +18,33 @@ function finger_handle_query($input) {
 			printf("(%d users over %d connections on %d hosts.)\r\n",
 				$n_users, $n_conns, $n_hosts);
 		}
+		return;
 	}
-	else {
-		list ($q_user, $q_host) = RWho\parse_query($query);
-		$data = RWho\retrieve($q_user, $q_host);
-		if (!count($data))
-			die("Nobody is logged in.\r\n");
-		if (!$detailed)
-			$data = RWho\summarize($data);
-		output($data, $detailed);
-		if ($detailed) {
-			if ($q_user === '') {
-				$n_users = RWho\count_users();
-				$n_conns = count($data);
-				$n_hosts = RWho\count_hosts();
-				print("\r\n");
-				printf("(%d users over %d connections on %d hosts.)\r\n",
-					$n_users, $n_conns, $n_hosts);
-			} else {
-				print("\r\n");
-				output_plan($q_user, $q_host);
-			}
-		}
+
+	list ($q_user, $q_host) = RWho\parse_query($query);
+
+	$data = RWho\retrieve($q_user, $q_host);
+	if (!$detailed)
+		$data = RWho\summarize($data);
+
+	if ($q_user === "") {
+		if (count($data)) {
+			output($data, $detailed);
+			$n_users = RWho\count_users();
+			$n_conns = count($data);
+			$n_hosts = RWho\count_hosts();
+			print("\r\n");
+			printf("(%d users over %d connections on %d hosts.)\r\n",
+				$n_users, $n_conns, $n_hosts);
+		} else
+			print("finger: Nobody is logged in.\r\n");
+	} else {
+		if (count($data))
+			output($data, $detailed);
+		else
+			printf("finger: %s is not logged in.\r\n", $q_user);
+		print("\r\n");
+		output_plan($q_user, $q_host);
 	}
 }
 
