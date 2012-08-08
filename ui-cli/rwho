@@ -8,13 +8,13 @@
 RWHO_DIR="/cluenet/rwho"
 
 [[ $RWHO_HOST ]] ||
-    RWHO_HOST='virgule.cluenet.org'
+    RWHO_HOST='rwho.cluenet.org'
 
 [[ $RWHO_SERVICE ]] ||
     RWHO_SERVICE='finger'
 
 [[ $RWHO_URL ]] ||
-    RWHO_URL="http://$RWHO_HOST/~grawity/rwho/"
+    RWHO_URL="http://$RWHO_HOST/"
 
 rwho-fingerd() { "$RWHO_DIR/ui-finger/in.rwho-fingerd" "$@"; }
 
