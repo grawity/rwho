@@ -11,7 +11,7 @@ use Pod::Usage;
 use Sys::Hostname;
 use Time::HiRes qw(usleep);
 
-my $notify_url = "http://virgule.cluenet.org/~grawity/rwho/server.php";
+my $notify_url = "http://rwho.cluenet.org/server.php";
 my $utmp_path;
 my $poll_interval;
 my $verbose	= 0;
