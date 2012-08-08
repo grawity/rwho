@@ -171,7 +171,7 @@ function output_plan($user, $host) {
 	$path = find_user_plan($user, $host);
 
 	if ($path === null) {
-		print("No plan.\r\n");
+		print("No Plan.\r\n");
 	}
 
 	$fplan = @fopen($path, "r");
