@@ -121,7 +121,7 @@ function output($data, $detailed=false) {
 			elseif ($len > 0)
 				$line[] = $row["rhost"];
 			else
-				$line[] = "-";
+				$line[] = "(local)";
 		}
 
 		vprintf($fmt, $line);
