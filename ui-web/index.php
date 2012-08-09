@@ -129,6 +129,9 @@ function output_html($data) {
 			$rhost = strlen($row["rhost"])
 				? htmlspecialchars($row["rhost"])
 				: "(local)";
+			$name = strlen($row["name"])
+				? htmlspecialchars($row["name"])
+				: $user;
 
 			if (is_stale($row["updated"]))
 				print "<tr class=\"stale\">\n";
@@ -140,6 +143,9 @@ function output_html($data) {
 					.(strlen(query::$user) ? $user
 						: "<a href=\"?user=$user\">$user</a>")
 					."</td>\n";
+
+				print "\t<td>$name</td>\n";
+
 				print "\t<td>$uid</td>\n";
 			} else {
 				if ($k == 0)
@@ -153,9 +159,11 @@ function output_html($data) {
 				.(strlen(query::$host) ? $host
 					: "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>")
 				."</td>\n";
+
 			print "\t<td>"
 				.($row["is_summary"] ? "($line ttys)" : $line)
 				."</td>\n";
+
 			print "\t<td>$rhost</td>\n";
 
 			print "</tr>\n";
@@ -205,8 +213,10 @@ echo strlen(query::$host)
 <tr>
 <?php
 html::header("user", 15);
-if (query::$detailed)
+if (query::$detailed) {
+	html::header("name", 16);
 	html::header("uid", 5);
+}
 html::header("host", 10);
 html::header("line", 8);
 html::header("address", 40);

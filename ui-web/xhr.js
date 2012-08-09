@@ -117,6 +117,10 @@ function handle_utmp_data(data) {
 				trow.appendChild(cell);
 
 				cell = document.createElement("td");
+				cell.textContent = row.name.length ? row.name : row.user;
+				trow.appendChild(cell);
+
+				cell = document.createElement("td");
 				cell.textContent = row.uid;
 				trow.appendChild(cell);
 			}
