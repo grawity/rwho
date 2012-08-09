@@ -57,8 +57,6 @@ function output_xml($data) {
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("host"));
 
-		unset($row["hostid"]);
-
 		$rowx->appendChild($doc->createAttribute("name"))
 			->appendChild($doc->createTextNode($row["host"]));
 
