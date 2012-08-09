@@ -129,7 +129,7 @@ function summarize($utmp) {
 	$out = array();
 	$byuser = array();
 	foreach ($utmp as &$entry) {
-		$byuser[$entry["user"]][$entry["host"]][] = $entry;
+		$byuser[$entry["user"]][$entry["host"]][] = &$entry;
 	}
 	foreach ($byuser as $user => &$byhost) {
 		foreach ($byhost as $host => &$sessions) {
