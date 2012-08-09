@@ -34,7 +34,7 @@ CREATE TABLE names (
 	name		varchar(256)	NOT NULL,
 	-- indexes
 	PRIMARY KEY (host, user),
-	UNIQUE KEY (host)
+	KEY (host)
 );
 
 COMMIT;
