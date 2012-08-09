@@ -116,8 +116,8 @@ function output($data, $detailed=false) {
 		$fmt = "%-12s %1s %-22s %-10s %s\r\n";
 		$headers = array("USER", "", "HOST", "LINE", "FROM");
 	} else {
-		$fmt = "%-12s %-12s %-10s %s\r\n";
-		$headers = array("USER", "HOST", "LINE", "FROM");
+		$fmt = "%-12s %-18s %-12s %-10s %s\r\n";
+		$headers = array("USER", "NAME", "HOST", "LINE", "FROM");
 	}
 
 	vprintf($fmt, $headers);
@@ -141,6 +141,8 @@ function output($data, $detailed=false) {
 
 		if ($detailed)
 			$line[] = $flag;
+		else
+			$line[] = strlen($row["name"]) ? $row["name"] : $row["user"];
 
 		$line[] = $detailed
 				? $row["host"]
@@ -154,8 +156,8 @@ function output($data, $detailed=false) {
 			$line[] = $row["rhost"];
 		else {
 			$len = strlen($row["rhost"]);
-			if ($len > 40)
-				$line[] = substr($row["rhost"], 0, 39).">";
+			if ($len > 24)
+				$line[] = substr($row["rhost"], 0, 23).">";
 			elseif ($len > 0)
 				$line[] = $row["rhost"];
 			else
