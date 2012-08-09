@@ -60,6 +60,11 @@ function finger_handle_query($input) {
 
 	$data = RWho\retrieve($q_user, $q_host);
 
+	if ($data === null) {
+		print("finger: Server error.\r\n");
+		return;
+	}
+
 	// display login info
 
 	if (count($data)) {

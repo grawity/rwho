@@ -98,7 +98,7 @@ function retrieve($q_user, $q_host) {
 		ON	utmp.host = names.host
 			AND utmp.rawuser = names.user";
 	$conds = array();
-	if (strlen($q_user)) $conds[] = "user=:user";
+	if (strlen($q_user)) $conds[] = "utmp.user=:user";
 	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
 	if (count($conds))
 		$sql .= " WHERE ".implode(" AND ", $conds);
