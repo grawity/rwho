@@ -11,7 +11,9 @@ class DB {
 	static $dbh;
 	static function connect() {
 		if (!isset(self::$dbh)) {
-			self::$dbh = new \PDO(DB_PATH, DB_USER, DB_PASS);
+			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
+						Config::get("db.username"),
+						Config::get("db.password"));
 		}
 		return self::$dbh;
 	}

@@ -1,12 +1,44 @@
 <?php
 namespace RWho;
 
-require __DIR__."/../config.php";
+class Config {
+	static $data = array();
 
-if (!defined("MAX_AGE"))
-	// maximum age before which the entry will be considered stale
-	// default is 1 minute more than the rwhod periodic update time
-	define("MAX_AGE", 11*60);
+	static function parse($file) {
+		$fh = fopen($file, "r");
+		if (!$fh)
+			return;
+		while (($line = fgets($fh)) !== false) {
+			if (!strlen($line))
+				continue;
+			if ($line[0] === ";" || $line[0] === "#")
+				continue;
+			list ($key, $val) = explode("=", $line, 2);
+			$key = trim($key);
+			$val = trim($val);
+			self::$data[$key] = $val;
+		}
+		fclose($fh);
+	}
+
+	static function has($key) {
+		return isset(self::$data[$key]);
+	}
+
+	static function set($key, $value) {
+		return self::$data[$key] = $value;
+	}
+
+	static function get($key) {
+		return self::$data[$key];
+	}
+}
+
+// maximum age before which the entry will be considered stale
+// default is 1 minute more than the rwhod periodic update time
+Config::set("expire", 11*60);
+
+Config::parse(__DIR__."/../rwho.conf");
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
@@ -29,13 +61,20 @@ function parse_query($query) {
 	return array($user, $host);
 }
 
+function _open_db() {
+	$db = new \PDO(Config::get("db.pdo_driver"),
+			Config::get("db.username"),
+			Config::get("db.password"))
+		or die("error: could not open rwho database\r\n");
+	return $db;
+}
+
 // retrieve(str? $user, str? $host) -> utmp_entry[]
 // Retrieve all currently known sessions for given query.
 // Both parameters optional.
 
 function retrieve($q_user, $q_host) {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
@@ -105,10 +144,9 @@ function summarize($utmp) {
 // Retrieve all currently active hosts, with user and connection counts.
 
 function retrieve_hosts() {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
-	$max_ts = time() - MAX_AGE;
+	$max_ts = time() - Config::get("expire");
 
 	$sql = "SELECT
 			hosts.*,
@@ -139,8 +177,7 @@ function retrieve_hosts() {
 // Useful for 'SELECT COUNT(x) AS count' kind of queries.
 
 function __single_field_query($sql, $field) {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
 	$st = $db->prepare($sql);
 	if (!$st->execute()) {
@@ -157,7 +194,7 @@ function __single_field_query($sql, $field) {
 // Count unique user names on all utmp records.
 
 function count_users() {
-	$max_ts = time() - MAX_AGE;
+	$max_ts = time() - Config::get("expire");
 	$sql = "SELECT COUNT(DISTINCT user) AS count
 		FROM utmp
 		WHERE updated >= $max_ts";
@@ -168,7 +205,7 @@ function count_users() {
 // Count all connections (utmp records).
 
 function count_conns() {
-	$max_ts = time() - MAX_AGE;
+	$max_ts = time() - Config::get("expire");
 	$sql = "SELECT COUNT(user) AS count
 		FROM utmp
 		WHERE updated >= $max_ts";
@@ -179,7 +216,7 @@ function count_conns() {
 // Count all currently active hosts, with or without users.
 
 function count_hosts() {
-	$max_ts = time() - MAX_AGE;
+	$max_ts = time() - Config::get("expire");
 	$sql = "SELECT COUNT(host) AS count
 		FROM hosts
 		WHERE last_update >= $max_ts";
@@ -187,7 +224,7 @@ function count_hosts() {
 }
 
 function is_stale($timestamp) {
-	return $timestamp < time() - MAX_AGE;
+	return $timestamp < time() - Config::get("expire");
 }
 
 // strip_domain(str $fqdn) -> str $hostname
