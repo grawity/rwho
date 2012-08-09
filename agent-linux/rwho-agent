@@ -10,6 +10,7 @@ use POSIX qw(:errno_h :signal_h);
 use Pod::Usage;
 use Sys::Hostname;
 use Time::HiRes qw(usleep);
+use User::pwent qw(getpw);
 
 my $notify_url = "http://rwho.cluenet.org/server.php";
 my $utmp_path;
@@ -30,6 +31,21 @@ my $my_fqdn;
 my $monitor_impl;
 my $main_pid;
 my $poller_pid;
+
+sub uniq (@) {
+	my %seen;
+	grep {not $seen{$_}++} @_;
+}
+
+sub get_user_realname {
+	state %cache;
+	my ($user) = @_;
+	if (!defined $cache{$user}) {
+		$cache{$user} = getpw($user)->gecos;
+		$cache{$user} =~ s/,.*$//;
+	}
+	$cache{$user};
+}
 
 sub enum_sessions {
 	my @utmp = ();
@@ -86,13 +102,18 @@ sub upload {
 	my ($action, $sessions) = @_;
 	my $ua = LWP::UserAgent->new;
 
+	my %users = map {$_ => get_user_realname($_)}
+			uniq map {$_->{user}} @$sessions;
+
 	my %data = (
 		host => $my_hostname,
 		fqdn => $my_fqdn,
 		opsys => $^O,
 		action => $action,
 		utmp => encode_json($sessions),
+		names => encode_json(\%users),
 	);
+
 	my $resp = $ua->post($notify_url, \%data);
 	debug("upload: sending ".(scalar @$sessions)." entries");
 	if (!$resp->is_success) {
