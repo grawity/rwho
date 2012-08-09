@@ -118,8 +118,9 @@ function finger_parse($input) {
 
 function output($data, $detailed=false) {
 	if ($detailed) {
-		$fmt = "%-12s %1s %-22s %-10s %s\r\n";
-		$headers = array("USER", "", "HOST", "LINE", "FROM");
+		$hfmt = "%s %s\r\n";
+		$fmt = "%4s %-22s %-10s %s\r\n";
+		$headers = array("USER", "", "LINE", "FROM");
 	} else {
 		$fmt = "%-12s %-18s %-12s %-10s %s\r\n";
 		$headers = array("USER", "NAME", "HOST", "LINE", "FROM");
@@ -127,8 +128,27 @@ function output($data, $detailed=false) {
 
 	vprintf($fmt, $headers);
 
+	$byuser = array();
+	$names = array();
+	foreach ($data as &$row) {
+		$byuser[$row["user"]][] = &$row;
+		if (!isset($names[$row["user"]]))
+			$names[$row["user"]] = $row["name"];
+	}
+
 	$last = array("user" => null);
 	foreach ($data as $row) {
+		if ($detailed) {
+			if ($row["user"] !== $last["user"]) {
+				$line = array();
+				$name = $names[$row["user"]];
+				$line[] = $row["user"];
+				$line[] = strlen($name) ? "($name)" : "";
+				$line[] = count($byuser[$row["user"]]);
+				vprintf($hfmt, $line);
+			}
+		}
+
 		$line = array();
 		$flag = "";
 
@@ -142,7 +162,8 @@ function output($data, $detailed=false) {
 		elseif ($row["uid"] < 25000)
 			$flag = "<";
 
-		$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
+		if (!$detailed)
+			$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
 
 		if ($detailed)
 			$line[] = $flag;
