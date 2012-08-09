@@ -38,7 +38,7 @@ function output_json($data) {
 	header("Content-Type: text/plain; charset=utf-8");
 	print json_encode(array(
 		"time"		=> time(),
-		"maxage"	=> MAX_AGE,
+		"maxage"	=> Config::get("expire"),
 		"hosts"		=> $d,
 	))."\n";
 }
@@ -165,7 +165,7 @@ html::header("updated", 7);
 <?php output_html($data); ?>
 </table>
 
-<p>Hosts idle longer than <?= MAX_AGE ?> seconds are not shown.</p>
+<p>Hosts idle longer than <?= Config::get("expire") ?> seconds are not shown.</p>
 
 <script type="text/javascript">
 var settings = {

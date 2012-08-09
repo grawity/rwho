@@ -1,0 +1,5 @@
+db.pdo_driver = mysql:host=localhost;dbname=rwho
+db.username =
+db.password =
+; if set, web interface will add a finger gateway link
+finger.host = localhost

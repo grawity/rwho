@@ -27,12 +27,12 @@ class html {
 function H($str) { return htmlspecialchars($str); }
 
 function make_finger_addr() {
-	if (!defined("FINGER_HOST"))
+	if (!Config::has("finger.host"))
 		return null;
 	$q = (string) query::$user;
 	if (strlen(query::$host))
 		$q .= "@".query::$host;
-	$q .= "@".constant("FINGER_HOST");
+	$q .= "@".Config::get("finger.host");
 	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
 		$q = "/W ".$q;
 	return "//nullroute.eu.org/finger/?q=".urlencode($q);
@@ -54,7 +54,7 @@ function output_json($data) {
 			"host"		=> query::$host,
 			"summary"	=> !query::$detailed,
 		),
-		"maxage"	=> MAX_AGE,
+		"maxage"	=> Config::get("expire"),
 		"utmp"		=> $data,
 	))."\n";
 }
@@ -227,7 +227,7 @@ html::header("address", 40);
 		or output as
 		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
 		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
-<?php if (defined("FINGER_HOST")) { ?>
+<?php if (Config::has("finger.host")) { ?>
 		<a href="<?php echo H(make_finger_addr()) ?>">text</a>,
 <?php } ?>
 		or
