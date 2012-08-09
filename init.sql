@@ -29,10 +29,12 @@ CREATE TABLE hosts (
 
 DROP TABLE IF EXISTS names;
 CREATE TABLE names (
-	ukey		char(32)	PRIMARY KEY,
 	host		varchar(255)	NOT NULL,
 	user		varchar(64)	NOT NULL,
-	name		varchar(256)	NOT NULL
+	name		varchar(256)	NOT NULL,
+	-- indexes
+	PRIMARY KEY (host, user),
+	UNIQUE KEY (host)
 );
 
 COMMIT;

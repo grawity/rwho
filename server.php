@@ -71,12 +71,10 @@ function utmp_delete_host($host) {
 
 function names_add_user($host, $user, $name) {
 	$dbh = DB::connect();
-	$key = md5($user."@".$host);
 	$st = $dbh->prepare('
-		INSERT INTO names (ukey, host, user, name)
-		VALUES (:ukey, :host, :user, :name)
+		INSERT INTO names (host, user, name)
+		VALUES (:host, :user, :name)
 		ON DUPLICATE KEY UPDATE name=:name');
-	$st->bindValue(":ukey", $key);
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $user);
 	$st->bindValue(":name", $name);
