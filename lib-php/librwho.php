@@ -141,7 +141,8 @@ function summarize($utmp) {
 				$from = normalize_host($entry["rhost"]);
 				@$byfrom[$from][] = $entry["line"];
 				@$updated[$from] = max($updated[$from], $entry["updated"]);
-				$names[$user] = $entry["name"];
+				if (!isset($names[$user]))
+					$names[$user] = $entry["name"];
 				$uid = $entry["uid"];
 			}
 			ksort($byfrom);
