@@ -29,13 +29,18 @@ function parse_query($query) {
 	return array($user, $host);
 }
 
+function _open_db() {
+	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
+		or die("error: could not open rwho database\r\n");
+	return $db;
+}
+
 // retrieve(str? $user, str? $host) -> utmp_entry[]
 // Retrieve all currently known sessions for given query.
 // Both parameters optional.
 
 function retrieve($q_user, $q_host) {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
@@ -105,8 +110,7 @@ function summarize($utmp) {
 // Retrieve all currently active hosts, with user and connection counts.
 
 function retrieve_hosts() {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
 	$max_ts = time() - MAX_AGE;
 
@@ -139,8 +143,7 @@ function retrieve_hosts() {
 // Useful for 'SELECT COUNT(x) AS count' kind of queries.
 
 function __single_field_query($sql, $field) {
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\r\n");
+	$db = _open_db();
 
 	$st = $db->prepare($sql);
 	if (!$st->execute()) {
