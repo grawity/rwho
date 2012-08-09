@@ -92,7 +92,11 @@ function parse_query($query) {
 function retrieve($q_user, $q_host) {
 	$db = DB::connect();
 
-	$sql = "SELECT * FROM utmp";
+	$sql = "SELECT utmp.*, names.name
+		FROM utmp
+		LEFT JOIN names
+		ON	utmp.host = names.host
+			AND utmp.rawuser = names.user";
 	$conds = array();
 	if (strlen($q_user)) $conds[] = "user=:user";
 	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
