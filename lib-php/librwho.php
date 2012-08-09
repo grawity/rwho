@@ -135,11 +135,13 @@ function summarize($utmp) {
 		foreach ($byhost as $host => &$sessions) {
 			$byfrom = array();
 			$updated = array();
+			$names = array();
 
 			foreach ($sessions as $entry) {
 				$from = normalize_host($entry["rhost"]);
 				@$byfrom[$from][] = $entry["line"];
 				@$updated[$from] = max($updated[$from], $entry["updated"]);
+				$names[$user] = $entry["name"];
 				$uid = $entry["uid"];
 			}
 			ksort($byfrom);
@@ -153,6 +155,7 @@ function summarize($utmp) {
 					"rhost" => $from,
 					"is_summary" => count($lines) > 1,
 					"updated" => $updated[$from],
+					"name" => $names[$user],
 					);
 			}
 		}
