@@ -1,13 +1,13 @@
 #!/usr/bin/env php
 <?php
 namespace RWho;
-require __DIR__."/config.php";
+require __DIR__."/lib-php/librwho.php";
 
 function cleanup() {
 	$max_age = 7200;
 
-	$db = new \PDO(DB_PATH, DB_USER, DB_PASS)
-		or die("error: could not open rwho database\n");
+	$db = _open_db();
+
 	$rows = $db->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
 	if ($rows === false) {
 		$err = $db->errorInfo();
