@@ -4,20 +4,8 @@ namespace RWho;
 header("Content-Type: text/plain; charset=utf-8");
 
 require __DIR__."/lib-php/librwho.php";
-#require __DIR__."/config.php";
-openlog("rwho-server", null, LOG_DAEMON);
 
-class DB {
-	static $dbh;
-	static function connect() {
-		if (!isset(self::$dbh)) {
-			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
-						Config::get("db.username"),
-						Config::get("db.password"));
-		}
-		return self::$dbh;
-	}
-}
+openlog("rwho-server", null, LOG_DAEMON);
 
 // Host information
 

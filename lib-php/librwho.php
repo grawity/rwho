@@ -34,6 +34,19 @@ class Config {
 	}
 }
 
+class DB {
+	static $dbh;
+
+	static function connect() {
+		if (!isset(self::$dbh)) {
+			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
+						Config::get("db.username"),
+						Config::get("db.password"));
+		}
+		return self::$dbh;
+	}
+}
+
 // maximum age before which the entry will be considered stale
 // default is 1 minute more than the rwhod periodic update time
 Config::set("expire", 11*60);
@@ -61,20 +74,12 @@ function parse_query($query) {
 	return array($user, $host);
 }
 
-function _open_db() {
-	$db = new \PDO(Config::get("db.pdo_driver"),
-			Config::get("db.username"),
-			Config::get("db.password"))
-		or die("error: could not open rwho database\r\n");
-	return $db;
-}
-
 // retrieve(str? $user, str? $host) -> utmp_entry[]
 // Retrieve all currently known sessions for given query.
 // Both parameters optional.
 
 function retrieve($q_user, $q_host) {
-	$db = _open_db();
+	$db = DB::connect();
 
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
@@ -144,7 +149,7 @@ function summarize($utmp) {
 // Retrieve all currently active hosts, with user and connection counts.
 
 function retrieve_hosts() {
-	$db = _open_db();
+	$db = DB::connect();
 
 	$max_ts = time() - Config::get("expire");
 
@@ -177,7 +182,7 @@ function retrieve_hosts() {
 // Useful for 'SELECT COUNT(x) AS count' kind of queries.
 
 function __single_field_query($sql, $field) {
-	$db = _open_db();
+	$db = DB::connect();
 
 	$st = $db->prepare($sql);
 	if (!$st->execute()) {

@@ -6,11 +6,10 @@ require __DIR__."/lib-php/librwho.php";
 function cleanup() {
 	$max_age = 7200;
 
-	$db = _open_db();
-
-	$rows = $db->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
+	$dbh = DB::connect();
+	$rows = $dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
 	if ($rows === false) {
-		$err = $db->errorInfo();
+		$err = $dbh->errorInfo();
 		fwrite(STDERR, "error: ".implode("; ", $err)."\n");
 	}
 	return $rows;
