@@ -32,6 +32,15 @@ class Config {
 	static function get($key) {
 		return self::$data[$key];
 	}
+
+	static function getbool($key) {
+		$v = self::$data[$key];
+		return $v === "true" ? true
+			: $v === "false" ? false
+			: $v === "yes" ? true
+			: $v === "no" ? false
+			: (bool) $v;
+	}
 }
 
 class DB {
@@ -47,10 +56,12 @@ class DB {
 	}
 }
 
-// maximum age before which the entry will be considered stale
-// default is 1 minute more than the rwhod periodic update time
-Config::set("expire", 11*60);
-
+Config::$data = array(
+	// maximum age before which the entry will be considered stale
+	// default is 1 minute more than the rwhod periodic update time
+	"expire" => 11*60,
+	"finger.log" => false,
+);
 Config::parse(__DIR__."/../rwho.conf");
 
 // parse_query(str? $query) -> str $user, str $host

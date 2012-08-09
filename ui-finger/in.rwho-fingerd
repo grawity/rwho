@@ -2,8 +2,38 @@
 <?php
 require __DIR__."/../lib-php/librwho.php";
 
+openlog("rwho-fingerd", null, LOG_DAEMON);
+
+function strip_host($host) {
+	if (substr($host, 0, 7) === "::ffff:")
+		$host = substr($host, 7);
+	return $host;
+}
+
+function get_rhost() {
+	$h = getenv("REMOTE_HOST");
+	if ($h !== false) return strip_host($h);
+
+	$h = getenv("REMOTEHOST");
+	if ($h !== false) return strip_host($h);
+
+	if (defined("STDIN")) {
+		$h = stream_socket_get_name(constant("STDIN"), true);
+		if ($h !== false) return strip_host($h);
+	}
+}
+
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
+
+	if (RWho\Config::getbool("finger.log")) {
+		$log_qry = rtrim($input, "\r\n");
+		$log_msg = "query \"".addcslashes($log_qry, "\000..\037")."\"";
+		$log_host = get_rhost();
+		syslog(LOG_DEBUG, "accepted $log_msg from $log_host");
+	}
+
+	// special "list hosts" query
 
 	if ($query === "*") {
 		$data = RWho\retrieve_hosts();
@@ -21,12 +51,16 @@ function finger_handle_query($input) {
 		return;
 	}
 
+	// normal queries
+
 	list ($q_user, $q_host) = RWho\parse_query($query);
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);
 
 	$data = RWho\retrieve($q_user, $q_host);
+
+	// display login info
 
 	if (count($data)) {
 		if (!$detailed)
@@ -46,6 +80,8 @@ function finger_handle_query($input) {
 			print("finger: Nobody is logged in.\r\n");
 	}
 
+	// display stats
+
 	if ($detailed && !$has_user && !$has_host) {
 		$n_users = RWho\count_users();
 		$n_conns = count($data);
@@ -54,6 +90,8 @@ function finger_handle_query($input) {
 		printf("(%d users over %d connections on %d hosts)\r\n",
 			$n_users, $n_conns, $n_hosts);
 	}
+
+	// display plan
 
 	if ($has_user) {
 		print("\r\n");
