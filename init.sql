@@ -1,3 +1,5 @@
+START TRANSACTION;
+
 DROP TABLE IF EXISTS utmp;
 CREATE TABLE utmp (
 	rowid	integer		AUTO_INCREMENT PRIMARY KEY,
@@ -21,3 +23,5 @@ CREATE TABLE hosts (
 	last_update	integer,
 	last_addr	varchar(63)
 );
+
+COMMIT;
