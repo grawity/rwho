@@ -69,6 +69,28 @@ function utmp_delete_host($host) {
 	return $st->execute();
 }
 
+function names_add_user($host, $user, $name) {
+	$dbh = DB::connect();
+	$key = md5($user."@".$host);
+	$st = $dbh->prepare('
+		INSERT INTO names (ukey, host, user, name)
+		VALUES (:ukey, :host, :user, :name)
+		ON DUPLICATE KEY UPDATE name=:name');
+	$st->bindValue(":ukey", $key);
+	$st->bindValue(":host", $host);
+	$st->bindValue(":user", $user);
+	$st->bindValue(":name", $name);
+	return $st->execute();
+}
+
+function names_delete_host($host) {
+	$dbh = DB::connect();
+	$st = $dbh->prepare('DELETE FROM names
+			     WHERE host=:host');
+	$st->bindValue(":host", $host);
+	return $st->execute();
+}
+
 // API actions
 
 if (strlen($_POST["fqdn"]))
@@ -93,6 +115,14 @@ switch ($action) {
 		foreach ($data as $entry) {
 			utmp_insert($host, $entry);
 		}
+
+		if (isset($_POST["names"])) {
+			$names = json_decode($_POST["names"]);
+			foreach ($names as $user => $name) {
+				names_add_user($host, $user, $name);
+			}
+		}
+
 		print "OK\n";
 		break;
 
@@ -119,12 +149,22 @@ switch ($action) {
 		foreach ($data as $entry) {
 			utmp_insert($host, $entry);
 		}
+
+		if (isset($_POST["names"])) {
+			$names = json_decode($_POST["names"]);
+			foreach ($names as $user => $name) {
+				names_add_user($host, $user, $name);
+			}
+		}
+
 		print "OK\n";
 		break;
 
 	case "destroy":
 		host_delete($host);
 		utmp_delete_host($host);
+		names_delete_host($host);
+
 		print "OK\n";
 		break;
 
