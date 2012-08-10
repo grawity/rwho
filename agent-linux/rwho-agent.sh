@@ -1,39 +1,39 @@
 #!/usr/bin/env bash
 
 RWHO_DIR="$(dirname "$0")/.."
-RWHO_AGENT="$RWHO_DIR/agent-linux/rwho-agent"
-RWHO_ARGS=""
+AGENT="$RWHO_DIR/agent-linux/rwho-agent"
+ARGS=""
 
 if [ "$(whoami)" = "root" ]; then
-	RWHO_PIDFILE="/run/rwho-agent.pid"
-	CONFIG_FILE="/etc/rwho.conf"
+	PIDFILE="/run/rwho-agent.pid"
+	CONFIG="/etc/rwho.conf"
 else
-	RWHO_PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
-	CONFIG_FILE="$RWHO_DIR/rwho.conf"
+	PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
+	CONFIG="$RWHO_DIR/rwho.conf"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
 	export PERL5LIB
 fi
 
-if [ "$CONFIG_FILE" && -s "$CONFIG_FILE" ]; then
-	RWHO_ARGS="$RWHO_ARGS --config $CONFIG_FILE"
+if [ -s "$CONFIG" ]; then
+	ARGS+=" --config $CONFIG"
 fi
 
 ctl() {
 	case $1 in
 	start)
-		mkdir -p "$(dirname "$RWHO_PIDFILE")"
-		exec "$RWHO_AGENT" --pidfile="$RWHO_PIDFILE" --daemon $RWHO_ARGS
+		mkdir -p "$(dirname "$PIDFILE")"
+		exec "$AGENT" --pidfile "$PIDFILE" --daemon $ARGS
 		;;
 	foreground)
-		mkdir -p "$(dirname "$RWHO_PIDFILE")"
-		exec "$RWHO_AGENT" --pidfile="$RWHO_PIDFILE" --verbose $RWHO_ARGS
+		mkdir -p "$(dirname "$PIDFILE")"
+		exec "$AGENT" --pidfile "$PIDFILE" --verbose $ARGS
 		;;
 	stop)
-		if [ -f "$RWHO_PIDFILE" ]; then
-			read -r pid < "$RWHO_PIDFILE" &&
+		if [ -f "$PIDFILE" ]; then
+			read -r pid < "$PIDFILE" &&
 			kill "$pid" &&
-			rm -f "$RWHO_PIDFILE"
+			rm -f "$PIDFILE"
 		else
 			echo "not running (pidfile not found)"
 		fi
@@ -49,17 +49,17 @@ ctl() {
 		ctl restart
 		;;
 	status)
-		if [ ! -f "$RWHO_PIDFILE" ]; then
+		if [ ! -f "$PIDFILE" ]; then
 			echo "stopped (no pidfile)"
 			return 3
 		fi
 
-		if ! read -r pid <"$RWHO_PIDFILE"; then
+		if ! read -r pid < "$PIDFILE"; then
 			echo "unknown (cannot read pidfile)"
 			return 1
 		fi
 
-		if kill -0 "$pid" 2>/dev/null; then
+		if kill -0 "$pid" 2> /dev/null; then
 			echo "running (pid $pid)"
 			return 0
 		else
@@ -89,7 +89,7 @@ ctl() {
 		${CPAN:-echo} $perldeps
 		;;
 	update)
-		if [ "$RWHO_AGENT" -nt "$RWHO_PIDFILE" ]; then
+		if [ "$AGENT" -nt "$PIDFILE" ]; then
 			ctl restart
 		fi
 		;;
