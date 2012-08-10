@@ -9,13 +9,12 @@ class Config {
 		if (!$fh)
 			return;
 		while (($line = fgets($fh)) !== false) {
+			$line = trim($line);
 			if (!strlen($line))
 				continue;
 			if ($line[0] === ";" || $line[0] === "#")
 				continue;
-			list ($key, $val) = explode("=", $line, 2);
-			$key = trim($key);
-			$val = trim($val);
+			list ($key, $val) = preg_split('/\s*=\s*/', $line, 2);
 			self::$data[$key] = $val;
 		}
 		fclose($fh);
