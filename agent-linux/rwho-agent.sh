@@ -11,7 +11,6 @@ if [ "$(whoami)" = "root" ]; then
 else
 	RWHO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/rwho/rwho-agent.conf"
 	RWHO_PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
-	OLD_PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
 	CONFIG_FILE="$RWHO_DIR/rwho.conf"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
@@ -37,11 +36,7 @@ ctl() {
 		exec "$RWHO_AGENT" --pidfile="$RWHO_PIDFILE" --verbose $RWHO_ARGS
 		;;
 	stop)
-		if [ -f "$OLD_PIDFILE" ]; then
-			read -r pid < "$OLD_PIDFILE" &&
-			kill "$pid" &&
-			rm -f "$OLD_PIDFILE"
-		elif [ -f "$RWHO_PIDFILE" ]; then
+		if [ -f "$RWHO_PIDFILE" ]; then
 			read -r pid < "$RWHO_PIDFILE" &&
 			kill "$pid" &&
 			rm -f "$RWHO_PIDFILE"
