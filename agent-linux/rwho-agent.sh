@@ -38,15 +38,14 @@ ctl() {
 			echo "not running (pidfile not found)"
 		fi
 		;;
-	restart)
+	restart|reload|force-reload)
 		ctl stop
 		ctl start
 		;;
-	reload)
-		ctl restart
-		;;
-	force-reload)
-		ctl restart
+	update)
+		if [ "$AGENT" -nt "$PIDFILE" ]; then
+			ctl restart
+		fi
 		;;
 	status)
 		if [ ! -f "$PIDFILE" ]; then
@@ -74,7 +73,6 @@ ctl() {
 		Socket::GetAddrInfo
 		Sys::Utmp
 		'
-
 		case `uname` in
 		FreeBSD)
 			perldeps+='
@@ -85,13 +83,7 @@ ctl() {
 			Linux::Inotify2
 			';;
 		esac
-
 		${CPAN:-echo} $perldeps
-		;;
-	update)
-		if [ "$AGENT" -nt "$PIDFILE" ]; then
-			ctl restart
-		fi
 		;;
 	*)
 		echo "usage: $0 <start|stop|restart|foreground|status|update>"
