@@ -3,22 +3,31 @@
 
 [[ $DEBUG ]] && set -x
 
-## Defaults
-
 RWHO_DIR="/cluenet/rwho"
 
-[[ $RWHO_HOST ]] ||
-    RWHO_HOST='rwho.cluenet.org'
+RWHO_HOST='rwho.cluenet.org'
+RWHO_PORT='finger'
+RWHO_URL="http://$RWHO_HOST/"
 
-[[ $RWHO_SERVICE ]] ||
-    RWHO_SERVICE='finger'
+CONFIG="$RWHO_DIR/rwho.conf"
 
-[[ $RWHO_URL ]] ||
-    RWHO_URL="http://$RWHO_HOST/"
-
-rwho-fingerd() { "$RWHO_DIR/ui-finger/in.rwho-fingerd" "$@"; }
-
-## Functions
+if [[ -s $CONFIG ]]; then
+	re='^\s*([^;#][^\s]+)\s*=\s*(.*)$'
+	while read -r line; do
+		if [[ $line =~ $re ]]; then
+			key=${BASH_REMATCH[1]}
+			val=${BASH_REMATCH[2]}
+			case $key in
+			'finger.host')
+				RWHO_HOST=$val;;
+			'finger.port')
+				RWHO_PORT=$val;;
+			'agent.notify_url')
+				RWHO_URL=${val#server.php};;
+			esac
+		fi
+	done < "$CONFIG"
+fi
 
 usage() {
 	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
@@ -36,28 +45,15 @@ filter() {
 	perl -pe 's/\033/"^".chr(ord($&)+0100)/ge'
 }
 
-conn_remote() {
+conn() {
 	local request=$1 fd=
-	exec {fd}<>"/dev/tcp/$RWHO_HOST/$RWHO_SERVICE" || {
+	exec {fd}<>"/dev/tcp/$RWHO_HOST/$RWHO_PORT" || {
 		echo >&2 "rwho: connection failed ($?)"
 		return 1
 	}
 	printf >&$fd '%s\r\n' "$request"
 	filter <&$fd
 	exec {fd}>&-
-}
-
-conn_local() {
-	local request=$1
-	printf '%s\n' "$request" | rwho-fingerd
-}
-
-conn() {
-	if [[ $(hostname -f) == "$RWHO_HOST" ]]; then
-		conn_local "$@"
-	else
-		conn_remote "$@"
-	fi
 }
 
 opt_l=false
@@ -79,17 +75,11 @@ query=$1
 if $opt_l; then
 	if [[ $query ]]; then
 		long=true
+		query="/W $query"
 	else
 		hosts=true
+		query="*"
 	fi
 fi
 
-if $hosts; then
-	query='*'
-fi
-
-if $long; then
-	conn "/W $query"
-else
-	conn "$query"
-fi
+conn "$query"
