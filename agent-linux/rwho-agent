@@ -141,15 +141,13 @@ sub getutmppath {
 	return $path;
 }
 
-sub forked(&) {
+sub forked (&) {
 	my $sub = shift;
 	my $pid = fork();
 	if ($pid) {return $pid} else {exit &$sub}
 }
 
 sub daemonize {
-	chdir("/")
-		or die "daemonize: cannot chdir to /: $!\n";
 	open(STDIN, "<", "/dev/null")
 		or die "daemonize: cannot open /dev/null: $!\n";
 
@@ -380,9 +378,6 @@ debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
 
 # main code
 
-$SIG{INT} = \&cleanup;
-$SIG{TERM} = \&cleanup;
-
 if (defined $pidfile) {
 	if ($do_single || $do_cleanup) {
 		warn "warning: --pidfile ignored in single-update mode\n";
@@ -392,13 +387,18 @@ if (defined $pidfile) {
 	}
 }
 
+chdir("/");
+
+$SIG{INT} = \&cleanup;
+$SIG{TERM} = \&cleanup;
+
 if ($do_cleanup) {
 	cleanup();
 	exit(0);
+} else {
+	debug("performing initial update");
+	update();
 }
-
-debug("performing initial update");
-update();
 
 if ($do_fork) {
 	if ($do_single) {
@@ -406,8 +406,6 @@ if ($do_fork) {
 	} else {
 		daemonize();
 	}
-} else {
-	chdir("/");
 }
 
 $main_pid = $$;
