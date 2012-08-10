@@ -11,7 +11,9 @@ use Pod::Usage;
 use Sys::Hostname;
 use Time::HiRes qw(usleep);
 
-my $notify_url = "http://rwho.cluenet.org/server.php";
+my (%arg, %conf);
+
+my $notify_url;
 my $utmp_path;
 my $poll_interval;
 my $verbose	= 0;
@@ -20,7 +22,8 @@ my $do_single	= 0;
 my $do_cleanup	= 0;
 my $do_monitor	= 1;
 my $do_poll	= 1;
-my $show_root	= 0;
+my $skip_root	= 1;
+my $skip_users;
 my $pidfile;
 my $pidfile_h;
 
@@ -30,6 +33,22 @@ my $my_fqdn;
 my $monitor_impl;
 my $main_pid;
 my $poller_pid;
+
+sub parse_bool {
+	given (shift) {
+		when (undef) { undef; }
+		when (/^(yes|true)$/) { 1; }
+		when (/^(no|false)$/) { 0; }
+		default { warn "invalid boolean value '$_'\n"; undef; }
+	}
+}
+
+sub parse_conf {
+	my $fh = shift;
+	map {split /\s*=\s*/, $_, 2}
+	grep {length and !/^[#;]/}
+	grep {chomp} <$fh>;
+}
 
 sub enum_sessions {
 	my @utmp = ();
@@ -75,8 +94,11 @@ sub update {
 		$_->{host} //= "?";
 		$_->{host} =~ s/^::ffff://;
 	}
-	if (!$show_root) {
+	if ($skip_root) {
 		@sessions = grep {$_->{user} ne "root"} @sessions;
+	}
+	if ($skip_users) {
+		@sessions = grep {$_->{user} !~ $skip_users} @sessions;
 	}
 	upload("put", \@sessions);
 }
@@ -239,15 +261,9 @@ sub mainloop_monitor {
 	$0 = "rwho-agent: monitor";
 
 	given ($monitor_impl) {
-		when ("kqueue") {
-			goto &mainloop_monitor_kqueue;
-		}
-		when ("inotify") {
-			goto &mainloop_monitor_inotify;
-		}
-		default {
-			die "error: monitor mode not supported on $^O\n";
-		}
+		when ("kqueue") { goto &mainloop_monitor_kqueue; }
+		when ("inotify") { goto &mainloop_monitor_inotify; }
+		default { die "error: monitor mode not supported on $^O\n"; }
 	}
 }
 
@@ -273,17 +289,26 @@ my $pod = "$0.1.pod";
 $0 = "rwho-agent";
 
 GetOptions(
+	"config=s"	=> sub {
+				my ($opt, $arg) = @_;
+				if (open(my $fh, "<", $arg)) {
+					%conf = parse_conf($fh);
+				} else {
+					die "error: unable to read '$arg' ($!)\n";
+				}
+			},
 	"cleanup!"	=> \$do_cleanup,
 	"daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(-input => $pod, -exitstatus => 0); },
-	"include-root!"	=> \$show_root,
-	"inotify!"	=> \$do_monitor,
+	"include-root!"	=> sub { $arg{skip_root} = 0; },
 	"man"		=> sub { pod2usage(-input => $pod, -exitstatus => 0, -verbose => 2); },
 	"monitor!"	=> \$do_monitor,
 	"poll=i"	=> \$poll_interval,
 	"no-poll"	=> sub { $poll_interval = 0; },
 	"pidfile=s"	=> \$pidfile,
-	"server-url=s"	=> \$notify_url,
+	"server-url=s"	=> \$arg{notify_url},
+	"skip-root!"	=> \$arg{skip_root},
+	"skip-users=s"	=> \$arg{skip_users},
 	"single!"	=> \$do_single,
 	"v|verbose"	=> \$verbose,
 ) or pod2usage(-input => $pod, -exitstatus => 1, -verbose => 0);
@@ -309,28 +334,51 @@ if ($do_monitor) {
 	debug("monitor: using $monitor_impl on $^O");
 }
 
-# init
+# merge arguments and config file
+
+$skip_root = $arg{skip_root}
+		// parse_bool($conf{"agent.exclude_root"})
+		// 1;
+
+$skip_users = $arg{skip_users}
+		// $conf{"agent.exclude_users"}
+		// undef;
+
+$skip_users = qr/^($skip_users)$/i if defined $skip_users;
+
+$notify_url = $arg{notify_url}
+		// $conf{"agent.notify_url"}
+		// "http://rwho.cluenet.org/server.php";
+
+if (!length $notify_url) {
+	die "server URL not specified\n";
+}
+
+debug("upload: using $notify_url");
+
+$utmp_path = $conf{"agent.utmp_path"}
+		|| getutmppath()
+		|| die "error: utmp file not found\n";
 
 $poll_interval //= ($do_monitor ? 600 : 30);
+
 $do_poll = $poll_interval > 0;
+
 unless ($do_monitor || $do_poll) {
 	die "error: cannot disable both polling and monitor\n";
 }
 
-$utmp_path //= getutmppath();
-if (!defined $utmp_path) {
-	die "error: utmp file not found\n";
+$my_hostname = hostname() || '(none)';
+
+if ($my_hostname eq '(none)') {
+	die "error: could not determine own hostname";
 }
 
-if (!defined $notify_url) {
-	die "error: server URL not specified\n";
-}
+$my_fqdn = canon_hostname($my_hostname) || $my_hostname;
 
-$my_hostname = hostname();
-$my_fqdn = canon_hostname($my_hostname);
 debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
 
-# Main code
+# main code
 
 $SIG{INT} = \&cleanup;
 $SIG{TERM} = \&cleanup;
@@ -345,7 +393,6 @@ if (defined $pidfile) {
 }
 
 if ($do_cleanup) {
-	debug("sending empty update");
 	cleanup();
 	exit(0);
 }

@@ -14,6 +14,10 @@ rwhod [options]
 
 Send an empty update and exit. (See also B<--single> for notes.) 
 
+=item B<--config=I<path>>
+
+Read a configuration file (see I<rwho.conf.example> for details). Command-line options override those given in the config.
+
 =item B<--daemon>
 
 Fork to background after initial update.
@@ -22,14 +26,9 @@ Fork to background after initial update.
 
 Obvious.
 
-=item B<--[no-]include-root>
-
-Include or ignore root logins. Default is to ignore, for "security" reasons.
-(Those who run rwhod generally care little about security, however.)
-
 =item B<--[no-]monitor>
 
-Monitor for changes using I<inotify(7)> or I<kqueue(2)>. Enabled by default.
+Monitor for changes using I<inotify(7)> or I<kqueue(2)> (depending on OS). Enabled by default.
 
 =item B<--man>
 
@@ -44,13 +43,22 @@ Ignored in single-update mode.
 
 Periodic update every I<seconds> seconds. 600 seconds is the default (30 seconds if monitor is disabled). Zero to disable.
 
-=item B<--server-url=I<url>>
+=item B<--server-url=I<url>> (conf: I<agent.server_url>)
 
 Use specified server URL.
 
 =item B<--single>
 
 Send a single update and exit. Will cause B<--daemon> or B<--pidfile> to be ignored.
+
+=item B<--[no-]skip-root> (conf: I<agent.exclude_root>)
+
+Include or ignore root logins. Default is to ignore, for "security" reasons.
+(Those who run rwhod generally care little about security, however.)
+
+=item B<--skip-users=I<regex>> (conf: I<agent.exclude_users>)
+
+Ignore users whose logins fully match a given regex.
 
 =item B<-v>, B<--verbose>
 

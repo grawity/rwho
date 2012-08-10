@@ -7,10 +7,12 @@ RWHO_ARGS=""
 if [ "$(whoami)" = "root" ]; then
 	RWHO_CONFIG="/etc/conf.d/rwho-agent"
 	RWHO_PIDFILE="/run/rwho-agent.pid"
+	CONFIG_FILE="/etc/rwho.conf"
 else
 	RWHO_CONFIG="${XDG_CONFIG_HOME:-$HOME/.config}/rwho/rwho-agent.conf"
 	RWHO_PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
 	OLD_PIDFILE="$HOME/tmp/rwhod-$HOSTNAME.pid"
+	CONFIG_FILE="$RWHO_DIR/rwho.conf"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
 	export PERL5LIB
@@ -18,6 +20,10 @@ fi
 
 if [ -e "$RWHO_CONFIG" ]; then
 	. "$RWHO_CONFIG"
+fi
+
+if [ "$CONFIG_FILE" && -s "$CONFIG_FILE" ]; then
+	RWHO_ARGS="$RWHO_ARGS --config $CONFIG_FILE"
 fi
 
 ctl() {
