@@ -1,5 +1,5 @@
 <?php namespace RWho; ?>
-<h1><?php echo h(html::$title) ?></h1>
+<h1><?= h(html::$title) ?></h1>
 
 <table id="sessions">
 <thead>
@@ -16,11 +16,11 @@ html::header("updated", 7);
 
 <tfoot>
 <tr>
-	<td colspan="<?php echo html::$columns ?>">
+	<td colspan="<?= html::$columns ?>">
 		<a href="./">Back to all sessions</a>
 		or output as
-		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
-		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>
+		<a href="?<?= H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
+		<a href="?<?= H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>
 	</td>
 </tr>
 </tfoot>

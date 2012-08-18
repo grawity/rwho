@@ -28,7 +28,7 @@ html::header("address", 40);
 
 <tfoot>
 <tr>
-	<td colspan="<?php echo html::$columns ?>">
+	<td colspan="<?= html::$columns ?>">
 <?php if (strlen(query::$user) or strlen(query::$host)) { ?>
 		<a href="?">Back to all sessions</a>
 <?php } elseif (query::$detailed) { ?>
@@ -37,10 +37,10 @@ html::header("address", 40);
 		<a href="?full">Expanded view</a>
 <?php } ?>
 		or output as
-		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
-		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
+		<a href="?<?= H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
+		<a href="?<?= H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
 <?php if (Config::has("finger.host")) { ?>
-		<a href="<?php echo H(make_finger_addr()) ?>">text</a>,
+		<a href="<?= H(make_finger_addr()) ?>">text</a>,
 <?php } ?>
 		or
 		<a href="hosts.php">list hosts</a>
@@ -52,7 +52,7 @@ html::header("address", 40);
 </table>
 
 <?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
-<p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>
+<p><a href="http://search.cluenet.org/?q=<?= H(query::$user) ?>">See <?= H(query::$user) ?>'s Cluenet profile.</a></p>
 <?php } ?>
 
 <?php } else { // data === false ?>
