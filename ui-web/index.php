@@ -185,6 +185,9 @@ if (query::$format == "html") {
 	</noscript>
 	<meta name="robots" content="noindex, nofollow">
 	<link rel="stylesheet" href="rwho.css">
+<?php if (Config::has("web.stylesheet")) { ?>
+	<link rel="stylesheet" href="<?php echo h(Config::get("web.stylesheet")) ?>">
+<?php } ?>
 </head>
 
 <?php if ($data !== false) { ?>

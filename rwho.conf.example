@@ -10,3 +10,5 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 
 # if set, web interface will add a finger gateway link
 ;finger.host = localhost
+
+;web.stylesheet = /custom.css
