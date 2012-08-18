@@ -21,7 +21,7 @@ if (query::$detailed)
 	html::header("uid", 5);
 html::header("host", 10);
 html::header("line", 8);
-html::header("address", 40);
+html::header("address", 30);
 ?>
 </tr>
 </thead>
