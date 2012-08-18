@@ -1,7 +1,7 @@
 <?php namespace RWho; ?>
 <h1><?= h(html::$title) ?></h1>
 
-<table id="sessions">
+<table id="rwho-sessions">
 <thead>
 <tr>
 <?php

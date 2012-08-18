@@ -12,7 +12,7 @@ echo strlen(query::$host)
 	: "all servers";
 ?></h1>
 
-<table id="sessions">
+<table id="rwho-sessions">
 <thead>
 <tr>
 <?php

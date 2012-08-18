@@ -11,17 +11,17 @@ table {
 	border-collapse: collapse;
 }
 
-#sessions thead,
-#sessions tfoot {
+#rwho-sessions thead,
+#rwho-sessions tfoot {
 	background: #f7f7f7;
 }
 
-#sessions tfoot {
+#rwho-sessions tfoot {
 	font-size: smaller;
 }
 
-#sessions td,
-#sessions th {
+#rwho-sessions td,
+#rwho-sessions th {
 	border-width: 1px 0;
 	border-style: solid;
 	border-color: #ddd;
@@ -30,7 +30,7 @@ table {
 	vertical-align: top;
 }
 
-#sessions .stale td {
+#rwho-sessions .stale td {
 	color: #aaa;
 	font-style: italic;
 }
