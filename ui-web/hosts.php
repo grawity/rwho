@@ -3,27 +3,11 @@ namespace RWho;
 error_reporting(E_ALL^E_NOTICE);
 
 require __DIR__."/../lib-php/librwho.php";
+require "util.inc.php";
 
 class query {
 	static $format;
 }
-
-class html {
-	static $columns = 0;
-	static $title = "rwho";
-	static $refresh = 0;
-
-	static function header($title, $width=0) {
-		if ($width)
-			echo "\t<th style=\"min-width: {$width}ex\">$title</th>\n";
-		else
-			echo "\t<th>$title</th>\n";
-
-		self::$columns++;
-	}
-}
-
-function H($str) { return htmlspecialchars($str); }
 
 function output_json($data) {
 	$d = array();
