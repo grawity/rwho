@@ -10,6 +10,7 @@ class query {
 
 class html {
 	static $columns = 0;
+	static $title;
 
 	static function header($title, $width=0) {
 		if ($width)
@@ -122,66 +123,11 @@ query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 $data = retrieve_hosts();
 
 if (query::$format == "html") {
-?>
-<!DOCTYPE html>
-<head>
-	<title>Active hosts</title>
-	<meta charset="utf-8">
-	<noscript>
-		<meta http-equiv="Refresh" content="10">
-	</noscript>
-	<meta name="robots" content="noindex, nofollow">
-	<link rel="stylesheet" href="rwho.css">
-<?php if (Config::has("web.stylesheet")) { ?>
-	<link rel="stylesheet" href="<?php echo h(Config::get("web.stylesheet")) ?>">
-<?php } ?>
-</head>
-
-<h1>Active hosts</h1>
-
-<table id="sessions">
-<thead>
-<tr>
-<?php
-html::header("name", 9);
-html::header("fqdn", 20);
-html::header("users", 7);
-html::header("lines", 7);
-html::header("updated", 7);
-?>
-</tr>
-</thead>
-
-<tfoot>
-<tr>
-	<td colspan="<?php echo html::$columns ?>">
-		<a href="./">Back to all sessions</a>
-		or output as
-		<a href="?<?php echo H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
-		<a href="?<?php echo H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>
-	</td>
-</tr>
-</tfoot>
-
-<?php output_html($data); ?>
-</table>
-
-<p>Hosts idle longer than <?= Config::get("expire") ?> seconds are not shown.</p>
-
-<script type="text/javascript">
-var settings = {
-	page: "host",
-	interval: 5,
-	args: "<?= addslashes(mangle_query(array("fmt" => "json"))) ?>",
-	html_columns: <?= html::$columns ?>,
-};
-</script>
-<script type="text/javascript" src="xhr.js"></script>
-
-<?php @include "footer.html"; ?>
-
-<?php
-} // query::$format == "html"
+	html::$title = "Active hosts";
+	require "html-header.inc.php";
+	require "html-body-hosts.inc.php";
+	@include "html-footer.inc.php";
+}
 elseif (query::$format == "json") {
 	output_json($data);
 }
