@@ -51,14 +51,6 @@ html::header("address", 40);
 <?php output_html($data); ?>
 </table>
 
-<script type="text/javascript">
-var settings = {
-	interval: 3,
-	args: "<?= addslashes(mangle_query(array("fmt" => "html-xhr"))) ?>",
-};
-</script>
-<script type="text/javascript" src="xhr.js"></script>
-
 <?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
 <p><a href="http://search.cluenet.org/?q=<?php echo H(query::$user) ?>">See <?php echo H(query::$user) ?>'s Cluenet profile.</a></p>
 <?php } ?>

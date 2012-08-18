@@ -10,7 +10,8 @@ class query {
 
 class html {
 	static $columns = 0;
-	static $title;
+	static $title = "rwho";
+	static $refresh = 0;
 
 	static function header($title, $width=0) {
 		if ($width)
@@ -124,6 +125,7 @@ $data = retrieve_hosts();
 
 if (query::$format == "html") {
 	html::$title = "Active hosts";
+	html::$refresh = 5;
 	require "html-header.inc.php";
 	require "html-body-hosts.inc.php";
 	@include "html-footer.inc.php";

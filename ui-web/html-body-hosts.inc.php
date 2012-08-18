@@ -29,11 +29,3 @@ html::header("updated", 7);
 </table>
 
 <p>Hosts idle longer than <?= Config::get("expire") ?> seconds are not shown.</p>
-
-<script type="text/javascript">
-var settings = {
-	interval: 5,
-	args: "<?= addslashes(mangle_query(array("fmt" => "json"))) ?>",
-};
-</script>
-<script type="text/javascript" src="xhr.js"></script>

@@ -13,7 +13,8 @@ class query {
 
 class html {
 	static $columns = 0;
-	static $title;
+	static $title = "rwho";
+	static $refresh = 0;
 
 	static function header($title, $width=0) {
 		if ($width)
@@ -177,6 +178,7 @@ if (!query::$detailed)
 
 if (query::$format == "html") {
 	html::$title = "Users logged in";
+	html::$refresh = 3;
 	require "html-header.inc.php";
 	require "html-body-users.inc.php";
 	@include "html-footer.inc.php";
