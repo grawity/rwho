@@ -4,11 +4,11 @@
 
 <h1><?php
 echo strlen(query::$user)
-	? "<strong>".H(query::$user)."</strong>"
+	? "<em>".H(query::$user)."</em>"
 	: "All users";
 echo " on ";
 echo strlen(query::$host)
-	? H(query::$host)
+	? "<em>".H(query::$host)."</em>"
 	: "all servers";
 ?></h1>
 
