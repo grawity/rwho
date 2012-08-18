@@ -128,14 +128,14 @@ if (query::$format == "html") {
 	require "html-body-hosts.inc.php";
 	@include "html-footer.inc.php";
 }
+elseif (query::$format == "html-xhr") {
+	output_html($data);
+}
 elseif (query::$format == "json") {
 	output_json($data);
 }
 elseif (query::$format == "xml") {
 	output_xml($data);
-}
-elseif (query::$format == "html-xhr") {
-	output_html($data);
 }
 else {
 	header("Content-Type: text/plain; charset=utf-8", true, 406);

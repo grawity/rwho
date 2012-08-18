@@ -53,10 +53,8 @@ html::header("address", 40);
 
 <script type="text/javascript">
 var settings = {
-	page: "utmp",
 	interval: 3,
-	args: "<?= addslashes(mangle_query(array("fmt" => "json"))) ?>",
-	html_columns: <?= html::$columns ?>,
+	args: "<?= addslashes(mangle_query(array("fmt" => "html-xhr"))) ?>",
 };
 </script>
 <script type="text/javascript" src="xhr.js"></script>
