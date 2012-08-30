@@ -59,6 +59,7 @@ Config::$data = array(
 	// maximum age before which the entry will be considered stale
 	// default is 1 minute more than the rwhod periodic update time
 	"expire" => 11*60,
+	"expire.host-dead" => 60*60,
 	"finger.log" => false,
 );
 Config::parse(__DIR__."/../rwho.conf");
@@ -158,10 +159,13 @@ function summarize($utmp) {
 // retrieve_hosts() -> host_entry[]
 // Retrieve all currently active hosts, with user and connection counts.
 
-function retrieve_hosts() {
+function retrieve_hosts($all=true) {
 	$db = DB::connect();
 
-	$max_ts = time() - Config::get("expire");
+	$stale_ts = time() - Config::get("expire");
+	$dead_ts = time() - Config::get("expire.host-dead");
+
+	$ignore_ts = $all ? $dead_ts : $stale_ts;
 
 	$sql = "SELECT
 			hosts.*,
@@ -170,7 +174,7 @@ function retrieve_hosts() {
 		FROM hosts
 		LEFT OUTER JOIN utmp
 		ON hosts.host = utmp.host
-		WHERE last_update >= $max_ts
+		WHERE last_update >= $ignore_ts
 		GROUP BY host";
 
 	$st = $db->prepare($sql);
