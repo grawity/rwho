@@ -28,4 +28,4 @@ html::header("updated", 7);
 <?php output_html($data); ?>
 </table>
 
-<p>Hosts idle longer than <?= Config::get("expire") ?> seconds are not shown.</p>
+<p>Hosts idle longer than <?= Config::get("expire.host-dead") ?> seconds are not shown.</p>

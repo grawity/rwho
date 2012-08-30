@@ -77,7 +77,10 @@ function output_html($data) {
 		$fqdn = htmlspecialchars($row["host"]);
 		$host = strip_domain($fqdn);
 
-		print "<tr>\n";
+		if (is_stale($row["last_update"]))
+			print "<tr class=\"stale\">\n";
+		else
+			print "<tr>\n";
 
 		print "\t<td>"
 			."<a href=\"./?host=$fqdn\" title=\"$fqdn\">$host</a>"
