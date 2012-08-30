@@ -35,6 +35,10 @@ table {
 	font-style: italic;
 }
 
+#rwho-sessions .stale a {
+	color: #77b;
+}
+
 .comment {
 	font-style: italic;
 }
