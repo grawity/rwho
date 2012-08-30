@@ -95,12 +95,14 @@ function parse_query($query) {
 function retrieve($q_user, $q_host) {
 	$db = DB::connect();
 
+	$dead_ts = time() - Config::get("expire.host-dead");
+
 	$sql = "SELECT * FROM utmp";
 	$conds = array();
 	if (strlen($q_user)) $conds[] = "user=:user";
 	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
-	if (count($conds))
-		$sql .= " WHERE ".implode(" AND ", $conds);
+	$conds[] = "updated >= $dead_ts";
+	$sql .= " WHERE ".implode(" AND ", $conds);
 	$sql .= " ORDER BY user, host, line, time DESC";
 
 	$st = $db->prepare($sql);
