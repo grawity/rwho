@@ -57,9 +57,12 @@ class DB {
 
 Config::$data = array(
 	// maximum age before which the entry will be considered stale
+	// (e.g. the host temporarily down for some reason)
 	// default is 1 minute more than the rwhod periodic update time
 	"expire" => 11*60,
-	"expire.host-dead" => 60*60,
+	// maximum age before which the entry will be considered dead
+	// and not displayed in host list
+	"expire.host-dead" => 86400,
 	"finger.log" => false,
 );
 Config::parse(__DIR__."/../rwho.conf");
