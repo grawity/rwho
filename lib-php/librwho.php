@@ -453,6 +453,8 @@ function ip_cidr($host, $mask) {
 
 	if ($len === null || $len == $nbits)
 		return $host === $net;
+	elseif ($len == 0)
+		return true;
 	elseif ($len < 0 || $len > $nbits)
 		return false;
 
