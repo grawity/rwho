@@ -137,13 +137,27 @@ function output_html($data) {
 	}
 }
 
+function should_filter() {
+	$anon = true;
+	$rhost = get_rhost();
+	foreach (Config::getlist("privacy.allow_addr") as $addr)
+		if (ip_cidr($rhost, $addr)) {
+			$anon = false;
+			break;
+		}
+
+	if ($anon && Config::getbool("privacy.hide_rhost"))
+		return true;
+	return false;
+}
+
 query::$user = $_GET["user"];
 query::$host = $_GET["host"];
 query::$detailed = strlen(query::$user) || strlen(query::$host)
 	|| isset($_GET["full"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = retrieve(query::$user, query::$host);
+$data = retrieve(query::$user, query::$host, should_filter());
 
 if (!query::$detailed)
 	$data = summarize($data);
