@@ -11,4 +11,9 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 # if set, web interface will add a finger gateway link
 ;finger.host = localhost
 
+;privacy.allow_addr =
+; allow anonymous queries? (privacy.hide_* will apply)
+;privacy.allow_anonymous = true
+;privacy.hide_rhost = true
+
 ;web.stylesheet = /custom.css

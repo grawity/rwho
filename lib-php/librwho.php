@@ -73,6 +73,9 @@ Config::$data = array(
 	// and not displayed in host list
 	"expire.host-dead" => 86400,
 	"finger.log" => false,
+	"privacy.allow_addr" => "",
+	"privacy.allow_anonymous" => true,
+	"privacy.hide_rhost" => false,
 );
 Config::parse(__DIR__."/../rwho.conf");
 

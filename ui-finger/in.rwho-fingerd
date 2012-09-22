@@ -68,11 +68,29 @@ function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
 	$q_rhost = get_rhost();
+	$q_accepted = true;
+	$q_anonymous = true;
+
+	foreach (RWho\Config::getlist("privacy.allow_addr") as $addr) {
+		if (ip_cidr($q_rhost, $addr)) {
+			$q_anonymous = false;
+			break;
+		}
+	}
+
+	if ($q_anonymous && !RWho\Config::getbool("privacy.allow_anonymous"))
+		$q_accepted = false;
 
 	if (RWho\Config::getbool("finger.log")) {
+		$log_accepted = $q_accepted ? "accepted" : "refused";
 		$log_qry = rtrim($input, "\r\n");
 		$log_msg = "query \"".addcslashes($log_qry, "\000..\037")."\"";
-		syslog(LOG_DEBUG, "accepted $log_msg from $q_rhost");
+		syslog(LOG_DEBUG, "$log_accepted $log_msg from $q_rhost");
+	}
+
+	if (!$q_accepted) {
+		print("Access denied.\r\n");
+		return;
 	}
 
 	// special "list hosts" query
@@ -95,18 +113,14 @@ function finger_handle_query($input) {
 
 	// normal queries
 
-	if (ip_cidr($q_rhost, '2001:470:1f0b:915::/64')
-	|| ip_cidr($q_rhost, '78.60.211.195'))
-		$do_filter = false;
-	else
-		$do_filter = true;
-
 	list ($q_user, $q_host) = RWho\parse_query($query);
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);
 
-	$data = RWho\retrieve($q_user, $q_host, $do_filter);
+	$q_hide_rhost = $q_anonymous && RWho\Config::getbool("privacy.hide_rhost");
+
+	$data = RWho\retrieve($q_user, $q_host, $q_hide_rhost);
 
 	// display login info
 
