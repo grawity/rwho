@@ -92,7 +92,7 @@ function parse_query($query) {
 // Retrieve all currently known sessions for given query.
 // Both parameters optional.
 
-function retrieve($q_user, $q_host) {
+function retrieve($q_user, $q_host, $q_filter=true) {
 	$db = DB::connect();
 
 	$dead_ts = time() - Config::get("expire.host-dead");
@@ -119,6 +119,11 @@ function retrieve($q_user, $q_host) {
 		$row["is_summary"] = false;
 		$data[] = $row;
 	}
+
+	if ($q_filter)
+		foreach ($data as &$row)
+			$row["rhost"] = "none";
+
 	return $data;
 }
 
