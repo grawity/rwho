@@ -40,6 +40,14 @@ class Config {
 			: $v === "no" ? false
 			: (bool) $v;
 	}
+
+	static function getlist($key, $sep=" ") {
+		$v = self::$data[$key];
+		$l = explode($sep, $v);
+		foreach ($l as &$lv)
+			$lv = trim($lv);
+		return $l;
+	}
 }
 
 class DB {
