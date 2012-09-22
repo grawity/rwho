@@ -23,14 +23,83 @@ function get_rhost() {
 	}
 }
 
+function ip6_expand($addr, $str=true) {
+	$addr = explode(":", $addr);
+	$count = count($addr);
+
+	$mapped = explode(".", $addr[$count-1]);
+	if (count($mapped) == 4)
+		++$count;
+	else
+		$mapped = null;
+
+	$outv = array();
+	foreach ($addr as $i => $piece) {
+		$len = strlen($piece);
+		if ($len == 0) {
+			do {
+				$outv[] = $str ? "0000" : 0;
+			} while ($count++ < 8);
+		} elseif (!ctype_xdigit($piece)) {
+			if ($i !== count($addr)-1 || $mapped === null)
+				return null;
+			$piece = null;
+			foreach ($mapped as $octet) {
+				if (!ctype_digit($octet)) {
+					return null;
+				} elseif ($piece === null) {
+					$piece = intval($octet, 10) << 8;
+				} else {
+					$piece |= intval($octet, 10);
+					$outv[] = $str
+						? sprintf("%04x", $piece)
+						: $piece;
+					$piece = null;
+				}
+			}
+		} elseif ($len < 4) {
+			$outv[] = $str
+				? sprintf("%04s", $piece)
+				: intval($piece, 16);
+		} elseif ($len == 4) {
+			$outv[] = $str
+				? $piece
+				: intval($piece, 16);
+		} else # ($len > 4)
+			return null;
+	}
+
+	if (count($outv) != 8)
+		return null;
+	else
+		return $str ? implode(":", $outv) : $outv;
+}
+
+function ip6_cidr($host, $mask) {
+	list($net, $len) = explode("/", $mask, 2);
+	$host = ip6_expand($host, false);
+	$net = ip6_expand($net, false);
+	if ($len < 0 || $len > 128 || !$host || !$net)
+		return false;
+	for ($i = 0; $i < 8 && $len > 0; $i++) {
+		$bits = $len >= 16 ? 16 : $len;
+		$bmask = (0xFFFF << 16 >> $bits) & 0xFFFF;
+		if (($host[$i] & $bmask) != ($net[$i] & $bmask))
+			return false;
+		$len -= 16;
+	}
+	return true;
+}
+
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
+
+	$q_rhost = get_rhost();
 
 	if (RWho\Config::getbool("finger.log")) {
 		$log_qry = rtrim($input, "\r\n");
 		$log_msg = "query \"".addcslashes($log_qry, "\000..\037")."\"";
-		$log_host = get_rhost();
-		syslog(LOG_DEBUG, "accepted $log_msg from $log_host");
+		syslog(LOG_DEBUG, "accepted $log_msg from $q_rhost");
 	}
 
 	// special "list hosts" query
@@ -53,12 +122,17 @@ function finger_handle_query($input) {
 
 	// normal queries
 
+	if (ip6_cidr($q_rhost, '2001:470:1f0b:915::/64'))
+		$do_filter = false;
+	else
+		$do_filter = true;
+
 	list ($q_user, $q_host) = RWho\parse_query($query);
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);
 
-	$data = RWho\retrieve($q_user, $q_host);
+	$data = RWho\retrieve($q_user, $q_host, $do_filter);
 
 	// display login info
 
