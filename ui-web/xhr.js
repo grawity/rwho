@@ -32,4 +32,4 @@ function handle_data(data) {
 	body.innerHTML = data;
 }
 
-document.addEventListener("DOMContentLoaded", set_timer, true);
+document.addEventListener("DOMContentLoaded", fetch_data, true);
