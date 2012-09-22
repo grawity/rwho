@@ -8,27 +8,23 @@ openlog("rwho-fingerd", null, LOG_DAEMON);
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
-	$q_rhost = get_rhost();
-	$q_accepted = true;
-	$q_anonymous = true;
+	$rhost = get_rhost();
+	$anon = true;
 
 	foreach (Config::getlist("privacy.allow_addr") as $addr)
-		if (ip_cidr($q_rhost, $addr)) {
-			$q_anonymous = false;
-			break;
-		}
+		if ($anon && ip_cidr($rhost, $addr))
+			$anon = false;
 
-	if ($q_anonymous && !Config::getbool("privacy.allow_anonymous"))
-		$q_accepted = false;
+	$accepted = $anon ? Config::getbool("privacy.allow_anonymous") : true;
 
 	if (Config::getbool("finger.log")) {
-		$log_accepted = $q_accepted ? "accepted" : "refused";
+		$log_accepted = $accepted ? "accepted" : "refused";
 		$log_qry = rtrim($input, "\r\n");
-		$log_msg = "query \"".addcslashes($log_qry, "\000..\037")."\"";
-		syslog(LOG_DEBUG, "$log_accepted $log_msg from $q_rhost");
+		$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
+		syslog(LOG_DEBUG, "$log_accepted $log_msg from $rhost");
 	}
 
-	if (!$q_accepted)
+	if (!$accepted)
 		die("Access denied.\r\n");
 
 	// special "list hosts" query
@@ -52,11 +48,10 @@ function finger_handle_query($input) {
 	// normal queries
 
 	list ($q_user, $q_host) = parse_query($query);
+	$hide_rhost = $anon && Config::getbool("privacy.hide_rhost");
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);
-
-	$hide_rhost = $q_anonymous && Config::getbool("privacy.hide_rhost");
 
 	$data = retrieve($q_user, $q_host, $hide_rhost);
 
