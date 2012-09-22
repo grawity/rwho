@@ -472,4 +472,31 @@ function ip_cidr($host, $mask) {
 	return true;
 }
 
+// _strip_addr(str $addr) -> str
+
+function _strip_addr($addr) {
+	if (substr($addr, 0, 7) === "::ffff:")
+		$addr = substr($addr, 7);
+	return $addr;
+}
+
+// get_rhost() -> str?
+// Get the remote host of current connection.
+
+function get_rhost() {
+	$h = @$_SERVER["REMOTE_ADDR"];
+	if (isset($h)) return _strip_addr($h);
+
+	$h = getenv("REMOTE_HOST");
+	if ($h !== false) return _strip_addr($h);
+
+	$h = getenv("REMOTEHOST");
+	if ($h !== false) return strip_addr($h);
+
+	if (defined("STDIN")) {
+		$h = stream_socket_get_name(constant("STDIN"), true);
+		if ($h !== false) return strip_addr($h);
+	}
+}
+
 return true;

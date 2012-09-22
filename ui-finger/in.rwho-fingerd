@@ -4,29 +4,10 @@ require __DIR__."/../lib-php/librwho.php";
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
 
-function strip_host($host) {
-	if (substr($host, 0, 7) === "::ffff:")
-		$host = substr($host, 7);
-	return $host;
-}
-
-function get_rhost() {
-	$h = getenv("REMOTE_HOST");
-	if ($h !== false) return strip_host($h);
-
-	$h = getenv("REMOTEHOST");
-	if ($h !== false) return strip_host($h);
-
-	if (defined("STDIN")) {
-		$h = stream_socket_get_name(constant("STDIN"), true);
-		if ($h !== false) return strip_host($h);
-	}
-}
-
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
-	$q_rhost = get_rhost();
+	$q_rhost = RWho\get_rhost();
 	$q_accepted = true;
 	$q_anonymous = true;
 
