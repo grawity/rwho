@@ -23,70 +23,43 @@ function get_rhost() {
 	}
 }
 
-function ip6_expand($addr, $str=true) {
-	$addr = explode(":", $addr);
-	$count = count($addr);
-
-	$mapped = explode(".", $addr[$count-1]);
-	if (count($mapped) == 4)
-		++$count;
-	else
-		$mapped = null;
-
-	$outv = array();
-	foreach ($addr as $i => $piece) {
-		$len = strlen($piece);
-		if ($len == 0) {
-			do {
-				$outv[] = $str ? "0000" : 0;
-			} while ($count++ < 8);
-		} elseif (!ctype_xdigit($piece)) {
-			if ($i !== count($addr)-1 || $mapped === null)
-				return null;
-			$piece = null;
-			foreach ($mapped as $octet) {
-				if (!ctype_digit($octet)) {
-					return null;
-				} elseif ($piece === null) {
-					$piece = intval($octet, 10) << 8;
-				} else {
-					$piece |= intval($octet, 10);
-					$outv[] = $str
-						? sprintf("%04x", $piece)
-						: $piece;
-					$piece = null;
-				}
-			}
-		} elseif ($len < 4) {
-			$outv[] = $str
-				? sprintf("%04s", $piece)
-				: intval($piece, 16);
-		} elseif ($len == 4) {
-			$outv[] = $str
-				? $piece
-				: intval($piece, 16);
-		} else # ($len > 4)
-			return null;
-	}
-
-	if (count($outv) != 8)
+function ip_expand($addr) {
+	$addr = @inet_pton($addr);
+	if ($addr === false || $addr === -1)
 		return null;
-	else
-		return $str ? implode(":", $outv) : $outv;
+	if (strlen($addr) == 16) {
+		if (substr($addr, 0, 12) === "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xFF"
+		||  substr($addr, 0, 12) === "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+			return substr($addr, 12);
+	}
+	return $addr;
 }
 
-function ip6_cidr($host, $mask) {
-	list($net, $len) = explode("/", $mask, 2);
-	$host = ip6_expand($host, false);
-	$net = ip6_expand($net, false);
-	if ($len < 0 || $len > 128 || !$host || !$net)
+function ip_cidr($host, $mask) {
+	@list($net, $len) = explode("/", $mask, 2);
+
+	$host = ip_expand($host);
+	$net = ip_expand($net);
+
+	if ($host === null || $net === null || strlen($host) !== strlen($net))
 		return false;
-	for ($i = 0; $i < 8 && $len > 0; $i++) {
-		$bits = $len >= 16 ? 16 : $len;
-		$bmask = (0xFFFF << 16 >> $bits) & 0xFFFF;
+
+	$nbits = strlen($net) * 8;
+
+	if ($len === null)
+		$len = $nbits;
+	elseif ($len < 0 || $len > $nbits)
+		return false;
+
+	$host = unpack('C*', $host);
+	$net = unpack('C*', $net);
+
+	for ($i = 1; $i <= count($net) && $len > 0; $i++) {
+		$bits = $len >= 8 ? 8 : $len;
+		$bmask = (0xFF << 8 >> $bits) & 0xFF;
 		if (($host[$i] & $bmask) != ($net[$i] & $bmask))
 			return false;
-		$len -= 16;
+		$len -= 8;
 	}
 	return true;
 }
@@ -122,7 +95,8 @@ function finger_handle_query($input) {
 
 	// normal queries
 
-	if (ip6_cidr($q_rhost, '2001:470:1f0b:915::/64'))
+	if (ip_cidr($q_rhost, '2001:470:1f0b:915::/64')
+	|| ip_cidr($q_rhost, '78.60.211.195'))
 		$do_filter = false;
 	else
 		$do_filter = true;
