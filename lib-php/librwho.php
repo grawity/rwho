@@ -34,11 +34,20 @@ class Config {
 
 	static function getbool($key) {
 		$v = self::$data[$key];
-		return $v === "true" ? true
-			: $v === "false" ? false
-			: $v === "yes" ? true
-			: $v === "no" ? false
-			: (bool) $v;
+		if ($v === "true" || $v === "yes")
+			return true;
+		elseif ($v === "false" || $v === "no")
+			return false;
+		else
+			return (bool) $v;
+	}
+
+	static function getlist($key, $sep=" ") {
+		$v = self::$data[$key];
+		$l = explode($sep, $v);
+		foreach ($l as &$lv)
+			$lv = trim($lv);
+		return $l;
 	}
 }
 
@@ -64,6 +73,9 @@ Config::$data = array(
 	// and not displayed in host list
 	"expire.host-dead" => 86400,
 	"finger.log" => false,
+	"privacy.allow_addr" => "",
+	"privacy.allow_anonymous" => true,
+	"privacy.hide_rhost" => false,
 );
 Config::parse(__DIR__."/../rwho.conf");
 
@@ -92,7 +104,7 @@ function parse_query($query) {
 // Retrieve all currently known sessions for given query.
 // Both parameters optional.
 
-function retrieve($q_user, $q_host) {
+function retrieve($q_user, $q_host, $q_filter=true) {
 	$db = DB::connect();
 
 	$dead_ts = time() - Config::get("expire.host-dead");
@@ -119,6 +131,11 @@ function retrieve($q_user, $q_host) {
 		$row["is_summary"] = false;
 		$data[] = $row;
 	}
+
+	if ($q_filter)
+		foreach ($data as &$row)
+			$row["rhost"] = "none";
+
 	return $data;
 }
 
@@ -402,6 +419,84 @@ function find_user_plan($user, $host) {
 		return $path;
 
 	return null;
+}
+
+// ip_expand(str $addr) -> str?
+// Expand a string IP address to binary representation.
+// v6-mapped IPv4 addresses will be converted to IPv4.
+
+function ip_expand($addr) {
+	$addr = @inet_pton($addr);
+	if ($addr === false || $addr === -1)
+		return null;
+	if (strlen($addr) == 16) {
+		if (substr($addr, 0, 12) === "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\xFF\xFF"
+		||  substr($addr, 0, 12) === "\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00\x00")
+			return substr($addr, 12);
+	}
+	return $addr;
+}
+
+// ip_cidr(str $host, str $cidrmask) -> bool
+// Check if $host belongs to the network $mask (specified in CIDR format)
+// If $cidrmask does not contain /prefixlen, an exact match will be done.
+
+function ip_cidr($host, $mask) {
+	@list ($net, $len) = explode("/", $mask, 2);
+
+	$host = ip_expand($host);
+	$net = ip_expand($net);
+
+	if ($host === null || $net === null || strlen($host) !== strlen($net))
+		return false;
+
+	$nbits = strlen($net) * 8;
+
+	if ($len === null || $len == $nbits)
+		return $host === $net;
+	elseif ($len == 0)
+		return true;
+	elseif ($len < 0 || $len > $nbits)
+		return false;
+
+	$host = unpack("C*", $host);
+	$net = unpack("C*", $net);
+
+	for ($i = 1; $i <= count($net) && $len > 0; $i++) {
+		$bits = $len >= 8 ? 8 : $len;
+		$bmask = (0xFF << 8 >> $bits) & 0xFF;
+		if (($host[$i] & $bmask) != ($net[$i] & $bmask))
+			return false;
+		$len -= 8;
+	}
+	return true;
+}
+
+// _strip_addr(str $addr) -> str
+
+function _strip_addr($addr) {
+	if (substr($addr, 0, 7) === "::ffff:")
+		$addr = substr($addr, 7);
+	return $addr;
+}
+
+// get_rhost() -> str?
+// Get the remote host of current connection.
+
+function get_rhost() {
+	$h = @$_SERVER["REMOTE_ADDR"];
+	if (isset($h)) return _strip_addr($h);
+
+	$h = getenv("REMOTE_HOST");
+	if ($h !== false) return _strip_addr($h);
+
+	$h = getenv("REMOTEHOST");
+	if ($h !== false) return strip_addr($h);
+
+	if (defined("STDIN")) {
+		$h = stream_socket_get_name(constant("STDIN"), true);
+		if ($h !== false) return strip_addr($h);
+	}
 }
 
 return true;

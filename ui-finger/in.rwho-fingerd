@@ -1,48 +1,42 @@
 #!/usr/bin/php
 <?php
+namespace RWho;
 require __DIR__."/../lib-php/librwho.php";
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
 
-function strip_host($host) {
-	if (substr($host, 0, 7) === "::ffff:")
-		$host = substr($host, 7);
-	return $host;
-}
-
-function get_rhost() {
-	$h = getenv("REMOTE_HOST");
-	if ($h !== false) return strip_host($h);
-
-	$h = getenv("REMOTEHOST");
-	if ($h !== false) return strip_host($h);
-
-	if (defined("STDIN")) {
-		$h = stream_socket_get_name(constant("STDIN"), true);
-		if ($h !== false) return strip_host($h);
-	}
-}
-
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
-	if (RWho\Config::getbool("finger.log")) {
+	$rhost = get_rhost();
+	$anon = true;
+
+	foreach (Config::getlist("privacy.allow_addr") as $addr)
+		if ($anon && ip_cidr($rhost, $addr))
+			$anon = false;
+
+	$accepted = $anon ? Config::getbool("privacy.allow_anonymous") : true;
+
+	if (Config::getbool("finger.log")) {
+		$log_accepted = $accepted ? "accepted" : "refused";
 		$log_qry = rtrim($input, "\r\n");
-		$log_msg = "query \"".addcslashes($log_qry, "\000..\037")."\"";
-		$log_host = get_rhost();
-		syslog(LOG_DEBUG, "accepted $log_msg from $log_host");
+		$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
+		syslog(LOG_DEBUG, "$log_accepted $log_msg from $rhost");
 	}
+
+	if (!$accepted)
+		die("Access denied.\r\n");
 
 	// special "list hosts" query
 
 	if ($query === "*") {
-		$data = RWho\retrieve_hosts();
+		$data = retrieve_hosts();
 		if (!count($data))
 			die("No active hosts.\r\n");
 		output_hosts($data);
 		if ($detailed) {
-			$n_users = RWho\count_users();
-			$n_conns = RWho\count_conns();
+			$n_users = count_users();
+			$n_conns = count_conns();
 			$n_hosts = count($data);
 			print("\r\n");
 			printf("(%d users over %d connections on %d hosts)\r\n",
@@ -53,18 +47,19 @@ function finger_handle_query($input) {
 
 	// normal queries
 
-	list ($q_user, $q_host) = RWho\parse_query($query);
+	list ($q_user, $q_host) = parse_query($query);
+	$hide_rhost = $anon && Config::getbool("privacy.hide_rhost");
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);
 
-	$data = RWho\retrieve($q_user, $q_host);
+	$data = retrieve($q_user, $q_host, $hide_rhost);
 
 	// display login info
 
 	if (count($data)) {
 		if (!$detailed)
-			$data = RWho\summarize($data);
+			$data = summarize($data);
 		output($data, $detailed);
 	} else {
 		if ($has_user && $has_host)
@@ -83,9 +78,9 @@ function finger_handle_query($input) {
 	// display stats
 
 	if ($detailed && !$has_user && !$has_host) {
-		$n_users = RWho\count_users();
+		$n_users = count_users();
 		$n_conns = count($data);
-		$n_hosts = RWho\count_hosts();
+		$n_hosts = count_hosts();
 		print("\r\n");
 		printf("(%d users over %d connections on %d hosts)\r\n",
 			$n_users, $n_conns, $n_hosts);
@@ -127,7 +122,7 @@ function output($data, $detailed=false) {
 		$line = array();
 		$flag = "";
 
-		if (RWho\is_stale($row["updated"])) {
+		if (is_stale($row["updated"])) {
 			if (!$detailed)
 				continue;
 			$flag = "?";
@@ -144,7 +139,7 @@ function output($data, $detailed=false) {
 
 		$line[] = $detailed
 				? $row["host"]
-				: substr(RWho\strip_domain($row["host"]), 0, 12);
+				: substr(strip_domain($row["host"]), 0, 12);
 
 		$line[] = $row["is_summary"]
 				? "{".$row["line"]."}"
@@ -176,17 +171,17 @@ function output_hosts($data) {
 
 	foreach ($data as $row) {
 		printf($fmt,
-			substr(RWho\strip_domain($row["host"]), 0, 12),
+			substr(strip_domain($row["host"]), 0, 12),
 			$row["host"],
 			$row["users"],
 			$row["entries"],
-			RWho\interval($row["last_update"])
+			interval($row["last_update"])
 		);
 	}
 }
 
 function output_plan($user, $host) {
-	$path = RWho\find_user_plan($user, $host);
+	$path = find_user_plan($user, $host);
 
 	if ($path === null) {
 		print("No Plan.\r\n");
