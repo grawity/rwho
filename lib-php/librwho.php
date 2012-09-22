@@ -34,11 +34,12 @@ class Config {
 
 	static function getbool($key) {
 		$v = self::$data[$key];
-		return $v === "true" ? true
-			: $v === "false" ? false
-			: $v === "yes" ? true
-			: $v === "no" ? false
-			: (bool) $v;
+		if ($v === "true" || $v === "yes")
+			return true;
+		elseif ($v === "false" || $v === "no")
+			return false;
+		else
+			return (bool) $v;
 	}
 
 	static function getlist($key, $sep=" ") {
