@@ -30,12 +30,11 @@ function finger_handle_query($input) {
 	$q_accepted = true;
 	$q_anonymous = true;
 
-	foreach (RWho\Config::getlist("privacy.allow_addr") as $addr) {
+	foreach (RWho\Config::getlist("privacy.allow_addr") as $addr)
 		if (RWho\ip_cidr($q_rhost, $addr)) {
 			$q_anonymous = false;
 			break;
 		}
-	}
 
 	if ($q_anonymous && !RWho\Config::getbool("privacy.allow_anonymous"))
 		$q_accepted = false;
@@ -47,10 +46,8 @@ function finger_handle_query($input) {
 		syslog(LOG_DEBUG, "$log_accepted $log_msg from $q_rhost");
 	}
 
-	if (!$q_accepted) {
-		print("Access denied.\r\n");
-		return;
-	}
+	if (!$q_accepted)
+		die("Access denied.\r\n");
 
 	// special "list hosts" query
 

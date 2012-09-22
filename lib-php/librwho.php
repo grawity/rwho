@@ -423,6 +423,7 @@ function find_user_plan($user, $host) {
 
 // ip_expand(str $addr) -> str?
 // Expand a string IP address to binary representation.
+// v6-mapped IPv4 addresses will be converted to IPv4.
 
 function ip_expand($addr) {
 	$addr = @inet_pton($addr);
@@ -438,10 +439,10 @@ function ip_expand($addr) {
 
 // ip_cidr(str $host, str $cidrmask) -> bool
 // Check if $host belongs to the network $mask (specified in CIDR format)
-// If /prefixlen is not specified, an exact match will be done.
+// If $cidrmask does not contain /prefixlen, an exact match will be done.
 
 function ip_cidr($host, $mask) {
-	@list($net, $len) = explode("/", $mask, 2);
+	@list ($net, $len) = explode("/", $mask, 2);
 
 	$host = ip_expand($host);
 	$net = ip_expand($net);
@@ -458,8 +459,8 @@ function ip_cidr($host, $mask) {
 	elseif ($len < 0 || $len > $nbits)
 		return false;
 
-	$host = unpack('C*', $host);
-	$net = unpack('C*', $net);
+	$host = unpack("C*", $host);
+	$net = unpack("C*", $net);
 
 	for ($i = 1; $i <= count($net) && $len > 0; $i++) {
 		$bits = $len >= 8 ? 8 : $len;
