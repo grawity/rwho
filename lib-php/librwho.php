@@ -120,8 +120,12 @@ function retrieve($q_user, $q_host, $q_filter=true) {
 	$st = $db->prepare($sql);
 	if (strlen($q_user)) $st->bindValue(":user", $q_user);
 	if (strlen($q_host)) {
+		$w_host = str_replace("_", "\\_", $q_host);
+		if (strpos($w_host, "%") === false)
+			$w_host .= ".%";
+
 		$st->bindValue(":host", $q_host);
-		$st->bindValue(":parthost", "$q_host.%");
+		$st->bindValue(":parthost", $w_host);
 	}
 	if (!$st->execute())
 		return null;
