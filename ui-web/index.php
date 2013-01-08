@@ -151,10 +151,16 @@ function should_filter() {
 	return false;
 }
 
+function is_wildcard($str) {
+	return strlen($str) && (strpos($str, "%") !== false);
+}
+
 query::$user = $_GET["user"];
 query::$host = $_GET["host"];
-query::$detailed = (strlen(query::$user) || strlen(query::$host)
-	|| isset($_GET["full"])) && !isset($_GET["summary"]);
+query::$detailed = (strlen(query::$user)
+			|| (strlen(query::$host) && !is_wildcard(query::$host))
+			|| isset($_GET["full"]))
+		&& !isset($_GET["summary"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
 $data = retrieve(query::$user, query::$host, should_filter());
