@@ -12,6 +12,10 @@ class query {
 	static $format;
 }
 
+function is_wildcard($str) {
+	return strlen($str) && (strpos($str, "%") !== false);
+}
+
 function output_json($data) {
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
@@ -109,23 +113,29 @@ function output_html($data) {
 			else
 				print "<tr>\n";
 
+			$linkuser = !strlen(query::$user);
+			$linkhost = !strlen(query::$host) || is_wildcard(query::$host);
+
 			if (query::$detailed) {
 				print "\t<td>"
-					.(strlen(query::$user) ? $user
-						: "<a href=\"?user=$user\">$user</a>")
+					.($linkuser
+						? "<a href=\"?user=$user\">$user</a>"
+						: $user)
 					."</td>\n";
 				print "\t<td>$uid</td>\n";
 			} else {
 				if ($k == 0)
 					print "\t<td rowspan=\"".count($data)."\">"
-						.(strlen(query::$user) ? $user
-							: "<a href=\"?user=$user\">$user</a>")
+						.($linkuser
+							? "<a href=\"?user=$user\">$user</a>"
+							: $user)
 						."</td>\n";
 			}
 
 			print "\t<td>"
-				.(strlen(query::$host) ? $host
-					: "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>")
+				.($linkhost
+					? "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>"
+					: $host)
 				."</td>\n";
 			print "\t<td>"
 				.($row["is_summary"] ? "($line ttys)" : $line)
@@ -149,10 +159,6 @@ function should_filter() {
 	if ($anon && Config::getbool("privacy.hide_rhost"))
 		return true;
 	return false;
-}
-
-function is_wildcard($str) {
-	return strlen($str) && (strpos($str, "%") !== false);
 }
 
 query::$user = $_GET["user"];
