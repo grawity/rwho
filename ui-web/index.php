@@ -153,8 +153,8 @@ function should_filter() {
 
 query::$user = $_GET["user"];
 query::$host = $_GET["host"];
-query::$detailed = strlen(query::$user) || strlen(query::$host)
-	|| isset($_GET["full"]);
+query::$detailed = (strlen(query::$user) || strlen(query::$host)
+	|| isset($_GET["full"])) && !isset($_GET["summary"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
 $data = retrieve(query::$user, query::$host, should_filter());
