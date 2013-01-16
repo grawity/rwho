@@ -59,6 +59,10 @@ class DB {
 			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
 						Config::get("db.username"),
 						Config::get("db.password"));
+			// <http://stackoverflow.com/a/60496/49849> says that PDO emulates
+			// prepared statements internally by default
+			self::$dbh->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
+			//self::$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
 		}
 		return self::$dbh;
 	}
