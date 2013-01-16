@@ -9,13 +9,20 @@ class Config {
 		if (!$fh)
 			return;
 		while (($line = fgets($fh)) !== false) {
-			$line = trim($line);
+			$line = rtrim($line);
 			if (!strlen($line))
 				continue;
-			if ($line[0] === ";" || $line[0] === "#")
+			elseif ($line[0] === ";" || $line[0] === "#")
 				continue;
-			list ($key, $val) = preg_split('/\s*=\s*/', $line, 2);
-			self::$data[$key] = $val;
+			elseif (preg_match('/^\s+(.*)$/', $line, $m)) {
+				list ($_, $val) = $m;
+				if (isset($key))
+					self::$data[$key] .= $line;
+			}
+			elseif (preg_match('/^(\S+)\s*=\s*(.*)$/', $line, $m)) {
+				list ($_, $key, $val) = $m;
+				self::$data[$key] = $val;
+			}
 		}
 		fclose($fh);
 	}
@@ -42,11 +49,9 @@ class Config {
 			return (bool) $v;
 	}
 
-	static function getlist($key, $sep=" ") {
+	static function getlist($key) {
 		$v = self::$data[$key];
-		$l = explode($sep, $v);
-		foreach ($l as &$lv)
-			$lv = trim($lv);
+		$l = preg_split("/\s+/", $v);
 		return $l;
 	}
 }
