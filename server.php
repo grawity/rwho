@@ -14,11 +14,15 @@ function host_update($host) {
 	$st = $dbh->prepare('
 		INSERT INTO hosts (host, last_update, last_addr)
 		VALUES (:host, :time, :addr)
-		ON DUPLICATE KEY UPDATE last_update=:time, last_addr=:addr
+		ON DUPLICATE KEY UPDATE last_update=:xtime, last_addr=:xaddr
 		');
+	$time = time();
+	$addr = $_SERVER["REMOTE_ADDR"];
 	$st->bindValue(":host", $host);
-	$st->bindValue(":time", time());
-	$st->bindValue(":addr", $_SERVER["REMOTE_ADDR"]);
+	$st->bindValue(":time", $time);
+	$st->bindValue(":addr", $addr);
+	$st->bindValue(":xtime", $time);
+	$st->bindValue(":xaddr", $addr);
 	return $st->execute();
 }
 
