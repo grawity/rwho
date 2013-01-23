@@ -7,6 +7,20 @@ require __DIR__."/lib-php/librwho.php";
 
 openlog("rwho-server", null, LOG_DAEMON);
 
+function pdo_fmterr($st) {
+	list ($sqlstate, $code, $msg) = $st->errorInfo();
+	if ($code === null)
+		return "[$sqlstate] internal PDO error";
+	else
+		return "[$sqlstate] $msg ($code)";
+}
+
+function pdo_die($st) {
+	$err = pdo_fmterr($st);
+	header("Status: 500");
+	die("error: $err\n");
+}
+
 // Host information
 
 function host_update($host) {
@@ -16,6 +30,8 @@ function host_update($host) {
 		VALUES (:host, :time, :addr)
 		ON DUPLICATE KEY UPDATE last_update=:xtime, last_addr=:xaddr
 		');
+	if (!$st)
+		pdo_die($dbh);
 	$time = time();
 	$addr = $_SERVER["REMOTE_ADDR"];
 	$st->bindValue(":host", $host);
@@ -23,14 +39,18 @@ function host_update($host) {
 	$st->bindValue(":addr", $addr);
 	$st->bindValue(":xtime", $time);
 	$st->bindValue(":xaddr", $addr);
-	return $st->execute();
+	if (!$st->execute())
+		pdo_die($st);
 }
 
 function host_delete($host) {
 	$dbh = DB::connect();
 	$st = $dbh->prepare('DELETE FROM hosts WHERE host=:host');
+	if (!$st)
+		pdo_die($dbh);
 	$st->bindValue(":host", $host);
-	return $st->execute();
+	if (!$st->execute())
+		pdo_die($st);
 }
 
 // User session information
@@ -42,6 +62,8 @@ function utmp_insert($host, $entry) {
 		INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
 		VALUES (:host, :user, :rawuser, :uid, :rhost, :line, :time, :updated)
 		');
+	if (!$st)
+		pdo_die($dbh);
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $user);
 	$st->bindValue(":rawuser", $entry->user);
@@ -50,7 +72,8 @@ function utmp_insert($host, $entry) {
 	$st->bindValue(":line", $entry->line);
 	$st->bindValue(":time", $entry->time);
 	$st->bindValue(":updated", time());
-	return $st->execute();
+	if (!$st->execute())
+		pdo_die($st);
 }
 
 function utmp_delete($host, $entry) {
@@ -59,18 +82,24 @@ function utmp_delete($host, $entry) {
 			     WHERE host=:host
 			     AND rawuser=:user
 			     AND line=:line');
+	if (!$st)
+		pdo_die($dbh);
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $entry->user);
 	$st->bindValue(":line", $entry->line);
-	return $st->execute();
+	if (!$st->execute())
+		pdo_die($st);
 }
 
 function utmp_delete_host($host) {
 	$dbh = DB::connect();
 	$st = $dbh->prepare('DELETE FROM utmp
 			     WHERE host=:host');
+	if (!$st)
+		pdo_die($dbh);
 	$st->bindValue(":host", $host);
-	return $st->execute();
+	if (!$st->execute())
+		pdo_die($st);
 }
 
 // API actions
