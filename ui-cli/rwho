@@ -6,7 +6,6 @@
 RWHO_DIR="/cluenet/rwho"
 
 RWHO_HOST='rwho.cluenet.org'
-RWHO_PORT='finger'
 RWHO_URL="http://$RWHO_HOST/"
 
 CONFIG="$RWHO_DIR/rwho.conf"
@@ -46,8 +45,8 @@ filter() {
 }
 
 conn() {
-	local request=$1 fd=
-	exec {fd}<>"/dev/tcp/$RWHO_HOST/$RWHO_PORT" || {
+	local host=$1 request=$2 fd=
+	exec {fd}<>"/dev/tcp/$host/finger" || {
 		echo >&2 "rwho: connection failed ($?)"
 		return 1
 	}
@@ -70,6 +69,7 @@ while getopts ":lv" OPT; do
 done
 shift $((OPTIND-1))
 
+host=$RWHO_HOST
 query=$1
 
 if $opt_l; then
@@ -82,4 +82,12 @@ if $opt_l; then
 	fi
 fi
 
-conn "$query"
+if [[ $query == *@* ]]; then
+	qhost=${query##*@}
+	if [[ $qhost == *.* ]]; then
+		host=$qhost
+		query=${query%@*}
+	fi
+fi
+
+conn "$host" "$query"
