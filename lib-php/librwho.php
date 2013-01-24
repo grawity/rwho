@@ -304,17 +304,17 @@ function user_is_global($user) {
 
 function normalize_host($host) {
 	# strip .window from GNU Screen name
-	#$host = preg_replace('/(:S)\.\d+$/', '$1', $host);
+	$host = preg_replace('/^(\d+):S\.\d+$/', '$1? (screen)', $host);
 	$host = preg_replace('/^(.+):S\.\d+$/', '$1 (screen)', $host);
 
 	# strip .screen from X11 display
 	$host = preg_replace('/(:\d+)\.\d+$/', '$1', $host);
 
-	$host = preg_replace('/^:\d+$/', '$0 (local X11)', $host);
+	$host = preg_replace('/^:\d+$/', '$0 (X11)', $host);
 
 	# strip [pid] from mosh name
-	$host = preg_replace('/^mosh \[\d+\]$/', '(mosh)', $host);
-	$host = preg_replace('/ via mosh \[\d+\]$/', ' (mosh)', $host);
+	$host = preg_replace('/^mosh \[\d+\]$/', '(detached)', $host);
+	$host = preg_replace('/ via mosh \[\d+\]$/', '', $host);
 
 	return $host;
 }
