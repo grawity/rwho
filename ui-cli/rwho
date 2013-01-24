@@ -28,11 +28,18 @@ if [[ -s $CONFIG ]]; then
 	done < "$CONFIG"
 fi
 
+PLAN_URL="${RWHO_URL%/}/update-plan.php?user=$(logname)"
+
 usage() {
-	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
+	echo "Usage: ${0##*/} [-l] [-v] [-G|-P file|-D|-e] [user][@host]"
 	echo ""
 	echo "  -l  list hosts"
 	echo "  -v  verbose output"
+	echo ""
+	echo "  -G  get plan to stdout"
+	echo "  -P  put plan file"
+	echo "  -D  delete plan"
+	echo "  -e  get, edit & reupload plan"
 	echo ""
 	echo "HTTP interface is available at: $RWHO_URL"
 	echo ""
@@ -55,39 +62,69 @@ conn() {
 	exec {fd}>&-
 }
 
+action='query'
+file=
 opt_l=false
 hosts=false
 long=false
 
-while getopts ":lv" OPT; do
+while getopts ":GDP:elv" OPT; do
 	case $OPT in
+	'G')	action='plan-print';;
+	'D')	action='plan-delete';;
+	'P')	action='plan-put'; file=$OPTARG;;
+	'e')	action='plan-edit';;
 	'l')	opt_l=true;;
 	'v')	long=true;;
 	'?')	echo "Unknown option '$OPTARG'" >&2;
+		usage;;
+	':')	echo "Missing argument for -$OPTARG" >&2;
 		usage;;
 	esac
 done
 shift $((OPTIND-1))
 
-host=$RWHO_HOST
-query=$1
-
-if $opt_l; then
-	if [[ $query ]]; then
-		long=true
-		query="/W $query"
+case $action in
+'query')
+	host=$RWHO_HOST
+	query=$1
+	if $opt_l; then
+		if [[ $query ]]; then
+			long=true
+			query="/W $query"
+		else
+			hosts=true
+			query="*"
+		fi
+	fi
+	if [[ $query == *@* ]]; then
+		qhost=${query##*@}
+		if [[ $qhost == *.* ]]; then
+			host=$qhost
+			query=${query%@*}
+		fi
+	fi
+	conn "$host" "$query"
+	;;
+'plan-print')
+	curl "$PLAN_URL" -sfS
+	;;
+'plan-put')
+	curl "$PLAN_URL" -T "$file" -sfS
+	;;
+'plan-edit')
+	temp=$(mktemp ~/rwho-plan.XXXXXXXX)
+	curl "$PLAN_URL" -o "$temp" -s
+	$EDITOR "$temp"
+	head=$(head -c 16 "$temp")
+	if [[ ! $head || $head == "No Plan." ]]; then
+		curl "$PLAN_URL" -X DELETE -sfS
 	else
-		hosts=true
-		query="*"
+		curl "$PLAN_URL" -T "$temp" -sfS
 	fi
-fi
-
-if [[ $query == *@* ]]; then
-	qhost=${query##*@}
-	if [[ $qhost == *.* ]]; then
-		host=$qhost
-		query=${query%@*}
-	fi
-fi
-
-conn "$host" "$query"
+	rm -f "$temp"
+	;;
+'plan-delete')
+	curl "$PLAN_URL" -X DELETE -sfS
+	;;
+esac
