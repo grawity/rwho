@@ -89,7 +89,6 @@ function finger_handle_query($input) {
 	// display plan
 
 	if ($has_user) {
-		print("\r\n");
 		output_plan($q_user, $q_host);
 	}
 }
@@ -190,6 +189,7 @@ function output_plan($user, $host) {
 	$fplan = @fopen($path, "r");
 	if ($fplan) {
 		$lines = 0;
+		print("\r\n");
 		print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
 		while (++$lines < 100 && ($line = fgets($fplan, 4096)) !== false) {
 			$line = rtrim($line, "\n");
