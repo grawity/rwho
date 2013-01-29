@@ -185,6 +185,7 @@ function output_plan($user, $host) {
 
 	if ($path === null) {
 		print("No Plan.\r\n");
+		return;
 	}
 
 	$fplan = @fopen($path, "r");
