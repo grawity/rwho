@@ -180,23 +180,15 @@ function output_hosts($data) {
 }
 
 function output_plan($user, $host) {
-	$path = find_user_plan($user, $host);
-
-	if ($path === null) {
+	$text = read_user_plan($user, $host);
+	if ($text === null)
 		return;
-	}
 
-	$fplan = @fopen($path, "r");
-	if ($fplan) {
-		$lines = 0;
-		print("\r\n");
-		print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
-		while (++$lines < 100 && ($line = fgets($fplan, 4096)) !== false) {
-			$line = rtrim($line, "\n");
-			print("$line\r\n");
-		}
-		fclose($fplan);
-	}
+	print("\r\n");
+	print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
+
+	foreach (preg_split('/[\r\n]+/', $text) as $line)
+		print("$line\r\n");
 }
 
 if (isset($_SERVER["REQUEST_URI"])) {

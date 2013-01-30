@@ -10,6 +10,9 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 
 # if set, web interface will add a finger gateway link
 ;finger.host = localhost
+;finger.ldap.uri = ldapi:///
+;finger.ldap.dn = uid=%s,ou=people,dc=cluenet,dc=org
+;finger.ldap.attr = planFile
 
 ;privacy.allow_addr =
 ; allow anonymous queries? (privacy.hide_* will apply)
