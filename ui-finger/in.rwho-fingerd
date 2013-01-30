@@ -180,7 +180,7 @@ function output_hosts($data) {
 }
 
 function output_plan($user, $host) {
-	$path = find_user_plan($user, $host);
+	$path = find_user_plan_file($user, $host);
 
 	if ($path === null) {
 		return;
