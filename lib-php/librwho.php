@@ -474,7 +474,7 @@ function read_user_plan_ldap($user, $host) {
 		return null;
 
 	$attr = strtolower($ldap_attr);
-	if (!isset($data[0][$attr])) {
+	if (isset($data[0][$attr])) {
 		$text = $data[0][$attr][0];
 		$text = rtrim($text, "\r\n");
 		return $text;
