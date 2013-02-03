@@ -16,7 +16,6 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 ;finger.ldap.attr = planFile
 
 ;privacy.allow_addr =
-; allow anonymous queries? (privacy.hide_* will apply)
 ;privacy.allow_anonymous = true
 ;privacy.hide_rhost = true
 
