@@ -19,8 +19,6 @@ if [[ -s $CONFIG ]]; then
 			case $key in
 			'finger.host')
 				RWHO_HOST=$val;;
-			'finger.port')
-				RWHO_PORT=$val;;
 			'agent.notify_url')
 				RWHO_URL=${val#server.php};;
 			esac
