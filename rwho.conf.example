@@ -3,6 +3,7 @@
 agent.notify_url = http://rwho.cluenet.org/server.php
 ;agent.exclude_root = true
 ;agent.exclude_users = smith|guest\d+
+;agent.include_users = rms
 
 ;db.pdo_driver = mysql:host=localhost;dbname=rwho
 ;db.username =

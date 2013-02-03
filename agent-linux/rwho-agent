@@ -24,6 +24,7 @@ my $do_monitor	= 1;
 my $do_poll	= 1;
 my $skip_root	= 1;
 my $skip_users;
+my $only_users;
 my $pidfile;
 my $pidfile_h;
 
@@ -99,6 +100,9 @@ sub update {
 	}
 	if ($skip_users) {
 		@sessions = grep {$_->{user} !~ $skip_users} @sessions;
+	}
+	if ($only_users) {
+		@sessions = grep {$_->{user} =~ $only_users} @sessions;
 	}
 	upload("put", \@sessions);
 }
@@ -303,6 +307,7 @@ GetOptions(
 	"monitor!"	=> \$do_monitor,
 	"poll=i"	=> \$poll_interval,
 	"no-poll"	=> sub { $poll_interval = 0; },
+	"only-users=s"	=> \$arg{only_users},
 	"pidfile=s"	=> \$pidfile,
 	"server-url=s"	=> \$arg{notify_url},
 	"skip-root!"	=> \$arg{skip_root},
@@ -343,6 +348,12 @@ $skip_users = $arg{skip_users}
 		// undef;
 
 $skip_users = qr/^($skip_users)$/i if defined $skip_users;
+
+$only_users = $arg{only_users}
+		// $conf{"agent.include_users"}
+		// undef;
+
+$only_users = qr/^($only_users)$/i if defined $only_users;
 
 $notify_url = $arg{notify_url}
 		// $conf{"agent.notify_url"}
