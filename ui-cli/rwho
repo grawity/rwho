@@ -73,11 +73,13 @@ query=$1
 if $opt_l; then
 	if [[ $query ]]; then
 		long=true
-		query="/W $query"
 	else
-		hosts=true
 		query="*"
 	fi
+fi
+
+if $long; then
+	query="/W $query"
 fi
 
 if [[ $query == *@* ]]; then
