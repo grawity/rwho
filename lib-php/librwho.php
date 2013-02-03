@@ -465,7 +465,7 @@ function read_user_plan_ldap($user, $host) {
 	if (!$ok)
 		return null;
 
-	$res = ldap_read($ldaph, $ldap_dn, "(objectClass=*)", array($ldap_attr));
+	$res = @ldap_read($ldaph, $ldap_dn, "(objectClass=*)", array($ldap_attr));
 	if (!$res)
 		return null;
 
