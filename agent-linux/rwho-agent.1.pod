@@ -34,6 +34,14 @@ Monitor for changes using I<inotify(7)> or I<kqueue(2)> (depending on OS). Enabl
 
 Display the manual page.
 
+=item B<--min-uid=I<uid>> (conf: I<agent.min_uid>)
+
+Ignore users with UID lower than I<uid>.
+
+=item B<--only-users=I<regex>> (conf: I<agent.include_users>)
+
+Ignore users whose logins do not fully match a given regex.
+
 =item B<--pidfile=I<path>>
 
 Write PID to file after performing initial update (and daemonizing, if enabled).
