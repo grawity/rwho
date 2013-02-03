@@ -25,6 +25,7 @@ my $do_poll	= 1;
 my $skip_root	= 1;
 my $skip_users;
 my $only_users;
+my $min_uid;
 my $pidfile;
 my $pidfile_h;
 
@@ -103,6 +104,9 @@ sub update {
 	}
 	if ($only_users) {
 		@sessions = grep {$_->{user} =~ $only_users} @sessions;
+	}
+	if ($min_uid) {
+		@sessions = grep {$_->{uid} >= $min_uid} @sessions;
 	}
 	upload("put", \@sessions);
 }
@@ -304,6 +308,7 @@ GetOptions(
 	"help"		=> sub { pod2usage(-input => $pod, -exitstatus => 0); },
 	"include-root!"	=> sub { $arg{skip_root} = 0; },
 	"man"		=> sub { pod2usage(-input => $pod, -exitstatus => 0, -verbose => 2); },
+	"min-uid=i"	=> \$arg{min_uid},
 	"monitor!"	=> \$do_monitor,
 	"poll=i"	=> \$poll_interval,
 	"no-poll"	=> sub { $poll_interval = 0; },
@@ -354,6 +359,10 @@ $only_users = $arg{only_users}
 		// undef;
 
 $only_users = qr/^($only_users)$/i if defined $only_users;
+
+$min_uid = $arg{min_uid}
+		// $conf{"agent.min_uid"}
+		// undef;
 
 $notify_url = $arg{notify_url}
 		// $conf{"agent.notify_url"}
