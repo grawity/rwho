@@ -73,6 +73,9 @@ function finger_handle_query($input) {
 				$q_host);
 		else
 			print("finger: Nobody is logged in.\r\n");
+
+		if ($has_user)
+			output_lastlog($q_user);
 	}
 
 	// display stats
@@ -176,6 +179,15 @@ function output_hosts($data) {
 			$row["entries"],
 			interval($row["last_update"])
 		);
+	}
+}
+
+function output_lastlog($user) {
+	$lastlog = retrieve_lastlog($user);
+	if ($lastlog) {
+		$last_time = $lastlog["time"]/1000000;
+		$last_date = strftime("%b %d, %Y", $last_time);
+		printf("Last login was on %s.\r\n", $last_date);
 	}
 }
 
