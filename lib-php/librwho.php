@@ -584,4 +584,33 @@ function get_rhost() {
 	}
 }
 
+// retrieve_lastlog(str $user) -> lastlog_entry
+// Get the time of last login for a given user.
+
+function retrieve_lastlog($user) {
+	$db = DB::connect();
+
+	$user = preg_replace("/[%_]/", "\\\\\\1", $user);
+
+	if (strpos($user, "@") === false)
+		$principal = $user."@%";
+	else
+		$principal = $user;
+
+	$sql = "SELECT *
+		FROM lastlog
+		WHERE principal LIKE :principal
+		AND action = 'login'
+		ORDER BY rowid DESC
+		LIMIT 1";
+
+	$st = $db->prepare($sql);
+	$st->bindValue(":principal", $principal);
+	if (!$st->execute())
+		return null;
+
+	$row = $st->fetch(\PDO::FETCH_ASSOC);
+	return $row;
+}
+
 return true;
