@@ -124,7 +124,6 @@ function retrieve($q_user, $q_host, $q_filter=true) {
 	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
 	$conds[] = "updated >= $dead_ts";
 	$sql .= " WHERE ".implode(" AND ", $conds);
-	$sql .= " ORDER BY user, host, line, time DESC";
 
 	$st = $db->prepare($sql);
 	if (strlen($q_user)) $st->bindValue(":user", $q_user);
@@ -148,6 +147,14 @@ function retrieve($q_user, $q_host, $q_filter=true) {
 	if ($q_filter)
 		foreach ($data as &$row)
 			$row["rhost"] = "none";
+
+	usort($data, function($a, $b) {
+		return strnatcmp($a["user"], $b["user"])
+		    ?: strnatcmp($a["host"], $b["host"])
+		    ?: strnatcmp($a["line"], $b["line"])
+		    ?: strnatcmp($a["rhost"], $b["rhost"])
+		    ;
+	});
 
 	return $data;
 }
