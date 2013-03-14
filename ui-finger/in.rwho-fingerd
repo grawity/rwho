@@ -21,7 +21,7 @@ function finger_handle_query($input) {
 		$log_accepted = $accepted ? "accepted" : "refused";
 		$log_qry = rtrim($input, "\r\n");
 		$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
-		syslog(LOG_DEBUG, "$log_accepted $log_msg from $rhost");
+		syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
 	}
 
 	if (!$accepted)
@@ -196,7 +196,6 @@ if (isset($_SERVER["REQUEST_URI"])) {
 	$input = $_SERVER["QUERY_STRING"];
 	$input = urldecode($input);
 } else {
-	$input = fgets(STDIN)
-		or die();
+	$input = fgets(STDIN) or die();
 }
 finger_handle_query($input);
