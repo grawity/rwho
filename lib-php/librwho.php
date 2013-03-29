@@ -491,14 +491,9 @@ function read_user_plan_ldap($user, $host) {
 }
 
 // read_user_plan(str $user, str $host) -> str?
-// Get the text of user's .plan file, first from LDAP, then from filesystem.
+// Get the text of user's .plan file, first from filesystem, then from LDAP
 
 function read_user_plan($user, $host) {
-	$text = read_user_plan_ldap($user, $host);
-	if ($text !== null) {
-		return $text;
-	}
-
 	$path = find_user_plan_file($user, $host);
 	if ($path !== null) {
 		$fh = @fopen($path, "r");
@@ -508,6 +503,11 @@ function read_user_plan($user, $host) {
 			fclose($fh);
 			return $text;
 		}
+	}
+
+	$text = read_user_plan_ldap($user, $host);
+	if ($text !== null) {
+		return $text;
 	}
 
 	return null;
