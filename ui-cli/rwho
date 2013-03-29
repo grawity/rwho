@@ -53,6 +53,7 @@ conn() {
 	exec {fd}>&-
 }
 
+action='query'
 opt_l=false
 hosts=false
 long=false
@@ -67,27 +68,31 @@ while getopts ":lv" OPT; do
 done
 shift $((OPTIND-1))
 
-host=$RWHO_HOST
-query=$1
+case $action in
+'query')
+	host=$RWHO_HOST
+	query=$1
 
-if $opt_l; then
-	if [[ $query ]]; then
-		long=true
-	else
-		query="*"
+	if $opt_l; then
+		if [[ $query ]]; then
+			long=true
+		else
+			query="*"
+		fi
 	fi
-fi
 
-if $long; then
-	query="/W $query"
-fi
-
-if [[ $query == *@* ]]; then
-	qhost=${query##*@}
-	if [[ $qhost == *.* ]]; then
-		host=$qhost
-		query=${query%@*}
+	if $long; then
+		query="/W $query"
 	fi
-fi
 
-conn "$host" "$query"
+	if [[ $query == *@* ]]; then
+		qhost=${query##*@}
+		if [[ $qhost == *.* ]]; then
+			host=$qhost
+			query=${query%@*}
+		fi
+	fi
+
+	conn "$host" "$query"
+	;;
+esac
