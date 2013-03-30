@@ -187,7 +187,7 @@ function output_plan($user, $host) {
 	print("\r\n");
 	print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
 
-	foreach (preg_split('/[\r\n]+/', $text) as $line)
+	foreach (preg_split('/\r?\n/', $text) as $line)
 		print("$line\r\n");
 }
 
