@@ -324,6 +324,10 @@ GetOptions(
 
 # modules
 
+if ($do_single) {
+	$do_monitor = 0;
+}
+
 if ($do_monitor) {
 	given ($^O) {
 		when (/^(free|net)bsd$/) {
