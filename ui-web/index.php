@@ -122,7 +122,6 @@ function output_html($data) {
 						? "<a href=\"?user=$user\">$user</a>"
 						: $user)
 					."</td>\n";
-				print "\t<td>$uid</td>\n";
 			} else {
 				if ($k == 0)
 					print "\t<td rowspan=\"".count($data)."\">"
@@ -131,6 +130,9 @@ function output_html($data) {
 							: $user)
 						."</td>\n";
 			}
+
+			if (query::$detailed)
+				print "\t<td>$uid</td>\n";
 
 			print "\t<td>"
 				.($linkhost
