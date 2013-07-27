@@ -143,6 +143,7 @@ sub debug {
 sub getutmppath {
 	my @paths = (
 		"/run/utmp",		# Linux
+		"/var/run/utmpx",	# NetBSD
 		"/var/run/utmp",	# Linux (old)
 		"/var/run/utx.active",	# FreeBSD
 		"/var/adm/utmp",
