@@ -24,12 +24,12 @@ Dependencies:
   * use `JSON`
   * use `LWP::UserAgent`
   * use `Socket::GetAddrInfo`
-  * use `Sys::Utmp`
+  * use `User::Utmp` or `Sys::Utmp`
 
 For change monitoring:
 
   * use `Linux::Inotify2` (inotify: Linux)
-  * use `IO::KQueue` (kqueue: FreeBSD, NetBSD)
+  * use `IO::KQueue` (kqueue: FreeBSD, NetBSD, OpenBSD)
 
 ### agent-windows -- Windows NT agent
 
