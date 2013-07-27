@@ -246,7 +246,7 @@ sub mainloop_monitor_kqueue {
 
 	debug("monitor/kqueue: watching $utmp_path");
 	while (1) {
-		$kq->kevent;
+		eval { $kq->kevent } or warn "$@";
 		# hack for NetBSD to properly pick up changes
 		usleep(50);
 		update();
