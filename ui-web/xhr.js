@@ -1,7 +1,14 @@
 var waiting = 0;
+var timer_id;
+var hidden_prop;
+var hidden_event;
 
 function set_timer() {
-	setTimeout(fetch_data, settings.interval * 1000);
+	var interval = is_visible() ? settings.interval : 120;
+	if (timer_id) {
+		clearTimeout(timer_id);
+	}
+	timer_id = setTimeout(fetch_data, interval * 1000);
 }
 
 function fetch_data() {
@@ -32,4 +39,36 @@ function handle_data(data) {
 	body.innerHTML = data;
 }
 
+function is_visible() {
+	return hidden_prop ? !document[hidden_prop] : true;
+}
+
+function update_visibility() {
+	if (is_visible()) {
+		console.log("page became visible, starting instant update");
+		fetch_data();
+	} else {
+		console.log("page became hidden, adjusting timer");
+		set_timer();
+	}
+}
+
+if (typeof document.hidden !== "undefined") {
+	hidden_prop = "hidden";
+	hidden_event = "visibilitychange";
+} else if (typeof document.mozHidden !== "undefined") {
+	hidden_prop = "mozHidden";
+	hidden_event = "mozvisibilitychange";
+} else if (typeof document.msHidden !== "undefined") {
+	hidden_prop = "msHidden";
+	hidden_event = "msvisibilitychange";
+} else if (typeof document.webkitHidden !== "undefined") {
+	hidden_prop = "webkitHidden";
+	hidden_event = "webkitvisibilitychange";
+}
+
 document.addEventListener("DOMContentLoaded", fetch_data, true);
+
+if (hidden_event) {
+	document.addEventListener(hidden_event, update_visibility, false);
+}
