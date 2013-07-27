@@ -333,7 +333,7 @@ if ($do_single) {
 
 if ($do_monitor) {
 	given ($^O) {
-		when (/^(free|net)bsd$/) {
+		when (/^(free|net|open)bsd$/) {
 			eval {require IO::KQueue}
 			or die "error: monitor enabled but IO::KQueue missing\n";
 			$monitor_impl = "kqueue";
