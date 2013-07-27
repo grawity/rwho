@@ -90,7 +90,9 @@ Print informative messages.
 
 =item * C<Socket::GetAddrInfo> (recommended) or the C<getent> binary
 
-=item * C<Sys::Utmp> or C<User::Utmp>
+=item * C<User::Utmp> (recommended) or C<Sys::Utmp>
+
+On NetBSD, C<Sys::Utmp> works poorly, as it only reads from C<utmp> and not from C<utmpx> databases.
 
 =back
 
