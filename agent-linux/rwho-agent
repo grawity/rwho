@@ -59,6 +59,7 @@ sub enum_sessions {
 		User::Utmp::utmpxname($utmp_path) if $^O eq 'linux';
 		while (my $ent = User::Utmp::getutxent()) {
 			if ($ent->{ut_type} == User::Utmp->USER_PROCESS) {
+				next if !length $ent->{ut_user};
 				push @utmp, {
 					user => $ent->{ut_user},
 					line => $ent->{ut_line},
@@ -73,6 +74,7 @@ sub enum_sessions {
 		my $utmp = Sys::Utmp->new(Filename => $utmp_path);
 		while (my $ent = $utmp->getutent()) {
 			if ($ent->user_process) {
+				next if !length $ent->ut_user;
 				push @utmp, {
 					user => $ent->ut_user,
 					line => $ent->ut_line,
