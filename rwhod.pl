@@ -163,7 +163,10 @@ sub gethostid {
 		$idtype = "systemd";
 	} elsif (-f "/var/lib/dbus/machine-id") {
 		$id = readfile("/var/lib/dbus/machine-id");
-		$idtype = "dbus-old";
+		$idtype = "dbus-linux";
+	} elsif (-f "/var/db/dbus/machine-id") {
+		$id = readfile("/var/db/dbus/machine-id");
+		$idtype = "dbus-freebsd";
 	} else {
 		warn "gethostid: static host ID not found, falling back to hostname\n";
 		$id = "name=".hostname();
