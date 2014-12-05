@@ -398,7 +398,7 @@ $my_hostname = $conf{"agent.hostname"}
 		|| hostname()
 		|| "(none)";
 
-if ($my_hostname eq '(none)') {
+if ($my_hostname eq "(none)" || $my_hostname eq "localhost") {
 	die "error: could not determine own hostname";
 }
 
