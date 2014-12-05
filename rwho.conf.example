@@ -20,4 +20,7 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 ;privacy.allow_anonymous = true
 ;privacy.hide_rhost = true
 
+;sys.hostname =
+;sys.fqdn =
+
 ;web.stylesheet = /custom.css
