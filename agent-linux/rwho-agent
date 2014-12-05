@@ -404,6 +404,7 @@ if ($my_hostname eq '(none)') {
 
 $my_fqdn = $conf{"sys.fqdn"}
 		|| canon_hostname($my_hostname)
+		|| canon_hostname(hostname())
 		|| $my_hostname;
 
 debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
