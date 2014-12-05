@@ -394,7 +394,9 @@ unless ($do_monitor || $do_poll) {
 	die "error: cannot disable both polling and monitor\n";
 }
 
-$my_hostname = hostname() || '(none)';
+$my_hostname = $conf{"agent.hostname"}
+		|| hostname()
+		|| "(none)";
 
 if ($my_hostname eq '(none)') {
 	die "error: could not determine own hostname";
