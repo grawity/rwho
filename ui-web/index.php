@@ -50,12 +50,12 @@ function output_xml($data) {
 
 	$query = $root->appendChild($doc->createElement("query"));
 
-	if (strlen(query::$user))
-		$query->appendChild($doc->createElement("user"))
-			->appendChild($doc->createTextNode(query::$user));
 	if (strlen(query::$host))
 		$query->appendChild($doc->createElement("host"))
 			->appendChild($doc->createTextNode(query::$host));
+	if (strlen(query::$user))
+		$query->appendChild($doc->createElement("user"))
+			->appendChild($doc->createTextNode(query::$user));
 	if (!query::$detailed)
 		$query->appendChild($doc->createElement("summary"))
 			->appendChild($doc->createTextNode("true"));
