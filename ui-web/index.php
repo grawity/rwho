@@ -48,14 +48,16 @@ function output_xml($data) {
 	$root->appendChild($doc->createAttribute("time"))
 		->appendChild($doc->createTextNode(date("c")));
 
+	$query = $root->appendChild($doc->createElement("query"));
+
 	if (strlen(query::$user))
-		$root->appendChild($doc->createAttribute("user"))
+		$query->appendChild($doc->createAttribute("user"))
 			->appendChild($doc->createTextNode(query::$user));
 	if (strlen(query::$host))
-		$root->appendChild($doc->createAttribute("host"))
+		$query->appendChild($doc->createAttribute("host"))
 			->appendChild($doc->createTextNode(query::$host));
 	if (!query::$detailed)
-		$root->appendChild($doc->createAttribute("summary"))
+		$query->appendChild($doc->createAttribute("summary"))
 			->appendChild($doc->createTextNode("true"));
 
 	foreach ($data as $row) {
