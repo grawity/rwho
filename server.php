@@ -21,6 +21,63 @@ function pdo_die($st) {
 	die("error: $err\n");
 }
 
+function get_host_pwent($host) {
+	// FIXME: this should be done better
+	$accounts = @include(__DIR__."/accounts.conf.php");
+	if ($accounts)
+		return @$accounts[$host];
+	else
+		return null;
+}
+
+function check_authorization($host) {
+	$auth_id = @$_SERVER["PHP_AUTH_USER"];
+	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
+	$auth_type = @$_SERVER["AUTH_TYPE"];
+
+	if ($auth_id) {
+		if ($auth_id === $host) {
+			$db_pw = get_host_pwent($host);
+			// TODO: add authorization methods without password auth
+			// (split authn and authz)
+			if ($db_pw) {
+				// FIXME: timing-safe password_verify() [needs ≥5.5.0]
+				if (crypt($auth_pw, $db_pw) === $db_pw) {
+					syslog(LOG_INFO, "host '$host' accepted (authenticated)");
+					return true;
+				} else {
+					syslog(LOG_NOTICE, "host '$host' rejected (bad password)");
+					return false;
+				}
+			} else {
+				syslog(LOG_INFO, "host '$host' accepted (authentication provided but not needed)");
+				return true;
+			}
+		} else {
+			syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (mismatch)");
+			return false;
+		}
+	} else {
+		$db_pw = get_host_pwent($host);
+		if ($db_pw) {
+			syslog(LOG_INFO, "host '$host' rejected (authentication required but missing)");
+			return false;
+		} else {
+			syslog(LOG_INFO, "host '$host' accepted (without authentication)");
+			return true;
+		}
+	}
+
+	if ($db_pw) {
+	} else {
+		if (!$auth_id) {
+		}
+	}
+
+	syslog(LOG_NOTICE, "host '$host' accepted (authentication not implemented)");
+	return true;
+}
+
 // Host information
 
 function host_update($host) {
@@ -115,6 +172,12 @@ if (isset($_REQUEST["action"]))
 	$action = $_REQUEST["action"];
 else
 	die("error: action not specified\n");
+
+if (!check_authorization($host)) {
+	header("Status: 401");
+	header("WWW-Authenticate: Basic realm=\"rwho\"");
+	die("error: not authorized\n");
+}
 
 switch ($action) {
 	case "insert":
