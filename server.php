@@ -35,6 +35,8 @@ function check_authorization($host) {
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
 
+	$auth_required = Config::getbool("server.auth_required", false);
+
 	if ($auth_id) {
 		if ($auth_id === $host) {
 			$db_pw = get_host_pwent($host);
@@ -49,6 +51,9 @@ function check_authorization($host) {
 					syslog(LOG_NOTICE, "host '$host' rejected (bad password)");
 					return false;
 				}
+			} elseif ($auth_required) {
+				syslog(LOG_INFO, "host '$host' rejected (not found in credential table)");
+				return false;
 			} else {
 				syslog(LOG_INFO, "host '$host' accepted (authentication provided but not needed)");
 				return true;
@@ -59,7 +64,7 @@ function check_authorization($host) {
 		}
 	} else {
 		$db_pw = get_host_pwent($host);
-		if ($db_pw) {
+		if ($db_pw || $auth_required) {
 			syslog(LOG_INFO, "host '$host' rejected (authentication required but missing)");
 			return false;
 		} else {
