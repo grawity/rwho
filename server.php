@@ -21,19 +21,27 @@ function pdo_die($st) {
 	die("error: $err\n");
 }
 
-function check_authorization($host) {
-	$TEST_ACCOUNTS = [
-		"rain.nullroute.eu.org" => '$5$our4zK9JpZfBOCgP$Hwb8w9BUZCU.j67RVo9Ga68yo4Rs6Hnu.Flx8RLoAW1',
-	];
+function get_host_pwent($host) {
+	// FIXME: this should be done better
+	$accounts = @include(__DIR__."/accounts.conf.php");
+	if ($accounts)
+		return @$accounts[$host];
+	else
+		return null;
+}
 
+function check_authorization($host) {
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
 
 	if ($auth_id) {
 		if ($auth_id === $host) {
-			$db_pw = @$TEST_ACCOUNTS[$host];
+			$db_pw = get_host_pwent($host);
+			// TODO: add authorization methods without password auth
+			// (split authn and authz)
 			if ($db_pw) {
+				// FIXME: timing-safe password_verify() [needs ≥5.5.0]
 				if (crypt($auth_pw, $db_pw) === $db_pw) {
 					syslog(LOG_INFO, "host '$host' accepted (authenticated)");
 					return true;
@@ -50,7 +58,7 @@ function check_authorization($host) {
 			return false;
 		}
 	} else {
-		$db_pw = @$TEST_ACCOUNTS[$host];
+		$db_pw = get_host_pwent($host);
 		if ($db_pw) {
 			syslog(LOG_INFO, "host '$host' rejected (authentication required but missing)");
 			return false;
