@@ -22,19 +22,50 @@ function pdo_die($st) {
 }
 
 function check_authorization($host) {
+	$TEST_ACCOUNTS = [
+		"rain.nullroute.eu.org" => "C78p0Up4gjPV",
+	];
+
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
 
-	if (!$auth_id) {
-		syslog(LOG_INFO, "host '$host' accepted without authentication");
-		return true;
+	if ($auth_id) {
+		if ($auth_id === $host) {
+			$db_pw = @$TEST_ACCOUNTS[$host];
+			if ($db_pw) {
+				if (crypt($auth_pw, $db_pw) === $db_pw) {
+					syslog(LOG_INFO, "host '$host' accepted (authenticated)");
+					return true;
+				} else {
+					syslog(LOG_NOTICE, "host '$host' rejected (bad password)");
+					return false;
+				}
+			} else {
+				syslog(LOG_INFO, "host '$host' accepted (authentication provided but not needed)");
+				return true;
+			}
+		} else {
+			syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (mismatch)");
+			return false;
+		}
+	} else {
+		$db_pw = @$TEST_ACCOUNTS[$host];
+		if ($db_pw) {
+			syslog(LOG_INFO, "host '$host' rejected (authentication required but missing)");
+			return false;
+		} else {
+			syslog(LOG_INFO, "host '$host' accepted (without authentication)");
+			return true;
+		}
 	}
-	if ($auth_id !== $host) {
-		syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (mismatch)");
-		return false;
+
+	if ($db_pw) {
+	} else {
+		if (!$auth_id) {
+		}
 	}
-	// TODO
+
 	syslog(LOG_NOTICE, "host '$host' accepted (authentication not implemented)");
 	return true;
 }
