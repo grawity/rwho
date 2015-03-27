@@ -45,30 +45,30 @@ function check_authorization($host) {
 			if ($db_pw) {
 				// FIXME: timing-safe password_verify() [needs ≥5.5.0]
 				if (crypt($auth_pw, $db_pw) === $db_pw) {
-					syslog(LOG_INFO, "host '$host' accepted (authenticated)");
+					syslog(LOG_DEBUG, "host '$host' accepted (authenticated)");
 					return true;
 				} else {
 					syslog(LOG_NOTICE, "host '$host' rejected (bad password)");
 					return false;
 				}
 			} elseif ($auth_required) {
-				syslog(LOG_INFO, "host '$host' rejected (not found in credential table)");
+				syslog(LOG_NOTICE, "host '$host' rejected (not found in credential table)");
 				return false;
 			} else {
-				syslog(LOG_INFO, "host '$host' accepted (authentication provided but not needed)");
+				syslog(LOG_DEBUG, "host '$host' accepted (authentication provided but not needed)");
 				return true;
 			}
 		} else {
-			syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (mismatch)");
+			syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (username mismatch)");
 			return false;
 		}
 	} else {
 		$db_pw = get_host_pwent($host);
 		if ($db_pw || $auth_required) {
-			syslog(LOG_INFO, "host '$host' rejected (authentication required but missing)");
+			syslog(LOG_NOTICE, "host '$host' rejected (authentication required but missing)");
 			return false;
 		} else {
-			syslog(LOG_INFO, "host '$host' accepted (without authentication)");
+			syslog(LOG_DEBUG, "host '$host' accepted (without authentication)");
 			return true;
 		}
 	}
