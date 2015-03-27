@@ -130,6 +130,14 @@ sub upload {
 	debug("upload: sending ".(scalar @$sessions)." entries");
 	if (!$resp->is_success) {
 		warn "upload: error: '".$resp->status_line."'\n";
+		return 0;
+	}
+	chomp(my $rmsg = $resp->decoded_content);
+	if ($rmsg eq "OK") {
+		return 1;
+	} else {
+		warn "upload: rejected: '".$rmsg."'\n";
+		return 0;
 	}
 }
 
