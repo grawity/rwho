@@ -15,6 +15,8 @@ use Time::HiRes qw(usleep);
 my (%arg, %conf);
 
 my $notify_url;
+my $auth_id;
+my $auth_pw;
 my $utmp_path;
 my $poll_interval;
 my $verbose	= 0;
@@ -118,6 +120,11 @@ sub update {
 sub upload {
 	my ($action, $sessions) = @_;
 	my $ua = LWP::UserAgent->new;
+	if (length $auth_pw) {
+		# FIXME: dynamic realm etc.
+		debug("upload: setting credentials: $auth_id / $auth_pw");
+		$ua->credentials("rwho.cluenet.org:80", "rwho", $auth_id, $auth_pw);
+	}
 
 	my %data = (
 		host => $my_hostname,
@@ -310,6 +317,8 @@ my $pod = "$0.1.pod";
 $0 = "rwho-agent";
 
 GetOptions(
+	"auth-id=s"	=> \$arg{auth_id},
+	"auth-pw=s"	=> \$arg{auth_pw},
 	"config=s"	=> sub {
 				my ($opt, $arg) = @_;
 				if (open(my $fh, "<", $arg)) {
@@ -419,6 +428,15 @@ $my_fqdn = $conf{"sys.fqdn"}
 		|| $my_hostname;
 
 debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
+
+$auth_id = $arg{auth_id}
+		// $conf{"agent.auth_username"}
+		// $my_fqdn
+		// undef;
+
+$auth_pw = $arg{auth_pw}
+		// $conf{"agent.auth_password"}
+		// undef;
 
 # main code
 
