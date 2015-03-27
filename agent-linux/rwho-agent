@@ -129,7 +129,7 @@ sub update {
 # Upload data to server
 sub upload {
 	my ($action, $sessions) = @_;
-	my $ua = LWP::UserAgent->new;
+	state $ua = LWP::UserAgent->new;
 
 	my %data = (
 		host => $my_hostname,
