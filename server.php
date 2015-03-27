@@ -23,7 +23,7 @@ function pdo_die($st) {
 
 function check_authorization($host) {
 	$TEST_ACCOUNTS = [
-		"rain.nullroute.eu.org" => "C78p0Up4gjPV",
+		"rain.nullroute.eu.org" => '$5$our4zK9JpZfBOCgP$Hwb8w9BUZCU.j67RVo9Ga68yo4Rs6Hnu.Flx8RLoAW1',
 	];
 
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
