@@ -303,6 +303,7 @@ GetOptions(
 				my ($opt, $arg) = @_;
 				if (open(my $fh, "<", $arg)) {
 					%conf = parse_conf($fh);
+					close($fh);
 				} else {
 					die "error: unable to read '$arg' ($!)\n";
 				}
