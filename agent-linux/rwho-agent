@@ -359,6 +359,8 @@ if ($do_monitor) {
 
 if ($arg{config}) {
 	%conf = read_conf($arg{config});
+} elsif (-e "rwho.conf") {
+	%conf = read_conf("rwho.conf");
 }
 
 $skip_root = $arg{skip_root}
