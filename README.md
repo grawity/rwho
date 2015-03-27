@@ -14,7 +14,7 @@ See it in action via [HTTP][ex-http] or [Finger][ex-finger].
 
 ## Contents
 
-### agent-linux -- Linux/BSD agent
+### agent-linux – Linux/BSD agent
 
 Uses `/run/utmp`, with inotify and/or periodic updates. Requires only read access to the `utmp` database; in other words, a standard account.
 
@@ -31,7 +31,7 @@ For change monitoring:
   * use `Linux::Inotify2` (inotify: Linux)
   * use `IO::KQueue` (kqueue: FreeBSD, NetBSD, OpenBSD)
 
-### agent-windows -- Windows NT agent
+### agent-windows – Windows NT agent
 
 Uses Terminal Services API, requires Administrator privileges to see sessions other than current.
 
@@ -42,18 +42,18 @@ Dependencies:
 
 [pywin32]: http://sourceforge.net/projects/pywin32/files/pywin32/
 
-### lib-php -- PHP5 library
+### lib-php – PHP5 library
 
 Used by current UIs, interfaces directly with the database.
 
-### ui-cli -- command-line UI
+### ui-cli – command-line UI
 
 Does nothing more but fork ui-finger and pass the arguments to stdin.
 
-### ui-finger -- Finger UI
+### ui-finger – Finger UI
 
 Inetd-style server for the Finger protocol. Accepts a single query in stdin, dumps results to stdout.
 
-### ui-web -- HTML UI
+### ui-web – HTML UI
 
 Exactly what it says on the tin.
