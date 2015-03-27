@@ -35,13 +35,17 @@ class Config {
 		return self::$data[$key] = $value;
 	}
 
-	static function get($key) {
+	static function get($key, $default=null) {
+		if (!self::has($key))
+			return $default;
 		return self::$data[$key];
 	}
 
-	static function getbool($key) {
+	static function getbool($key, $default=false) {
 		$v = self::$data[$key];
-		if ($v === "true" || $v === "yes")
+		if (!isset($v))
+			return $default;
+		elseif ($v === "true" || $v === "yes")
 			return true;
 		elseif ($v === "false" || $v === "no")
 			return false;
@@ -50,6 +54,8 @@ class Config {
 	}
 
 	static function getlist($key) {
+		if (!self::has($key))
+			return array();
 		$v = self::$data[$key];
 		$l = preg_split("/\s+/", $v);
 		return $l;
