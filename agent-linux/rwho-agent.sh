@@ -47,6 +47,11 @@ ctl() {
 			ctl restart
 		fi
 		;;
+	git-update)
+		cd "$RWHO_PATH" &&
+		git pull --quiet --ff-only &&
+		ctl update
+		;;
 	status)
 		if [ ! -f "$PIDFILE" ]; then
 			echo "stopped (no pidfile)"
