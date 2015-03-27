@@ -47,10 +47,22 @@ sub parse_bool {
 }
 
 sub parse_conf {
-	my $fh = shift;
+	my ($fh) = @_;
 	map {split /\s*=\s*/, $_, 2}
 	grep {length and !/^[#;]/}
 	grep {chomp} <$fh>;
+}
+
+sub read_conf {
+	my ($file) = @_;
+	debug("config: reading '$file'");
+	if (open(my $fh, "<", $file)) {
+		my %conf = parse_conf($fh);
+		close($fh);
+		return %conf;
+	} else {
+		die "error: unable to read '$file' ($!)\n";
+	}
 }
 
 sub enum_sessions {
@@ -299,15 +311,7 @@ my $pod = "$0.1.pod";
 $0 = "rwho-agent";
 
 GetOptions(
-	"config=s"	=> sub {
-				my ($opt, $arg) = @_;
-				if (open(my $fh, "<", $arg)) {
-					%conf = parse_conf($fh);
-					close($fh);
-				} else {
-					die "error: unable to read '$arg' ($!)\n";
-				}
-			},
+	"config=s"	=> \$arg{config},
 	"cleanup!"	=> \$do_cleanup,
 	"daemon"	=> \$do_fork,
 	"help"		=> sub { pod2usage(-input => $pod, -exitstatus => 0); },
@@ -352,6 +356,10 @@ if ($do_monitor) {
 }
 
 # merge arguments and config file
+
+if ($arg{config}) {
+	%conf = read_conf($arg{config});
+}
 
 $skip_root = $arg{skip_root}
 		// parse_bool($conf{"agent.exclude_root"})
