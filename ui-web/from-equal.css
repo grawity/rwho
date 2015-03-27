@@ -1,0 +1,67 @@
+/* rescued from equal.cluenet.org's website */
+
+html {
+	background: #eee;
+	overflow-y: scroll;
+}
+
+body {
+	font: 11pt/1.5 Cambria, serif;
+	color: black;
+	background: white;
+	border-width: 0 1px 1px 1px;
+	border-style: solid;
+	border-color: #ccc;
+}
+
+@media handheld {
+	body { line-height: normal; }
+}
+
+@media screen {
+	body {
+		max-width: 700px;
+		margin: 0 auto;
+		padding: 1em;
+	}
+}
+
+#nav {
+	font-size: 1.2em;
+	border-bottom: 1px solid #eee;
+	padding: 0.2em 0em;
+}
+/*
+
+#nav a {
+	color: #729fcf;
+	text-decoration: none;
+}
+
+#nav a:hover, #nav a:focus {
+	color: #3465a4;
+	border-bottom: 2px solid #729fcf;
+}
+*/
+
+#motd u {
+	text-decoration: none;
+	font-style: italic;
+}
+
+table#rwho-sessions {
+	width: 100%;
+}
+
+.footer {
+	color: gray;
+	font-style: italic;
+	text-align: right;
+}
+
+samp {
+	background: #eee;
+	border: 1px solid #ccc;
+	-moz-border-radius: 3px;
+	padding: 0 1px;
+}
