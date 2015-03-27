@@ -120,10 +120,13 @@ sub update {
 sub upload {
 	my ($action, $sessions) = @_;
 	my $ua = LWP::UserAgent->new;
+
 	if (length $auth_pw) {
-		# FIXME: dynamic realm etc.
-		debug("upload: setting credentials: $auth_id / $auth_pw");
-		$ua->credentials("rwho.cluenet.org:80", "rwho", $auth_id, $auth_pw);
+		debug("upload: authenticating as \"$auth_id\"");
+		$ua->add_handler(request_prepare => sub {
+			my ($req, $ua, $h) = @_;
+			$req->authorization_basic($auth_id, $auth_pw);
+		});
 	}
 
 	my %data = (
