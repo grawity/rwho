@@ -135,6 +135,9 @@ sub upload {
 	chomp(my $rmsg = $resp->decoded_content);
 	if ($rmsg eq "OK") {
 		return 1;
+	} elsif ($rmsg =~ /^KOD/) {
+		warn "upload: rejected: '".$rmsg."'\n";
+		exit;
 	} else {
 		warn "upload: rejected: '".$rmsg."'\n";
 		return 0;
