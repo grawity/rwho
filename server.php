@@ -173,8 +173,11 @@ if (isset($_REQUEST["action"]))
 else
 	die("error: action not specified\n");
 
-if (!check_authorization($host))
+if (!check_authorization($host)) {
+	header("Status: 401");
+	header("WWW-Authenticate: Basic realm=\"rwho\"");
 	die("error: not authorized\n");
+}
 
 switch ($action) {
 	case "insert":
