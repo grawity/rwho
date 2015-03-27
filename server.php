@@ -21,6 +21,24 @@ function pdo_die($st) {
 	die("error: $err\n");
 }
 
+function check_authorization($host) {
+	$auth_id = @$_SERVER["PHP_AUTH_USER"];
+	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
+	$auth_type = @$_SERVER["AUTH_TYPE"];
+
+	if (!$auth_id) {
+		syslog(LOG_INFO, "host '$host' accepted without authentication");
+		return true;
+	}
+	if ($auth_id !== $host) {
+		syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (mismatch)");
+		return false;
+	}
+	// TODO
+	syslog(LOG_NOTICE, "host '$host' accepted (authentication not implemented)");
+	return true;
+}
+
 // Host information
 
 function host_update($host) {
@@ -115,6 +133,9 @@ if (isset($_REQUEST["action"]))
 	$action = $_REQUEST["action"];
 else
 	die("error: action not specified\n");
+
+if (!check_authorization($host))
+	die("error: not authorized\n");
 
 switch ($action) {
 	case "insert":
