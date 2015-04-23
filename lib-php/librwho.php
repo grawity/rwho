@@ -42,7 +42,7 @@ class Config {
 	}
 
 	static function getbool($key, $default=false) {
-		$v = self::$data[$key];
+		$v = @self::$data[$key];
 		if (!isset($v))
 			return $default;
 		elseif ($v === "true" || $v === "yes")
