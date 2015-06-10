@@ -325,8 +325,11 @@ function normalize_host($host) {
 
 	$host = preg_replace('/^:\d+$/', '$0 (X11)', $host);
 
+	# strip (pid).%w from tmux name
+	$host = preg_replace('/^tmux\(\d+\)\.%\d+$/', '(tmux)', $host);
+
 	# strip [pid] from mosh name
-	$host = preg_replace('/^mosh \[\d+\]$/', '(detached)', $host);
+	$host = preg_replace('/^mosh \[\d+\]$/', '(mosh detached)', $host);
 	$host = preg_replace('/ via mosh \[\d+\]$/', '', $host);
 
 	return $host;
