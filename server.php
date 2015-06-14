@@ -22,12 +22,8 @@ function pdo_die($st) {
 }
 
 function get_host_pwent($host) {
-	// FIXME: this should be done better
-	$accounts = @include(__DIR__."/accounts.conf.php");
-	if ($accounts)
-		return @$accounts[$host];
-	else
-		return null;
+	Config::parse(__DIR__."/accounts.conf");
+	return Config::get("auth.pw.$host");
 }
 
 function check_authorization($host) {

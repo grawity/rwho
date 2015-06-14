@@ -5,7 +5,7 @@ class Config {
 	static $data = array();
 
 	static function parse($file) {
-		$fh = fopen($file, "r");
+		$fh = @fopen($file, "r");
 		if (!$fh)
 			return;
 		while (($line = fgets($fh)) !== false) {
