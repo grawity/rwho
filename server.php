@@ -27,6 +27,9 @@ function get_host_pwent($host) {
 }
 
 function check_authorization($host) {
+	$client_ip = @$_SERVER["REMOTE_ADDR"];
+	$client_name = "host '$host' from $client_ip";
+
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
@@ -41,30 +44,30 @@ function check_authorization($host) {
 			if ($db_pw) {
 				// FIXME: timing-safe password_verify() [needs ≥5.5.0]
 				if (crypt($auth_pw, $db_pw) === $db_pw) {
-					syslog(LOG_DEBUG, "host '$host' accepted (authenticated)");
+					syslog(LOG_DEBUG, "$client_name accepted (authenticated)");
 					return true;
 				} else {
-					syslog(LOG_NOTICE, "host '$host' rejected (bad password)");
+					syslog(LOG_NOTICE, "$client_name rejected (bad password)");
 					return false;
 				}
 			} elseif ($auth_required) {
-				syslog(LOG_NOTICE, "host '$host' rejected (not found in credential table)");
+				syslog(LOG_NOTICE, "$client_name rejected (not found in credential table)");
 				return false;
 			} else {
-				syslog(LOG_DEBUG, "host '$host' accepted (authentication provided but not needed)");
+				syslog(LOG_DEBUG, "$client_name accepted (authentication provided but not needed)");
 				return true;
 			}
 		} else {
-			syslog(LOG_NOTICE, "host '$host' auth '$auth_id' rejected (username mismatch)");
+			syslog(LOG_NOTICE, "$client_name auth '$auth_id' rejected (username mismatch)");
 			return false;
 		}
 	} else {
 		$db_pw = get_host_pwent($host);
 		if ($db_pw || $auth_required) {
-			syslog(LOG_NOTICE, "host '$host' rejected (authentication required but missing)");
+			syslog(LOG_NOTICE, "$client_name rejected (authentication required but missing)");
 			return false;
 		} else {
-			syslog(LOG_DEBUG, "host '$host' accepted (without authentication)");
+			syslog(LOG_DEBUG, "$client_name accepted (without authentication)");
 			return true;
 		}
 	}
@@ -75,7 +78,7 @@ function check_authorization($host) {
 		}
 	}
 
-	syslog(LOG_NOTICE, "host '$host' accepted (authentication not implemented)");
+	syslog(LOG_NOTICE, "$client_name accepted (authentication not implemented)");
 	return true;
 }
 
