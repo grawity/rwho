@@ -39,7 +39,10 @@ function is_trusted_ip() {
 	return false;
 }
 
-function require_auth() {
+function require_auth($strict=false) {
+	if (!$strict && is_trusted_ip())
+		return;
+
 	$auth = Config::get("web.auth_method", "none");
 	if (!$auth || $auth === "none") {
 		return;
