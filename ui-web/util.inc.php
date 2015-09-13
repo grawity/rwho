@@ -29,3 +29,21 @@ function make_finger_addr() {
 		$q = "/W ".$q;
 	return "//nullroute.eu.org/finger/?q=".urlencode($q);
 }
+
+function require_auth() {
+	$auth = Config::get("web.auth_method", "none");
+	if (!$auth || $auth === "none") {
+		return;
+	}
+	elseif ($auth === "saml") {
+		$ssp_path = Config::get("web.ssp_autoload", "/usr/share/simplesamlphp/lib/_autoload.php");
+		$ssp_authsource = Config::get("web.ssp_authsource", "default-sp");
+
+		require_once($ssp_path);
+		$as = new \SimpleSAML_Auth_Simple($ssp_authsource);
+		$as->requireAuth();
+	}
+	else {
+		die("error: unknown auth_method '$auth'\n");
+	}
+}

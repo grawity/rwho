@@ -106,6 +106,8 @@ function output_html($data) {
 	}
 }
 
+require_auth();
+
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
 $data = retrieve_hosts();

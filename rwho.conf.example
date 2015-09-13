@@ -31,4 +31,8 @@ agent.notify_url = http://rwho.cluenet.org/server.php
 ;sys.hostname =
 ;sys.fqdn =
 
+;web.auth_method = saml
+;web.ssp_autoload = /usr/share/simplesamlphp/lib/_autoload.php
+;web.ssp_authsource = default-sp
+
 ;web.stylesheet = /custom.css

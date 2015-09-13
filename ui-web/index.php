@@ -165,6 +165,8 @@ function should_filter() {
 	return false;
 }
 
+require_auth();
+
 query::$user = $_GET["user"];
 query::$host = $_GET["host"];
 query::$detailed = (strlen(query::$user)
