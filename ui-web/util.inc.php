@@ -30,6 +30,15 @@ function make_finger_addr() {
 	return "//nullroute.eu.org/finger/?q=".urlencode($q);
 }
 
+function is_trusted_ip() {
+	$rhost = get_rhost();
+	foreach (Config::getlist("privacy.allow_addr") as $addr) {
+		if (ip_cidr($rhost, $addr))
+			return true;
+	}
+	return false;
+}
+
 function require_auth() {
 	$auth = Config::get("web.auth_method", "none");
 	if (!$auth || $auth === "none") {

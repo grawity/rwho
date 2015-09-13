@@ -152,14 +152,7 @@ function output_html($data) {
 }
 
 function should_filter() {
-	$anon = true;
-	$rhost = get_rhost();
-	foreach (Config::getlist("privacy.allow_addr") as $addr)
-		if (ip_cidr($rhost, $addr)) {
-			$anon = false;
-			break;
-		}
-
+	$anon = !is_trusted_ip();
 	if ($anon && Config::getbool("privacy.hide_rhost"))
 		return true;
 	return false;
