@@ -152,8 +152,10 @@ function output_html($data) {
 }
 
 function should_filter() {
-	$anon = !is_trusted_ip();
-	if ($anon && Config::getbool("privacy.hide_rhost"))
+	$trusted = is_trusted_ip();
+	if (!$trusted)
+		$trusted = is_authenticated();
+	if (!$trusted && Config::getbool("privacy.hide_rhost"))
 		return true;
 	return false;
 }

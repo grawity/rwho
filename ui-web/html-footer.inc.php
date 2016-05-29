@@ -10,3 +10,7 @@ var settings = {
 <?php } ?>
 
 <p class="footer"><a href="https://github.com/grawity/rwho/">rwho</a> by grawity</p>
+<p class="footer">authed: <?php echo is_authenticated() ? "yes" : "no" ?>, trusted: <?php echo is_trusted_ip() ? "yes" : "no" ?></p>
+<?php if (auth::$method !== "none" && auth::is_logged_in()) { ?>
+<p class="footer"><a href="?logout=1">log out</a></p>
+<?php } ?>

@@ -392,6 +392,19 @@ function mangle_query($add, $remove=null) {
 	return http_build_query($query);
 }
 
+// mangle(dict<str,str> $add, list<str> $remove) -> str $uri
+// Mangle query string, then return a full URL usable externally
+
+function mangle($add, $remove=null) {
+	$path = $_SERVER["SCRIPT_NAME"];
+	$query = mangle_query($add, $remove);
+
+	$uri = $path;
+	if (strlen($query))
+		$uri .= "?".$query;
+	return $uri;
+}
+
 // canonicalize_utmp_user(utmp_entry& $entry) -> utmp_entry
 // canonicalize_user(str $user, int $uid, str $host) -> str $user
 // Strip off the sssd @domain suffix, for summaries.
