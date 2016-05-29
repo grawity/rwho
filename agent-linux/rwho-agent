@@ -384,6 +384,8 @@ if ($arg{config}) {
 	%conf = read_conf($arg{config});
 } elsif (-e "rwho.conf") {
 	%conf = read_conf("rwho.conf");
+} else {
+	debug("no configuration file found");
 }
 
 $skip_root = $arg{skip_root}
