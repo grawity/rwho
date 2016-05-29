@@ -26,6 +26,11 @@ function get_host_pwent($host) {
 	return Config::get("auth.pw.$host");
 }
 
+function get_host_kodmsg($host) {
+	Config::parse(__DIR__."/accounts.conf");
+	return Config::get("auth.kod.$host");
+}
+
 function check_authorization($host) {
 	$client_ip = @$_SERVER["REMOTE_ADDR"];
 	$client_name = "host '$host' from $client_ip";
@@ -176,6 +181,9 @@ if (isset($_REQUEST["action"]))
 	$action = $_REQUEST["action"];
 else
 	die("error: action not specified\n");
+
+if ($msg = get_host_kodmsg($host))
+	die("KOD: $msg\n");
 
 if (!check_authorization($host)) {
 	header("Status: 401");
