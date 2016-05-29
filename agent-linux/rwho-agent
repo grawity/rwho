@@ -39,12 +39,21 @@ my $monitor_impl;
 my $main_pid;
 my $poller_pid;
 
+sub _warn  { warn "warning: @_\n"; }
+sub _err   { warn "error: @_\n"; }
+sub _die   { _err(@_); exit 1; }
+
+sub debug {
+	local $" = " ";
+	$verbose and print "rwho-agent[$$]: @_\n";
+}
+
 sub parse_bool {
 	given (shift) {
 		when (undef) { undef; }
 		when (/^(yes|true)$/) { 1; }
 		when (/^(no|false)$/) { 0; }
-		default { warn "invalid boolean value '$_'\n"; undef; }
+		default { _warn("invalid boolean value '$_'"); undef; }
 	}
 }
 
@@ -63,7 +72,7 @@ sub read_conf {
 		close($fh);
 		return %conf;
 	} else {
-		die "error: unable to read '$file' ($!)\n";
+		_die("unable to read config file '$file': $!");
 	}
 }
 
@@ -100,7 +109,7 @@ sub enum_sessions {
 		$utmp->endutent();
 	}
 	else {
-		die "error: either User::Utmp or Sys::Utmp required\n";
+		_die("either User::Utmp or Sys::Utmp required");
 	}
 	return @utmp;
 }
@@ -151,27 +160,23 @@ sub upload {
 	my $resp = $ua->post($notify_url, \%data);
 	debug("upload: sending ".(scalar @$sessions)." entries");
 	if (!$resp->is_success) {
-		warn "upload: error: '".$resp->status_line."'\n";
+		_err("upload: error: '".$resp->status_line."'");
 		return 0;
 	}
 	chomp(my $rmsg = $resp->decoded_content);
 	if ($rmsg eq "OK") {
 		return 1;
 	} elsif ($rmsg =~ /^KOD/) {
-		warn "upload: rejected: '".$rmsg."'\n";
+		_err("upload: rejected: '".$rmsg."'");
+		# TODO: create a flag file
 		exit;
 	} else {
-		warn "upload: rejected: '".$rmsg."'\n";
+		_err("upload: rejected: '".$rmsg."'");
 		return 0;
 	}
 }
 
 # Utility functions
-
-sub debug {
-	local $" = " ";
-	$verbose and print "rwho-agent[$$]: @_\n";
-}
 
 sub getutmppath {
 	my @paths = (
@@ -194,17 +199,17 @@ sub forked (&) {
 
 sub daemonize {
 	open(STDIN, "<", "/dev/null")
-		or die "daemonize: cannot open /dev/null: $!\n";
+		or _die("daemonize: cannot open /dev/null: $!");
 
 	my $pid = fork;
 
 	if (!defined $pid) {
-		die "daemonize: cannot fork: $!\n";
+		_die("daemonize: cannot fork: $!");
 	} elsif ($pid) {
 		exit;
 	} else {
 		if (POSIX::setsid() < 0) {
-			warn "daemonize: setsid failed: $!\n";
+			_die("daemonize: setsid failed: $!");
 		}
 		debug("running in background");
 	}
@@ -273,7 +278,7 @@ sub sigchld_reap_any {
 sub mainloop_monitor_kqueue {
 	IO::KQueue->import;
 	open(my $ut, "<", $utmp_path)
-		or die "error: cannot open utmp: $!\n";
+		or _die("cannot open utmp file '$utmp_path': $!");
 	my $kq = IO::KQueue->new;
 	$kq->EV_SET(fileno($ut), &EVFILT_VNODE,
 		&EV_ADD | &EV_CLEAR, &NOTE_WRITE, 5);
@@ -306,7 +311,7 @@ sub mainloop_monitor {
 	given ($monitor_impl) {
 		when ("kqueue") { goto &mainloop_monitor_kqueue; }
 		when ("inotify") { goto &mainloop_monitor_inotify; }
-		default { die "error: monitor mode not supported on $^O\n"; }
+		default { _die("monitor mode not supported on $^O"); }
 	}
 }
 
@@ -318,7 +323,7 @@ sub mainloop_poller {
 		sleep($poll_interval);
 		update();
 		if ($main_pid != $$ and !kill(0, $main_pid)) {
-			warn "poller: lost main process, exiting\n";
+			_warn("poller: lost main process, exiting");
 			goto \&cleanup;
 		}
 	}
@@ -362,17 +367,19 @@ if ($do_single) {
 if ($do_monitor) {
 	given ($^O) {
 		when (/^(free|net|open)bsd$/) {
-			eval {require IO::KQueue}
-			or die "error: monitor enabled but IO::KQueue missing\n";
+			unless (eval {require IO::KQueue}) {
+				_die("monitor enabled but IO::KQueue missing");
+			}
 			$monitor_impl = "kqueue";
 		}
 		when ("linux") {
-			eval {require Linux::Inotify2}
-			or die "error: monitor enabled but Linux::Inotify2 missing\n";
+			unless (eval {require Linux::Inotify2}) {
+				_die("monitor enabled but Linux::Inotify2 missing");
+			}
 			$monitor_impl = "inotify";
 		}
 		default {
-			die "error: monitor enabled but OS '$^O' not supported\n";
+			_die("monitor enabled but OS '$^O' not supported");
 		}
 	}
 	debug("monitor: using $monitor_impl on $^O");
@@ -413,21 +420,21 @@ $notify_url = $arg{notify_url}
 		// "http://rwho.cluenet.org/server.php";
 
 if (!length $notify_url) {
-	die "server URL not specified\n";
+	_die("server URL not specified");
 }
 
 debug("upload: using $notify_url");
 
 $utmp_path = $conf{"agent.utmp_path"}
 		|| getutmppath()
-		|| die "error: utmp file not found\n";
+		|| _die("utmp file not found");
 
 $poll_interval //= ($do_monitor ? 600 : 30);
 
 $do_poll = $poll_interval > 0;
 
 unless ($do_monitor || $do_poll) {
-	die "error: cannot disable both polling and monitor\n";
+	_die("cannot disable both polling and monitor");
 }
 
 $my_hostname = $conf{"sys.hostname"}
@@ -435,7 +442,7 @@ $my_hostname = $conf{"sys.hostname"}
 		|| "(none)";
 
 if ($my_hostname eq "(none)" || $my_hostname eq "localhost") {
-	die "error: could not determine own hostname";
+	_die("could not determine own hostname");
 }
 
 $my_fqdn = $conf{"sys.fqdn"}
@@ -458,10 +465,10 @@ $auth_pw = $arg{auth_pw}
 
 if (defined $pidfile) {
 	if ($do_single || $do_cleanup) {
-		warn "warning: --pidfile ignored in single-update mode\n";
+		_warn("'--pidfile' ignored in single-update mode");
 	} else {
 		open($pidfile_h, ">", $pidfile)
-			or die "unable to open pidfile '$pidfile'\n";
+			or _die("unable to open pidfile '$pidfile'");
 	}
 }
 
@@ -480,7 +487,7 @@ if ($do_cleanup) {
 
 if ($do_fork) {
 	if ($do_single) {
-		warn "warning: --daemon ignored in single-update mode\n";
+		_warn("'--daemon' ignored in single-update mode");
 	} else {
 		daemonize();
 	}
