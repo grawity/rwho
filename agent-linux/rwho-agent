@@ -118,7 +118,7 @@ sub enum_sessions {
 sub update {
 	my @sessions = enum_sessions();
 	for (@sessions) {
-		$_->{uid} = scalar getpwnam $_->{user};
+		$_->{uid} = getpwnam $_->{user};
 		$_->{host} //= "?";
 		$_->{host} =~ s/^::ffff://;
 	}
@@ -158,7 +158,7 @@ sub upload {
 		utmp => encode_json($sessions),
 	);
 	my $resp = $ua->post($notify_url, \%data);
-	debug("upload: sending ".(scalar @$sessions)." entries");
+	debug("upload: sending ".@$sessions." entries");
 	if (!$resp->is_success) {
 		_err("upload: error: '".$resp->status_line."'");
 		return 0;
