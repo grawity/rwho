@@ -35,10 +35,15 @@ function check_authorization($host) {
 	$client_ip = @$_SERVER["REMOTE_ADDR"];
 	$client_name = "host '$host' from $client_ip";
 
+	$kod_msg = get_host_kodmsg($host);
+	if ($kod_msg) {
+		syslog(LOG_NOTICE, "$client_name rejected (KOD enabled: \"$kod_msg\")");
+		die("KOD: $kod_msg\n");
+	}
+
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
-
 	$auth_required = Config::getbool("server.auth_required", false);
 
 	if ($auth_id) {
@@ -181,9 +186,6 @@ if (isset($_REQUEST["action"]))
 	$action = $_REQUEST["action"];
 else
 	die("error: action not specified\n");
-
-if ($msg = get_host_kodmsg($host))
-	die("KOD: $msg\n");
 
 if (!check_authorization($host)) {
 	header("Status: 401");
