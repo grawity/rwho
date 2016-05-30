@@ -1,0 +1,11 @@
+# rwho authentication config
+
+# auth.pw.<fqdn> = crypt()-compatible password hash
+# - If present, will require authentication for this specific host.
+#   (Global setting is "server.auth_required".)
+auth.pw.kremvax.example.com = $5$fJWY8mpdJT5aaAKs$D/hBtRq5ZicMNUtrIgbXdLfjH5Qg1RTvc6/vhXxI3h4
+
+# auth.kod.<fqdn> = free-form message
+# - If present, will request the agent to exit and stop contacting the server.
+#   (Any sessions currently in database will have to be purged after expiry.)
+auth.kod.badhost.evilgeniuses.int = Go away!
