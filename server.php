@@ -52,8 +52,7 @@ function check_authorization($host) {
 			// TODO: add authorization methods without password auth
 			// (split authn and authz)
 			if ($db_pw) {
-				// FIXME: timing-safe password_verify() [needs ≥5.5.0]
-				if (crypt($auth_pw, $db_pw) === $db_pw) {
+				if (password_verify($auth_pw, $db_pw)) {
 					syslog(LOG_DEBUG, "$client_name accepted (authenticated)");
 					return true;
 				} else {
