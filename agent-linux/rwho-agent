@@ -292,12 +292,15 @@ sub sigchld_reap_any {
 # Main loops
 
 sub mainloop_monitor_kqueue {
-	IO::KQueue->import;
 	open(my $ut, "<", $utmp_path)
 		or _die("cannot open utmp file '$utmp_path': $!");
+
 	my $kq = IO::KQueue->new;
-	$kq->EV_SET(fileno($ut), &EVFILT_VNODE,
-		&EV_ADD | &EV_CLEAR, &NOTE_WRITE, 5);
+	$kq->EV_SET(fileno($ut),
+			&IO::KQueue::EVFILT_VNODE,
+			&IO::KQueue::EV_ADD | &IO::KQueue::EV_CLEAR,
+			&IO::KQueue::NOTE_WRITE,
+			5);
 
 	debug("monitor/kqueue: watching $utmp_path");
 	while (1) {
@@ -310,9 +313,10 @@ sub mainloop_monitor_kqueue {
 }
 
 sub mainloop_monitor_inotify {
-	Linux::Inotify2->import;
 	my $inotify = Linux::Inotify2->new;
-	$inotify->watch($utmp_path, &IN_MODIFY, \&update);
+	$inotify->watch($utmp_path,
+			&Linux::Inotify2::IN_MODIFY,
+			\&update);
 
 	debug("monitor/inotify: watching $utmp_path");
 	while (1) {
