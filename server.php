@@ -28,7 +28,7 @@ function get_host_pwent($host) {
 
 function get_host_kodmsg($host) {
 	Config::parse(__DIR__."/accounts.conf");
-	return Config::get("auth.kod.$host");
+	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
 }
 
 function check_authorization($host) {
