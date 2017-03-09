@@ -161,7 +161,16 @@ sub upload {
 	my $resp = $ua->post($notify_url, \%data);
 	debug("upload: sending ".@$sessions." entries");
 	if (!$resp->is_success) {
-		_err("upload: error: '".$resp->status_line."'");
+		if ($resp->header("client-warning")) {
+			_err("upload: $_") for
+				grep {/./} split(/\n/, $resp->content);
+			if ($resp->content =~ /verification failed/) {
+				_err("exiting on fatal error");
+				exit;
+			}
+		} else {
+			_err("upload: server error: ".$resp->status_line);
+		}
 		return 0;
 	}
 	chomp(my $rmsg = $resp->decoded_content);

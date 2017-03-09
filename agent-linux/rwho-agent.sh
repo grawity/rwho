@@ -75,6 +75,7 @@ ctl() {
 		perldeps='
 		JSON
 		LWP::UserAgent
+		LWP::Protocol::https
 		Socket::GetAddrInfo
 		Sys::Utmp
 		'
