@@ -184,6 +184,11 @@ sub upload {
 		} else {
 			_err("could not create KOD file '".$kod_path."': $!");
 		}
+		if ($action ne "destroy") {
+			debug("attempting final cleanup on KOD response");
+			upload("destroy", []);
+		}
+		_err("exiting on KOD response");
 		exit;
 	} else {
 		_err("upload: rejected: '".$rmsg."'");
