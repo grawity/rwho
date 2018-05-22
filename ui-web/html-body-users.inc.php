@@ -51,10 +51,6 @@ html::header("address", 30);
 <?php output_html($data); ?>
 </table>
 
-<?php if (strlen(query::$user) and user_is_global(query::$user)) { ?>
-<p><a href="http://search.cluenet.org/?q=<?= H(query::$user) ?>">See <?= H(query::$user) ?>'s Cluenet profile.</a></p>
-<?php } ?>
-
 <?php } else { // data === false ?>
 <p>Could not retrieve <code>rwho</code> information.</p>
 <?php }; ?>
