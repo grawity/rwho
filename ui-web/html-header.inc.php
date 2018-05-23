@@ -15,5 +15,8 @@
 
 <h1>
 	<a href="//nullroute.eu.org">nullroute</a>
-	| <?= html::$title ?>
+	| <a href="//nullroute.eu.org/hosts.html">hosts</a>
+	| rwho
 </h1>
+
+<p><?= html::$title ?>:</p>
