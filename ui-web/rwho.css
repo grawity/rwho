@@ -1,4 +1,5 @@
-a {
+#rwho-sessions a:link,
+#rwho-sessions a:visited {
 	color: blue;
 	text-decoration: none;
 }
