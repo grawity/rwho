@@ -71,6 +71,8 @@ class Config {
 		$/x';
 		if (!self::has($key))
 			return $default;
+		if (is_int(self::$data[$key]))
+			return self::$data[$key];
 		if (!preg_match($re, self::$data[$key], $m))
 			return $default;
 		return
