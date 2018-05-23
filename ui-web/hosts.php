@@ -10,6 +10,8 @@ class query {
 }
 
 function output_json($data) {
+	$max_age = Config::getreltime("expire");
+
 	$d = array();
 	foreach ($data as $row) {
 		$d[] = array(
@@ -24,7 +26,7 @@ function output_json($data) {
 	header("Content-Type: text/plain; charset=utf-8");
 	print json_encode(array(
 		"time"		=> time(),
-		"maxage"	=> Config::get("expire"),
+		"maxage"	=> $max_age,
 		"hosts"		=> $d,
 	))."\n";
 }
