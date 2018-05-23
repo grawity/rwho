@@ -1,9 +1,3 @@
-#rwho-sessions a:link,
-#rwho-sessions a:visited {
-	color: blue;
-	text-decoration: none;
-}
-
 table#rwho-sessions {
 	border-collapse: collapse;
 	width: 100%;
@@ -32,6 +26,11 @@ table#rwho-sessions {
 #rwho-sessions .stale td {
 	color: #aaa;
 	font-style: italic;
+}
+
+#rwho-sessions a {
+	color: blue;
+	text-decoration: none;
 }
 
 #rwho-sessions .stale a {
