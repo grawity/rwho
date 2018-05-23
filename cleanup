@@ -6,13 +6,14 @@ require __DIR__."/lib-php/librwho.php";
 function cleanup() {
 	$max_age = intval(Config::getreltime("cleanup.max-age",
 			  Config::getreltime("expire.host-dead")));
-
+	fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
 	$dbh = DB::connect();
 	$rows = $dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
 	if ($rows === false) {
 		$err = $dbh->errorInfo();
 		fwrite(STDERR, "error: ".implode("; ", $err)."\n");
 	}
+	fwrite(STDOUT, "done: purged $rows rows\n");
 	return $rows;
 }
 
