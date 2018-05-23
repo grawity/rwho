@@ -2,16 +2,6 @@
 <?php if ($data !== false) { ?>
 <!-- user session table -->
 
-<h1><?php
-echo strlen(query::$user)
-	? "<em>".H(query::$user)."</em>"
-	: "All users";
-echo " on ";
-echo strlen(query::$host)
-	? "<em>".H(query::$host)."</em>"
-	: "all servers";
-?></h1>
-
 <table id="rwho-sessions">
 <thead>
 <tr>

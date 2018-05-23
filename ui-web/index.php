@@ -181,7 +181,9 @@ if (!query::$detailed)
 	$data = summarize($data);
 
 if (query::$format == "html") {
-	html::$title = "Users logged in";
+	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";
+	html::$title .= " on ";
+	html::$title .= strlen(query::$host) ? "<em>".H(query::$host)."</em>" : "all servers";
 	html::$refresh = 3;
 	require "html-header.inc.php";
 	require "html-body-users.inc.php";
