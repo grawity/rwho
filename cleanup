@@ -4,7 +4,8 @@ namespace RWho;
 require __DIR__."/lib-php/librwho.php";
 
 function cleanup() {
-	$max_age = 7200;
+	$max_age = intval(Config::get("cleanup.max-age",
+			  Config::get("expire.host-dead")));
 
 	$dbh = DB::connect();
 	$rows = $dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
