@@ -60,6 +60,26 @@ class Config {
 		$l = preg_split("/\s+/", $v);
 		return $l;
 	}
+
+	static function getreltime($key, $default=0) {
+		$re = '/^
+			(?:(?<w>\d+)w)?
+			(?:(?<d>\d+)d)?
+			(?:(?<h>\d+)h)?
+			(?:(?<m>\d+)m)?
+			(?:(?<s>\d+)s?)?
+		$/x';
+		if (!self::has($key))
+			return $default;
+		if (!preg_match($re, self::$data[$key], $m))
+			return $default;
+		return
+			+ intval(@$m["w"]) * 1*60*60*24*7
+			+ intval(@$m["d"]) * 1*60*60*24
+			+ intval(@$m["h"]) * 1*60*60
+			+ intval(@$m["m"]) * 1*60
+			+ intval(@$m["s"]) * 1;
+	}
 }
 
 class DB {
