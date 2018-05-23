@@ -1,14 +1,12 @@
-body {
-	font: 10pt sans-serif;
-}
-
 a {
 	color: blue;
 	text-decoration: none;
 }
 
-table {
+table#rwho-sessions {
 	border-collapse: collapse;
+	width: 100%;
+	margin: 1em 0;
 }
 
 #rwho-sessions thead,
@@ -25,7 +23,7 @@ table {
 	border-width: 1px 0;
 	border-style: solid;
 	border-color: #ddd;
-	padding: 3px;
+	padding: 4px 3px;
 	text-align: left;
 	vertical-align: top;
 }
@@ -47,4 +45,5 @@ table {
 	color: gray;
 	font-style: italic;
 	font-size: smaller;
+	text-align: right;
 }
