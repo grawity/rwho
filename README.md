@@ -9,8 +9,8 @@ A hack to centrally display all users logged in to a bunch of servers.
 
 See it in action via [HTTP][ex-http] or [Finger][ex-finger].
 
-[ex-http]: http://rwho.cluenet.org/
-[ex-finger]: http://nullroute.eu.org/finger/?q=%2Fw+grawity%40cluenet.org
+[ex-http]: https://rwho.nullroute.eu.org/
+[ex-finger]: https://nullroute.eu.org/finger/?q=%2Fw+grawity%40nullroute.eu.org
 
 ## Contents
 
@@ -40,7 +40,7 @@ Dependencies:
   * Python 2.x or 3.x
   * [PyWin32][pywin32]
 
-[pywin32]: http://sourceforge.net/projects/pywin32/files/pywin32/
+[pywin32]: https://sourceforge.net/projects/pywin32/files/pywin32/
 
 ### lib-php – PHP5 library
 

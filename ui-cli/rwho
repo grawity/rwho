@@ -3,9 +3,9 @@
 
 [[ $DEBUG ]] && set -x
 
-RWHO_DIR="/cluenet/rwho"
+RWHO_DIR="/etc/rwho"
 
-RWHO_HOST='rwho.cluenet.org'
+RWHO_HOST='rwho.nullroute.eu.org'
 RWHO_URL="http://$RWHO_HOST/"
 
 CONFIG="$RWHO_DIR/rwho.conf"

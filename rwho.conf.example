@@ -1,6 +1,6 @@
 # vim: ft=dosini
 
-agent.notify_url = https://rwho.cluenet.org/server.php
+;agent.notify_url = https://rwho.nullroute.eu.org/server.php
 ;agent.auth_username = [will use sys.fqdn if empty]
 ;agent.auth_password = hunter2
 ;agent.exclude_root = true
