@@ -86,9 +86,13 @@ function output_xml($data) {
 }
 
 function output_html($data) {
+	$columns = 4; /* user+host+line+address */
+	if (query::$detailed)
+		$columns += 1; /* uid */
+
 	if (!count($data)) {
 		print "<tr>\n";
-		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
+		print "\t<td colspan=\"".$columns."\" class=\"comment\">"
 			."Nobody is logged in."
 			."</td>\n";
 		print "</tr>\n";
