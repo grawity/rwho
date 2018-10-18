@@ -180,11 +180,18 @@ $data = retrieve(query::$user, query::$host, should_filter());
 if (!query::$detailed)
 	$data = summarize($data);
 
+$plan = null;
+
 if (query::$format == "html") {
+	if (strlen(query::$user) and user_is_global(query::$user)) {
+		$plan = read_user_plan(query::$user, query::$host);
+	}
+
 	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";
 	html::$title .= " on ";
 	html::$title .= strlen(query::$host) ? "<em>".H(query::$host)."</em>" : "all servers";
 	html::$refresh = 3;
+
 	require "html-header.inc.php";
 	require "html-body-users.inc.php";
 	@include "html-footer.inc.php";

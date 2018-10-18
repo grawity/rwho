@@ -57,3 +57,7 @@ Inetd-style server for the Finger protocol. Accepts a single query in stdin, dum
 ### ui-web – HTML UI
 
 Exactly what it says on the tin.
+
+## FAQ
+
+Is it GDPR-compliant? No.
