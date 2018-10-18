@@ -1,10 +1,21 @@
 var waiting = 0;
 var timer_id;
+var iterations = 0;
 var hidden_prop;
 var hidden_event;
 
 function set_timer() {
-	var interval = is_visible() ? settings.interval : 120;
+	var interval = settings.interval;
+	if (!is_visible()) {
+		interval = Math.max(interval, 120);
+	}
+	if (iterations > 500) {
+		interval *= (iterations / 500);
+	}
+	if (iterations > 10000) {
+		console.log("nobody's looking at us, going to sleep");
+		return;
+	}
 	if (timer_id) {
 		clearTimeout(timer_id);
 	}
@@ -31,6 +42,7 @@ function fetch_data() {
 		}
 	};
 	xhr.send(null);
+	iterations++;
 }
 
 function handle_data(data) {
