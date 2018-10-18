@@ -85,7 +85,7 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function output_html($data) {
+function output_html($data, $plan) {
 	$columns = 4; /* user+host+line+address */
 	if (query::$detailed)
 		$columns += 1; /* uid */
@@ -155,6 +155,14 @@ function output_html($data) {
 			print "</tr>\n";
 		}
 	}
+
+	if (strlen($plan)) {
+		print "<tr>\n";
+		print "\t<td colspan=\"".$columns."\">";
+		print "\t\t<pre class=\"plan\"><b>~/.plan</b><br><div class=\"plan-body\">".H($plan)."</div></pre>\n";
+		print "\t</td>\n";
+		print "</tr>\n";
+	}
 }
 
 function should_filter() {
@@ -185,12 +193,10 @@ if (!query::$detailed)
 	$data = summarize($data);
 
 $plan = null;
+if (strlen(query::$user) and user_is_global(query::$user))
+	$plan = read_user_plan(query::$user, query::$host);
 
 if (query::$format == "html") {
-	if (strlen(query::$user) and user_is_global(query::$user)) {
-		$plan = read_user_plan(query::$user, query::$host);
-	}
-
 	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";
 	html::$title .= " on ";
 	html::$title .= strlen(query::$host) ? "<em>".H(query::$host)."</em>" : "all servers";
@@ -201,7 +207,7 @@ if (query::$format == "html") {
 	@include "html-footer.inc.php";
 }
 elseif (query::$format == "html-xhr") {
-	output_html($data);
+	output_html($data, $plan);
 }
 elseif (query::$format == "json") {
 	output_json($data);

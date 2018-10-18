@@ -38,15 +38,8 @@ html::header("address", 30);
 </tr>
 </tfoot>
 
-<?php output_html($data); ?>
+<?php output_html($data, $plan); ?>
 </table>
-
-<?php if (strlen($plan)) { ?>
-<pre class="plan">
-<b>~/.plan</b>
-<div class="plan-body"><?= H($plan) ?></div>
-</pre>
-<?php } ?>
 
 <?php } else { // data === false ?>
 <p>Could not retrieve <code>rwho</code> information.</p>
