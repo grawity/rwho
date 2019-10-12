@@ -10,6 +10,7 @@ use LWP::UserAgent;
 use POSIX qw(:errno_h :signal_h);
 use Pod::Usage;
 use Sys::Hostname;
+use Sys::Syslog qw(:standard :macros);
 use Time::HiRes qw(usleep);
 
 my (%arg, %conf);
@@ -20,6 +21,7 @@ my $auth_pw;
 my $utmp_path;
 my $poll_interval;
 my $verbose	= 0;
+my $syslog	= 0;
 my $do_fork	= 0;
 my $do_single	= 0;
 my $do_cleanup	= 0;
@@ -40,13 +42,26 @@ my $monitor_impl;
 my $main_pid;
 my $poller_pid;
 
-sub _warn  { warn "warning: @_\n"; }
-sub _err   { warn "error: @_\n"; }
-sub _die   { _err(@_); exit 1; }
-
 sub debug {
-	local $" = " ";
-	$verbose and print "rwho-agent[$$]: @_\n";
+	return if !$verbose;
+	if ($syslog) {
+		syslog(LOG_DEBUG, "@_");
+	} else {
+		print "rwho-agent[$$]: @_\n";
+	}
+}
+sub _warn {
+	syslog(LOG_WARNING, "@_") if $syslog;
+	warn "warning: @_\n";
+}
+sub _err {
+	syslog(LOG_ERR, "@_");
+	warn "error: @_\n";
+}
+sub _die {
+	syslog(LOG_CRIT, "@_");
+	warn "fatal: @_\n";
+	exit 1;
 }
 
 sub parse_bool {
@@ -375,8 +390,16 @@ GetOptions(
 	"skip-root!"	=> \$arg{skip_root},
 	"skip-users=s"	=> \$arg{skip_users},
 	"single!"	=> \$do_single,
+	"syslog!"	=> \$syslog,
 	"v|verbose"	=> \$verbose,
 ) or pod2usage(-input => $pod, -exitstatus => 1, -verbose => 0);
+
+if ($do_fork) {
+	$syslog = 1;
+}
+if ($syslog) {
+	openlog("$0", "ndelay,pid", LOG_DAEMON);
+}
 
 $kod_path = ($ENV{HOME} // "/etc") . "/rwho.kod";
 
