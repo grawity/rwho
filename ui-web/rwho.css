@@ -47,3 +47,14 @@ table#rwho-sessions {
 	font-size: smaller;
 	text-align: right;
 }
+
+.plan {
+	margin: 0.2em 0;
+}
+
+.plan-head {
+	display: inline-block;
+	font-weight: bold;
+	border-bottom: 1px dashed #ccc;
+	margin-bottom: 0.7em;
+}
