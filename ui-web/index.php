@@ -193,7 +193,7 @@ if (!query::$detailed)
 	$data = summarize($data);
 
 $plan = null;
-if (strlen(query::$user) and user_is_global(query::$user))
+if (strlen(query::$user))
 	$plan = read_user_plan(query::$user, query::$host);
 
 if (query::$format == "html") {
