@@ -15,7 +15,7 @@
 # if set, web interface will add a finger gateway link
 ;finger.host = localhost
 ;finger.ldap.uri = ldapi:///
-;finger.ldap.dn = uid=%s,ou=people,dc=cluenet,dc=org
+;finger.ldap.dn = uid=%s,ou=people,dc=nullroute,dc=eu,dc=org
 ;finger.ldap.attr = planFile
 
 # trust these IP masks with private information
