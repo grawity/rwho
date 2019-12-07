@@ -16,7 +16,11 @@
 <h1>
 	<a href="//nullroute.eu.org">nullroute</a>
 	| <a href="//nullroute.eu.org/hosts.html">hosts</a>
+<?php if (strlen(query::$user) || strlen(query::$host)) { ?>
+	| <a href=".">rwho</a>
+<?php } else { ?>
 	| rwho
+<?php } ?>
 </h1>
 
 <p><?= html::$title ?>:</p>
