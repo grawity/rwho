@@ -1,6 +1,8 @@
 <?php
 namespace RWho;
 
+const MIN_UID = 1000;
+
 class Config {
 	static $data = array();
 
@@ -459,7 +461,7 @@ function find_user_plan_file($user, $host) {
 		return null;
 
 	$pw = @posix_getpwnam($user);
-	if (!$pw || ($pw["uid"] < 25000 && $pw["uid"] != 0))
+	if (!$pw || ($pw["uid"] < MIN_UID && $pw["uid"] != 0))
 		return null;
 
 	$dir = $pw["dir"];
