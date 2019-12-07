@@ -420,12 +420,6 @@ function canonicalize_user($user, $uid, $host) {
 	$pos = strpos($user, "@");
 	if ($pos !== false)
 		$user = substr($user, 0, $pos);
-	/*
-	if (false)		;
-	elseif ($uid > 42000)	$user = stripsuffix($user, "@nullroute");
-	elseif ($uid > 25999)	;
-	elseif ($uid > 25000)	$user = stripsuffix($user, "@cluenet");
-	*/
 	return $user;
 }
 
