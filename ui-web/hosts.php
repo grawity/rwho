@@ -6,6 +6,7 @@ require __DIR__."/../lib-php/librwho.php";
 require "util.inc.php";
 
 class query {
+	static $present;
 	static $format;
 }
 
@@ -108,6 +109,7 @@ function output_html($data) {
 	}
 }
 
+query::$present = true;
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
 $data = retrieve_hosts();

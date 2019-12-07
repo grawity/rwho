@@ -6,6 +6,7 @@ require __DIR__."/../lib-php/librwho.php";
 require "util.inc.php";
 
 class query {
+	static $present;
 	static $user;
 	static $host;
 	static $detailed;
@@ -179,8 +180,9 @@ function should_filter() {
 	return false;
 }
 
-query::$user = $_GET["user"];
-query::$host = $_GET["host"];
+query::$user = @$_GET["user"];
+query::$host = @$_GET["host"];
+query::$present = (strlen(query::$user) || strlen(query::$host));
 query::$detailed = (strlen(query::$user)
 			|| (strlen(query::$host) && !is_wildcard(query::$host))
 			|| isset($_GET["full"]))
