@@ -5,7 +5,7 @@
 ;agent.auth_password = hunter2
 ;agent.exclude_root = true
 ;agent.exclude_users = smith|guest\d+
-;agent.include_users = rms
+;agent.include_users = jane
 ;agent.min_uid = 1000
 
 ;db.pdo_driver = mysql:host=localhost;dbname=rwho
