@@ -328,16 +328,6 @@ function strip_domain($fqdn) {
 	return $pos === false ? $fqdn : substr($fqdn, 0, $pos);
 }
 
-// Cluenet internal use only:
-// user_is_global(str $user) -> bool
-// Check whether given username belongs to the Cluenet UID range.
-// The name->uid conversion is done using system facilities.
-
-function user_is_global($user) {
-	$pwent = posix_getpwnam($user);
-	return $pwent ? $pwent["uid"] > 25000 : false;
-}
-
 // normalize_host(str $host) -> str
 // Normalize the "remote host" value for use as array key in summarize()
 
