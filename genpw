@@ -21,11 +21,7 @@ function make_salt($algo) {
 	return "\$$algo\$$salt\$";
 }
 
-$fqdn = @$argv[1];
-if (!strlen($fqdn)) {
-	fwrite(STDERR, "error: hostname not specified\n");
-	exit(1);
-}
+$fqdn = @$argv[1] ?? "foo.example.com";
 
 $pw = rand_pass();
 echo "; client\n", "agent.auth_password = $pw\n", "\n";
