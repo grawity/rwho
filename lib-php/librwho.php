@@ -91,13 +91,20 @@ class DB {
 
 	static function connect() {
 		if (!isset(self::$dbh)) {
+			$options = [\PDO::ATTR_EMULATE_PREPARES => false];
+			#$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+			if (@strlen($tmp = Config::get("db.tls_ca"))) {
+				$options[\PDO::MYSQL_ATTR_SSL_CA] = $tmp;
+			}
+			if (@strlen($tmp = Config::get("db.tls_cert"))) {
+				$options[\PDO::MYSQL_ATTR_SSL_CERT] = $tmp;
+			}
+			if (@strlen($tmp = Config::get("db.tls_key"))) {
+				$options[\PDO::MYSQL_ATTR_SSL_KEY] = $tmp;
+			}
 			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
 						Config::get("db.username"),
-						Config::get("db.password"));
-			// <http://stackoverflow.com/a/60496/49849> says that PDO emulates
-			// prepared statements internally by default
-			self::$dbh->setAttribute(\PDO::ATTR_EMULATE_PREPARES, false);
-			//self::$dbh->setAttribute(\PDO::ATTR_ERRMODE, \PDO::ERRMODE_EXCEPTION);
+						Config::get("db.password"), $options);
 		}
 		return self::$dbh;
 	}
