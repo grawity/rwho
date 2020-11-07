@@ -16,6 +16,9 @@ class RwhoAgent():
         self.config = ConfigReader("/etc/rwho/agent.conf")
         self.server_url = self.config.get_str("agent.notify_url", DEFAULT_SERVER)
         self.last_upload = -1
+        self.wake_interval = 1*60
+        self.update_interval = 5*60
+        # TODO: Verify that update_interval >= wake_interval
 
         self.api = RwhoUploader(self.server_url)
         self.api.host_name = socket.gethostname().lower()
@@ -39,27 +42,32 @@ class RwhoAgent():
         self.api.remove_host()
 
 def run_forever(agent):
-    async def periodic_upload():
-        interval = 10*60
-        interval = 15
+    async def on_periodic_upload():
         while True:
-            print("periodic upload")
-            agent.refresh()
-            await asyncio.sleep(interval)
+            if agent.last_upload < time.time() - agent.update_interval:
+                print("periodic upload")
+                agent.refresh()
+            else:
+                print("periodic: last upload too recent, skipping")
+            print("waiting %s seconds" % agent.wake_interval)
+            await asyncio.sleep(agent.wake_interval)
 
-    def inotify_event(event):
+    def on_inotify_event(event):
         print("upload on inotify event %r" % event)
         agent.refresh()
+        print("event done")
         return False
 
     loop = asyncio.get_event_loop()
 
-    periodic_task = loop.create_task(periodic_upload())
+    # TODO: Automatically set one from the other if missing
+    if agent.wake_interval and agent.update_interval:
+        periodic_task = loop.create_task(on_periodic_upload())
 
     watchmgr = pyinotify.WatchManager()
     watchmgr.add_watch(UTMP_PATH, pyinotify.IN_MODIFY)
     notifier = pyinotify.AsyncioNotifier(watchmgr, loop,
-                                         default_proc_fun=inotify_event)
+                                         default_proc_fun=on_inotify_event)
 
     try:
         loop.run_forever()
