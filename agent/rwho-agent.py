@@ -31,11 +31,20 @@ class RwhoAgent():
         self.api.host_fqdn = socket.getfqdn().lower()
         self.api.host_fqdn = "ember-test.nullroute.eu.org"
 
-        if p := self.config.get_str("agent.auth_password"):
+        if self.config.get_bool("agent.auth_gssapi"):
+            log_debug("using GSSAPI authentication")
+            self.api.auth_method = "gssapi"
+        elif p := self.config.get_str("agent.auth_password"):
+            log_debug("using Basic authentication")
             self.api.auth_method = "basic"
             self.api.auth_pass = p
-
-        #self.api.auth_method = "gssapi"
+        elif os.environ.get("KRB5_CLIENT_KTNAME") \
+          or os.environ.get("KRB5CCNAME") \
+          or os.environ.get("GSS_USE_PROXY"):
+            log_debug("using GSSAPI authentication (detected from environ)")
+            self.api.auth_method = "gssapi"
+        else:
+            log_debug("using no authentication")
 
     def _check_kod(self):
         if os.path.exists(self.KOD_PATH):
