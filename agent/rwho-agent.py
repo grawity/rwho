@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
 from pprint import pprint
-import asyncio
 import os
 import pyinotify
+import select
+import signal
 import socket
 import time
 
@@ -18,12 +19,12 @@ class RwhoAgent():
     KOD_PATH = "/etc/rwho/agent.kod"
 
     def __init__(self, config_path=None):
-        self._check_kod()
+        self.check_kod()
         self.config = ConfigReader(config_path or self.CONFIG_PATH)
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
         self.last_upload = -1
         self.wake_interval = 1*15
-        self.update_interval = 5*60
+        self.update_interval = 1*60
         # TODO: Verify that update_interval >= wake_interval
 
         self.api = RwhoUploader(self.server_url)
@@ -46,13 +47,13 @@ class RwhoAgent():
         else:
             log_debug("using no authentication")
 
-    def _check_kod(self):
+    def check_kod(self):
         if os.path.exists(self.KOD_PATH):
             with open(self.KOD_PATH, "r") as fh:
                 message = fh.readline()
             raise RwhoShutdownRequestedError(message)
 
-    def _store_kod(self, message):
+    def store_kod(self, message):
         with open(self.KOD_PATH, "w") as fh:
             fh.write(message)
 
@@ -64,7 +65,7 @@ class RwhoAgent():
             self.last_upload = time.time()
         except RwhoShutdownRequestedError as e:
             log_debug("shutdown requested, giving up")
-            self._store_kod(e.args[0])
+            self.store_kod(e.args[0])
             raise
 
     def cleanup(self):
@@ -73,59 +74,64 @@ class RwhoAgent():
             self.api.remove_host()
         except RwhoShutdownRequestedError as e:
             log_debug("shutdown requested, giving up")
-            self._store_kod(e.args[0])
+            self.store_kod(e.args[0])
             raise
 
 def run_forever(agent):
-    loop = asyncio.get_event_loop()
-
-    async def on_periodic_upload():
-        while True:
-            if agent.last_upload < time.time() - agent.update_interval:
-                log_debug("periodic: uploading on timer")
-                try:
-                    agent.refresh()
-                except RwhoShutdownRequestedError:
-                    loop.stop()
-                    return True
-                except Exception as e:
-                    log_err("periodic: upload failed: %r", e)
-                    loop.stop()
-                    return True
-            else:
-                log_debug("periodic: last upload too recent, skipping")
-            log_debug("periodic: waiting %s seconds", agent.wake_interval)
-            await asyncio.sleep(agent.wake_interval)
+    def on_periodic_upload():
+        if agent.last_upload < time.time() - agent.update_interval:
+            log_debug("periodic: uploading on timer")
+            try:
+                agent.refresh()
+            except RwhoShutdownRequestedError:
+                raise
+            except Exception as e:
+                log_err("periodic: upload failed: %r", e)
+                raise
+        else:
+            log_debug("periodic: last upload too recent, skipping")
 
     def on_inotify_event(event):
         log_debug("inotify: uploading on event %r", event)
         try:
             agent.refresh()
         except RwhoShutdownRequestedError:
-            loop.stop()
-            return True
+            raise
         except Exception as e:
             log_err("inotify: upload failed: %r", e)
-            loop.stop()
-            return True
+            raise
         return False
 
-    # TODO: Automatically set one from the other if missing
-    if agent.wake_interval and agent.update_interval:
-        periodic_task = loop.create_task(on_periodic_upload())
+    def on_signal(sig, frame):
+        log_info("received signal %r, exiting", sig)
+        raise KeyboardInterrupt
 
     watchmgr = pyinotify.WatchManager()
     watchmgr.add_watch(UTMP_PATH, pyinotify.IN_MODIFY)
-    notifier = pyinotify.AsyncioNotifier(watchmgr, loop,
-                                         default_proc_fun=on_inotify_event)
+    notifier = pyinotify.Notifier(watchmgr, default_proc_fun=on_inotify_event)
+
+    poll = select.poll()
+    poll.register(notifier._fd, select.POLLIN | select.POLLHUP)
+
+    signal.signal(signal.SIGINT, on_signal)
+    signal.signal(signal.SIGTERM, on_signal)
+    signal.signal(signal.SIGQUIT, on_signal)
 
     try:
-        loop.run_forever()
-        print("loop was stopped")
+        log_debug("entering main loop")
+        while True:
+            r = poll.poll(agent.wake_interval * 1e3)
+            # We only have one fd -- either r[0] is inotify,
+            # or the poll() call timed out.
+            if r:
+                notifier.read_events()
+                notifier.process_events()
+            else:
+                on_periodic_upload()
+        log_debug("loop was stopped")
         agent.cleanup()
     except KeyboardInterrupt:
-        print("got SIGINT")
-        loop.stop()
+        log_debug("KeyboardInterrupt received")
         agent.cleanup()
 
 if __name__ == "__main__":
