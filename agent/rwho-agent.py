@@ -63,6 +63,10 @@ def run_forever(agent):
 
     try:
         loop.run_forever()
+    except KeyboardInterrupt:
+        print("got SIGINT")
+        loop.stop()
+        agent.cleanup()
     except Exception as e:
         print("[got %r, shutting down]" % e)
         loop.stop()
