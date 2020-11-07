@@ -1,33 +1,59 @@
 import json
 import requests
+import requests.auth
 import socket
 import sys
 
 class RwhoUploader():
     def __init__(self, url,
-                       hostname=None,
-                       hostfqdn=None):
+                       host_name=None,
+                       host_fqdn=None,
+                       auth_method=None,
+                       auth_user=None,
+                       auth_pass=None):
         self.url = url
-        self.hostname = hostname
-        self.hostfqdn = hostfqdn
+        self.host_name = host_name
+        self.host_fqdn = host_fqdn
+        self.auth_method = None
+        self.auth_user = None
+        self.auth_pass = None
         self.ua = requests.Session()
 
-    def upload(self, action, data):
-        from urllib.parse import urlencode
-        from urllib.request import urlopen
+    def _init_auth(self):
+        if not self.ua.auth:
+            if self.auth_method == "basic":
+                u = self.auth_user or self.host_fqdn
+                p = self.auth_pass
+                self.ua.auth = requests.auth.HTTPBasicAuth(username=u, password=p)
+            elif self.auth_method == "gssapi":
+                import requests_gssapi
+                ma = requests_gssapi.REQUIRED
+                self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(mutual_authentication=ma)
+            elif self.auth_method == "gssapi-old":
+                import requests_kerberos
+                ma = requests_kerberos.REQUIRED
+                self.ua.auth = requests_kerberos.HTTPKerberosAuth(mutual_authentication=ma)
+            elif self.auth_method == None:
+                self.ua.auth = None
+            else:
+                raise ValueError("invalid auth_method %r" % self.auth_method)
 
+    def upload(self, action, data):
+        self._init_auth()
         print("uploading %d items" % len(data))
         payload = {
-            "host": self.hostname,
-            "fqdn": self.hostfqdn,
+            "host": self.host_name,
+            "fqdn": self.host_fqdn,
             "opsys": sys.platform,
             "action": action,
             "utmp": json.dumps(data),
         }
-        payload = urlencode(payload).encode("utf-8")
-        resp = urlopen(self.url, payload)
-        print("server returned: %r" % resp.readline().strip())
+        resp = self.ua.post(self.url, data=payload)
+        resp.raise_for_status()
+        print("server returned: %r" % resp.content)
 
-    def send_sessions(self, sessions):
-        return self.upload(action="put",
-                           data=[*sessions])
+    def put_sessions(self, sessions):
+        return self.upload(action="put", data=[*sessions])
+
+    def remove_host(self):
+        return self.upload(action="destroy", data=[])
