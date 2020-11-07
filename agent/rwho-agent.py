@@ -10,6 +10,7 @@ from lib.exceptions import *
 from lib.utmp_linux import UTMP_PATH, enum_sessions
 from lib.api_client import RwhoUploader
 from lib.config import ConfigReader
+from lib.log_util import *
 
 class RwhoAgent():
     DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server.php"
@@ -48,21 +49,21 @@ class RwhoAgent():
 
     def refresh(self):
         sessions = [*enum_sessions()]
-        print("uploading %d sessions" % len(sessions))
+        log_info("uploading %d sessions" % len(sessions))
         try:
             self.api.put_sessions(sessions)
             self.last_upload = time.time()
         except RwhoShutdownRequestedError as e:
-            print("shutdown requested, giving up")
+            log_debug("shutdown requested, giving up")
             self._store_kod(e.args[0])
             raise
 
     def cleanup(self):
-        print("removing all host data")
+        log_info("removing all host data")
         try:
             self.api.remove_host()
         except RwhoShutdownRequestedError as e:
-            print("shutdown requested, giving up")
+            log_debug("shutdown requested, giving up")
             self._store_kod(e.args[0])
             raise
 
@@ -72,30 +73,30 @@ def run_forever(agent):
     async def on_periodic_upload():
         while True:
             if agent.last_upload < time.time() - agent.update_interval:
-                print("periodic: uploading on timer")
+                log_debug("periodic: uploading on timer")
                 try:
                     agent.refresh()
                 except RwhoShutdownRequestedError:
                     loop.stop()
                     return True
                 except Exception as e:
-                    print("periodic: upload failed: %r" % e)
+                    log_err("periodic: upload failed: %r", e)
                     loop.stop()
                     return True
             else:
-                print("periodic: last upload too recent, skipping")
-            print("periodic: waiting %s seconds" % agent.wake_interval)
+                log_debug("periodic: last upload too recent, skipping")
+            log_debug("periodic: waiting %s seconds", agent.wake_interval)
             await asyncio.sleep(agent.wake_interval)
 
     def on_inotify_event(event):
-        print("inotify: uploading on event %r" % event)
+        log_debug("inotify: uploading on event %r", event)
         try:
             agent.refresh()
         except RwhoShutdownRequestedError:
             loop.stop()
             return True
         except Exception as e:
-            print("inotify: upload failed: %r" % e)
+            log_err("inotify: upload failed: %r", e)
             loop.stop()
             return True
         return False
@@ -123,5 +124,5 @@ if __name__ == "__main__":
         agent = RwhoAgent()
         run_forever(agent)
     except RwhoShutdownRequestedError as e:
-        print("exiting on server shutdown request: %s" % e.args[0])
+        log_err("exiting on server shutdown request: %s", e.args[0])
         exit(1)
