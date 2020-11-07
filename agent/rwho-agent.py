@@ -9,12 +9,13 @@ from lib.utmp_linux import UTMP_PATH, enum_sessions
 from lib.api_client import RwhoUploader
 from lib.config import ConfigReader
 
+DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server.php"
+
 class RwhoAgent():
     def __init__(self, config_path=None):
         self.config = ConfigReader("/etc/rwho/agent.conf")
-
-        self.server_url = self.config.get_str("agent.notify_url",
-                                              "https://rwho.nullroute.eu.org/server.php")
+        self.server_url = self.config.get_str("agent.notify_url", DEFAULT_SERVER)
+        self.last_upload = -1
 
         self.api = RwhoUploader(self.server_url)
         self.api.host_name = socket.gethostname().lower()
@@ -26,8 +27,6 @@ class RwhoAgent():
             self.api.auth_pass = p
 
         #self.api.auth_method = "gssapi"
-
-        self.last_upload = -1
 
     def refresh(self):
         sessions = [*enum_sessions()]

@@ -4,6 +4,12 @@ import ipaddress
 import pwd
 import struct
 
+UTMP_PATH = "/run/utmp"
+
+UT_LINESIZE = 32
+UT_NAMESIZE = 32
+UT_HOSTSIZE = 256
+
 class UtType(enum.IntEnum):
     EMPTY           = 0
     RUN_LVL         = 1
@@ -16,11 +22,8 @@ class UtType(enum.IntEnum):
     DEAD_PROCESS    = 8
     ACCOUNTING      = 9
 
-UTMP_PATH = "/run/utmp"
-
-UT_LINESIZE = 32
-UT_NAMESIZE = 32
-UT_HOSTSIZE = 256
+def timeval_to_float(tv):
+    return tv[0] + tv[1]/1e6
 
 class struct_exit_status(ctypes.Structure):
     _fields_ = [
@@ -87,9 +90,6 @@ def enum_utmp(path=None):
                 "addr": addr,
             }
 
-def get_uid_of(username):
-    return getpwnam(username).pw_uid
-
 def enum_sessions(path=None):
     for en in enum_utmp(path):
         if en["type"] == UtType.USER_PROCESS:
@@ -101,7 +101,8 @@ def enum_sessions(path=None):
 
             yield {
                 "user": en["user"],
-                "host": en["host"],
                 "line": en["line"],
+                "host": en["host"],
+                "time": timeval_to_float(en["tv"]),
                 "uid": pwent.pw_uid,
             }
