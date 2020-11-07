@@ -4,6 +4,8 @@ import requests.auth
 import socket
 import sys
 
+from .exceptions import *
+
 class RwhoUploader():
     def __init__(self, url,
                        host_name=None,
@@ -40,7 +42,7 @@ class RwhoUploader():
 
     def upload(self, action, data):
         self._init_auth()
-        print("uploading %d items" % len(data))
+        print("sending action %r with %d items" % (action, len(data)))
         payload = {
             "host": self.host_name,
             "fqdn": self.host_fqdn,
@@ -50,7 +52,13 @@ class RwhoUploader():
         }
         resp = self.ua.post(self.url, data=payload)
         resp.raise_for_status()
-        print("server returned: %r" % resp.content)
+        print("server returned: %r" % resp.text)
+        if resp.text.strip() == "OK":
+            return True
+        elif resp.text.startswith("KOD"):
+            raise RwhoShutdownRequestedError(resp.text.strip())
+        else:
+            raise RwhoUploadRejectedError(resp.text.strip())
 
     def put_sessions(self, sessions):
         return self.upload(action="put", data=[*sessions])
