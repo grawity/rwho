@@ -1,6 +1,15 @@
 import os
+import socket
 import sys
 import syslog
+
+def sd_notify(*msgs):
+    if path := os.environ.get("NOTIFY_SOCKET"):
+        if path[0] == "@":
+            path = "\0" + path[1:]
+        msg = "\n".join(msgs)
+        sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
+        sock.sendto(msg.encode("utf-8"), path)
 
 def log_debug(msg, *args):
     if os.environ.get("DEBUG"):

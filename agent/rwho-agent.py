@@ -119,6 +119,7 @@ def run_forever(agent):
 
     try:
         log_debug("entering main loop")
+        sd_notify("READY=1")
         while True:
             r = poll.poll(agent.wake_interval * 1e3)
             # We only have one fd -- either r[0] is inotify,
