@@ -77,7 +77,11 @@ def run_forever(agent):
                     agent.refresh()
                 except RwhoShutdownRequestedError:
                     loop.stop()
-                    return
+                    return True
+                except Exception as e:
+                    print("periodic: upload failed: %r" % e)
+                    loop.stop()
+                    return True
             else:
                 print("periodic: last upload too recent, skipping")
             print("periodic: waiting %s seconds" % agent.wake_interval)
@@ -88,6 +92,10 @@ def run_forever(agent):
         try:
             agent.refresh()
         except RwhoShutdownRequestedError:
+            loop.stop()
+            return True
+        except Exception as e:
+            print("inotify: upload failed: %r" % e)
             loop.stop()
             return True
         return False
