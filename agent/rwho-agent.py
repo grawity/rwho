@@ -118,6 +118,8 @@ def run_forever(agent):
     signal.signal(signal.SIGQUIT, on_signal)
 
     try:
+        log_debug("performing initial upload")
+        on_periodic_upload()
         log_debug("entering main loop")
         sd_notify("READY=1")
         while True:
