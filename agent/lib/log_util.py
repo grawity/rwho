@@ -14,15 +14,16 @@ def sd_notify(*msgs):
 def log_debug(msg, *args):
     if os.environ.get("DEBUG"):
         msg = msg % args
-        print(msg, file=sys.stderr, flush=True)
+        print(msg, file=sys.stdout, flush=True)
         syslog.syslog(syslog.LOG_DEBUG, msg)
 
 def log_info(msg, *args):
     msg = msg % args
-    print(msg, file=sys.stderr, flush=True)
+    print(msg, file=sys.stdout, flush=True)
     syslog.syslog(syslog.LOG_INFO, msg)
 
 def log_err(msg, *args):
     msg = msg % args
-    print("error: %s" % msg, file=sys.stderr, flush=True)
+    msg = "error: %s" % msg
+    print(msg, file=sys.stdout, flush=True)
     syslog.syslog(syslog.LOG_ERR, msg)
