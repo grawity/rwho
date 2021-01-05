@@ -14,7 +14,7 @@ from lib.config import ConfigReader
 from lib.log_util import *
 
 class RwhoAgent():
-    DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server.php"
+    DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server/"
     CONFIG_PATH = "/etc/rwho/agent.conf"
     KOD_PATH = "/etc/rwho/agent.kod"
 
@@ -30,7 +30,6 @@ class RwhoAgent():
         self.api = RwhoUploader(self.server_url)
         self.api.host_name = socket.gethostname().lower()
         self.api.host_fqdn = socket.getfqdn().lower()
-        self.api.host_fqdn = "ember-test.nullroute.eu.org"
 
         if self.config.get_bool("agent.auth_gssapi"):
             log_debug("using GSSAPI authentication")
