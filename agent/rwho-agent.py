@@ -22,6 +22,7 @@ class RwhoAgent():
         self.check_kod()
         self.config = ConfigReader(config_path or self.CONFIG_PATH)
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
+        self.ignored_users = {"root"}
         self.last_upload = -1
         self.wake_interval = 1*15
         self.update_interval = 1*60
@@ -47,6 +48,9 @@ class RwhoAgent():
         else:
             log_info("using no authentication")
 
+        if names := self.config.get_str("agent.exclude_users"):
+            self.ignored_users |= {*names.split()}
+
     def check_kod(self):
         if os.path.exists(self.KOD_PATH):
             with open(self.KOD_PATH, "r") as fh:
@@ -57,8 +61,15 @@ class RwhoAgent():
         with open(self.KOD_PATH, "w") as fh:
             fh.write(message)
 
-    def refresh(self):
+    def enum_sessions(self):
         sessions = [*enum_sessions()]
+        if self.ignored_users:
+            sessions = [s for s in sessions
+                        if s["user"] not in self.ignored_users]
+        return sessions
+
+    def refresh(self):
+        sessions = self.enum_sessions()
         log_info("uploading %d sessions" % len(sessions))
         try:
             self.api.put_sessions(sessions)
