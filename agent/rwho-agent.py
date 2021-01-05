@@ -30,21 +30,22 @@ class RwhoAgent():
         self.api = RwhoUploader(self.server_url)
         self.api.host_name = socket.gethostname().lower()
         self.api.host_fqdn = socket.getfqdn().lower()
+        log_info("identifying as %r (aka %r)", self.api.host_fqdn, self.api.host_name)
 
         if self.config.get_bool("agent.auth_gssapi"):
-            log_debug("using GSSAPI authentication")
+            log_info("using GSSAPI authentication")
             self.api.auth_method = "gssapi"
-        elif p := self.config.get_str("agent.auth_password"):
-            log_debug("using Basic authentication")
+        elif pwd := self.config.get_str("agent.auth_password"):
+            log_info("using Basic authentication")
             self.api.auth_method = "basic"
-            self.api.auth_pass = p
+            self.api.auth_pass = pwd
         elif os.environ.get("KRB5_CLIENT_KTNAME") \
           or os.environ.get("KRB5CCNAME") \
           or os.environ.get("GSS_USE_PROXY"):
-            log_debug("using GSSAPI authentication (detected from environ)")
+            log_info("using GSSAPI authentication (detected from environment)")
             self.api.auth_method = "gssapi"
         else:
-            log_debug("using no authentication")
+            log_info("using no authentication")
 
     def check_kod(self):
         if os.path.exists(self.KOD_PATH):
