@@ -20,7 +20,7 @@ from win32security import *
 import win32service
 import win32serviceutil
 
-SERVER_URL = "http://rwho.nullroute.eu.org/server.php"
+SERVER_URL = "http://rwho.nullroute.eu.org/server/"
 
 ## Windows native types and constants
 
