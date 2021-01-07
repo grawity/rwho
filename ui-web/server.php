@@ -1,1 +1,1 @@
-../server.php
+../server-php/index.php

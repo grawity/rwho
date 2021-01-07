@@ -3,7 +3,7 @@ namespace RWho;
 
 header("Content-Type: text/plain; charset=utf-8");
 
-require __DIR__."/lib-php/librwho.php";
+require(__DIR__."/../lib-php/librwho.php");
 
 openlog("rwho-server", null, LOG_DAEMON);
 
@@ -22,12 +22,12 @@ function pdo_die($st) {
 }
 
 function get_host_pwent($host) {
-	Config::parse(__DIR__."/accounts.conf");
+	Config::parse(__DIR__."/../accounts.conf");
 	return Config::get("auth.pw.$host");
 }
 
 function get_host_kodmsg($host) {
-	Config::parse(__DIR__."/accounts.conf");
+	Config::parse(__DIR__."/../accounts.conf");
 	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
 }
 
