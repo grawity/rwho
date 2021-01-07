@@ -174,69 +174,94 @@ function utmp_delete_host($host) {
 
 // API actions
 
-if (strlen($_POST["fqdn"]))
-	$host = $_POST["fqdn"];
-elseif (strlen($_POST["host"]))
-	$host = $_POST["host"];
-else
-	die("error: host not specified\n");
-
-if (isset($_REQUEST["action"]))
-	$action = $_REQUEST["action"];
-else
-	die("error: action not specified\n");
-
-if (!check_authorization($host)) {
-	header("Status: 401");
-	header("WWW-Authenticate: Basic realm=\"rwho\"");
-	die("error: not authorized\n");
-}
-
-switch ($action) {
-	case "insert":
-		$data = json_decode($_POST["utmp"]);
-		if (!$data) {
-			die("error: no data\n");
-		}
+class RWhoServer {
+	function PutEntries($host, $entries) {
 		host_update($host);
-		foreach ($data as $entry) {
+		utmp_delete_host($host);
+		foreach ($entries as $entry) {
 			utmp_insert($host, $entry);
 		}
-		print "OK\n";
-		break;
+	}
 
-	case "delete":
-		$data = json_decode($_POST["utmp"]);
-		if (!$data) {
-			die("error: no data\n");
-		}
+	function InsertEntries($host, $entries) {
 		host_update($host);
-		foreach ($data as $entry) {
+		foreach ($entries as $entry) {
+			utmp_insert($host, $entry);
+		}
+	}
+
+	function RemoveEntries($host, $entries) {
+		host_update($host);
+		foreach ($entries as $entry) {
 			utmp_delete($host, $entry);
 		}
-		print "OK\n";
-		break;
+	}
 
-	case "put":
-		$data = json_decode($_POST["utmp"]);
-		// allow zero-length array
-		if ($data === false) {
-			die("error: no data\n");
-		}
-		host_update($host);
-		utmp_delete_host($host);
-		foreach ($data as $entry) {
-			utmp_insert($host, $entry);
-		}
-		print "OK\n";
-		break;
-
-	case "destroy":
+	function ClearEntries($host) {
 		host_delete($host);
 		utmp_delete_host($host);
-		print "OK\n";
-		break;
-
-	default:
-		print "error: unknown action\n";
+	}
 }
+
+function handle_legacy_request() {
+	if (strlen($_POST["fqdn"]))
+		$host = $_POST["fqdn"];
+	elseif (strlen($_POST["host"]))
+		$host = $_POST["host"];
+	else
+		die("error: host not specified\n");
+
+	if (isset($_REQUEST["action"]))
+		$action = $_REQUEST["action"];
+	else
+		die("error: action not specified\n");
+
+	if (!check_authorization($host)) {
+		header("Status: 401");
+		header("WWW-Authenticate: Basic realm=\"rwho\"");
+		die("error: not authorized\n");
+	}
+
+	$server = new RWhoServer();
+
+	switch ($action) {
+		case "insert":
+			$data = json_decode($_POST["utmp"]);
+			if (!$data) {
+				die("error: no data\n");
+			}
+			$server->InsertEntries($host, $data);
+			print "OK\n";
+			break;
+
+		case "delete":
+			$data = json_decode($_POST["utmp"]);
+			if (!$data) {
+				die("error: no data\n");
+			}
+			$server->RemoveEntries($host, $data);
+			print "OK\n";
+			break;
+
+		case "put":
+			$data = json_decode($_POST["utmp"]);
+			// allow zero-length array
+			if ($data === false) {
+				die("error: no data\n");
+			}
+			$server->PutEntries($host, $data);
+			print "OK\n";
+			break;
+
+		case "destroy":
+			$server->ClearEntries($host);
+			print "OK\n";
+			break;
+
+		default:
+			print "error: unknown action\n";
+	}
+}
+
+if (isset($_REQUEST["action"]))
+	handle_legacy_request();
