@@ -227,7 +227,7 @@ function handle_legacy_request() {
 	switch ($action) {
 		case "insert":
 			$data = json_decode($_POST["utmp"]);
-			if ($data === false) {
+			if (!is_array($data)) {
 				die("error: no data\n");
 			}
 			$server->InsertEntries($host, $data);
@@ -236,7 +236,7 @@ function handle_legacy_request() {
 
 		case "delete":
 			$data = json_decode($_POST["utmp"]);
-			if ($data === false) {
+			if (!is_array($data)) {
 				die("error: no data\n");
 			}
 			$server->RemoveEntries($host, $data);
@@ -245,7 +245,7 @@ function handle_legacy_request() {
 
 		case "put":
 			$data = json_decode($_POST["utmp"]);
-			if ($data === false) {
+			if (!is_array($data)) {
 				die("error: no data\n");
 			}
 			$server->PutEntries($host, $data);
