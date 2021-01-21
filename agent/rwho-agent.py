@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
-from pprint import pprint
+import errno
 import os
+from pprint import pprint
 import pyinotify
 import select
 import signal
@@ -161,6 +162,7 @@ if __name__ == "__main__":
         run_forever(agent)
     except RwhoShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
+        sd_notify("ERRNO=%d" % errno.ENOLINK)
         exit(EX_NORESTART)
     except RwhoPermanentError as e:
         log_err("exiting on permanent error: %s", e)
