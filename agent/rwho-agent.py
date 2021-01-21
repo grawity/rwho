@@ -13,7 +13,10 @@ from lib.api_client import RwhoUploader
 from lib.config import ConfigReader
 from lib.log_util import *
 
-EX_NORESTART = 3    # RestartPreventExitStatus, used for permanent failures (KOD)
+# Exit status for permanent errors (RestartPreventExitStatus)
+EX_LSB_NOTCONFIGURED = 6
+EX_LSB_NOTRUNNING = 7
+EX_NORESTART = EX_LSB_NOTRUNNING
 
 class RwhoAgent():
     DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server/"
