@@ -157,3 +157,6 @@ if __name__ == "__main__":
     except RwhoShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
         exit(EX_NORESTART)
+    except RwhoPermanentError as e:
+        log_err("exiting on permanent error: %s", e)
+        exit(EX_NORESTART)
