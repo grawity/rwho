@@ -13,6 +13,8 @@ from lib.api_client import RwhoUploader
 from lib.config import ConfigReader
 from lib.log_util import *
 
+EX_NORESTART = 3    # RestartPreventExitStatus, used for permanent failures (KOD)
+
 class RwhoAgent():
     DEFAULT_SERVER = "https://rwho.nullroute.eu.org/server/"
     CONFIG_PATH = "/etc/rwho/agent.conf"
@@ -154,4 +156,4 @@ if __name__ == "__main__":
         run_forever(agent)
     except RwhoShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
-        exit(1)
+        exit(EX_NORESTART)
