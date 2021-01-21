@@ -148,9 +148,11 @@ def run_forever(agent):
             else:
                 on_periodic_upload()
         log_debug("loop was stopped")
+        sd_notify("STOPPING=1")
         agent.cleanup()
     except KeyboardInterrupt:
         log_debug("KeyboardInterrupt received")
+        sd_notify("STOPPING=1")
         agent.cleanup()
 
 if __name__ == "__main__":
