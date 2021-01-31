@@ -14,7 +14,16 @@ See it in action via [HTTP][ex-http] or [Finger][ex-finger].
 
 ## Contents
 
-### agent-linux – Linux/BSD agent
+### agent/ – Python agent for Linux
+
+Uses `/run/utmp`, with inotify and/or periodic updates. Requires only read access to the `utmp` database; in other words, a standard account.
+
+Dependencies:
+
+  * Python 3.x
+  * pyinotify
+
+### agent-linux/ – Perl agent for Linux/BSD (deprecated)
 
 Uses `/run/utmp`, with inotify and/or periodic updates. Requires only read access to the `utmp` database; in other words, a standard account.
 
