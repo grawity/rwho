@@ -4,6 +4,8 @@ import ipaddress
 import pwd
 import struct
 
+from lib.log_util import *
+
 UTMP_PATH = "/run/utmp"
 
 UT_LINESIZE = 32
@@ -95,8 +97,9 @@ def enum_sessions(path=None):
         if en["type"] == UtType.USER_PROCESS:
             try:
                 pwent = pwd.getpwnam(en["user"])
+                uid = pwent.pw_uid
             except KeyError:
-                print("utmp entry for nonexistent username %r" % en["user"], file=sys.stderr)
+                log_info("Skipping utmp entry for nonexistent username %r" % en["user"]))
                 continue
 
             yield {
