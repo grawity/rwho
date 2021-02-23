@@ -99,7 +99,7 @@ def enum_sessions(path=None):
                 pwent = pwd.getpwnam(en["user"])
                 uid = pwent.pw_uid
             except KeyError:
-                log_info("Skipping utmp entry for nonexistent username %r" % en["user"]))
+                log_info("Skipping utmp entry for nonexistent username %r" % en["user"])
                 continue
 
             yield {
