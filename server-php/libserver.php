@@ -17,60 +17,6 @@ function pdo_die($st) {
 	die("error: $err\n");
 }
 
-function check_authorization($host) {
-	$client_ip = @$_SERVER["REMOTE_ADDR"];
-	$client_name = "host '$host' from $client_ip";
-
-	$auth_id = @$_SERVER["PHP_AUTH_USER"];
-	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
-	$auth_type = @$_SERVER["AUTH_TYPE"];
-	$auth_required = Config::getbool("server.auth_required", false);
-
-	if ($auth_id) {
-		if ($auth_id === $host) {
-			$db_pw = get_host_pwent($host);
-			// TODO: add authorization methods without password auth
-			// (split authn and authz)
-			if ($db_pw) {
-				if (password_verify($auth_pw, $db_pw)) {
-					syslog(LOG_DEBUG, "$client_name accepted (authenticated)");
-					return true;
-				} else {
-					syslog(LOG_NOTICE, "$client_name rejected (bad password)");
-					return false;
-				}
-			} elseif ($auth_required) {
-				syslog(LOG_NOTICE, "$client_name rejected (not found in credential table)");
-				return false;
-			} else {
-				syslog(LOG_DEBUG, "$client_name accepted (authentication provided but not needed)");
-				return true;
-			}
-		} else {
-			syslog(LOG_NOTICE, "$client_name auth '$auth_id' rejected (username mismatch)");
-			return false;
-		}
-	} else {
-		$db_pw = get_host_pwent($host);
-		if ($db_pw || $auth_required) {
-			syslog(LOG_NOTICE, "$client_name rejected (authentication required but missing)");
-			return false;
-		} else {
-			syslog(LOG_DEBUG, "$client_name accepted (without authentication)");
-			return true;
-		}
-	}
-
-	if ($db_pw) {
-	} else {
-		if (!$auth_id) {
-		}
-	}
-
-	syslog(LOG_NOTICE, "$client_name accepted (authentication not implemented)");
-	return true;
-}
-
 // Host information
 
 function host_update($host) {

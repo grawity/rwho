@@ -27,6 +27,62 @@ function die_require_http_basic() {
 	die();
 }
 
+function check_authentication() {
+	$auth_required = Config::getbool("server.auth_required", false);
+
+	$auth_id = @$_SERVER["PHP_AUTH_USER"];
+	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
+	$auth_type = @$_SERVER["AUTH_TYPE"];
+
+	if (isset($auth_id) && isset($auth_pw)) {
+		$db_pw = get_host_pwent($auth_id);
+		if ($db_pw) {
+			if (password_verify($auth_pw, $db_pw)) {
+				xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
+				return $auth_id;
+			} else {
+				xsyslog(LOG_WARNING, "Rejecting client '$auth_id' (authentication failure)");
+				die_require_http_basic();
+			}
+		} else {
+			xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
+			// Fall through - if there is no such username, apply the same rules as for anonymous clients.
+		}
+	}
+
+	if ($auth_required) {
+		xsyslog(LOG_WARNING, "Rejecting anonymous client (configuration requires auth)");
+		die_require_http_basic();
+	} else {
+		xsyslog(LOG_DEBUG, "Allowing anonymous client with no auth");
+		return null;
+	}
+}
+
+function check_authorization($auth_id, $host) {
+	$auth_required = Config::getbool("server.auth_required", false);
+
+	if ($auth_id === null) {
+		// No auth header, or account was unknown
+		if (!$auth_required) {
+			xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
+			return true;
+		} else {
+			// XXX: This can't happen because check_authn() already exits in this case.
+			xsyslog(LOG_WARNING, "Denying anonymous client to update host '$host'");
+		}
+	} else {
+		// Valid auth for known account
+		if ($auth_id === $host) {
+			xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
+			return true;
+		} else {
+			xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
+			return false;
+		}
+	}
+}
+
 function handle_legacy_request() {
 	if (strlen($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
@@ -46,8 +102,10 @@ function handle_legacy_request() {
 		die("KOD: $kod_msg\n");
 	}
 
-	if (!check_authorization($host)) {
-		die_require_http_basic();
+	$auth_id = check_authentication();
+	if (!check_authorization($auth_id, $host)) {
+		header("Status: 403");
+		die("error: account '$auth_id' not authorized for host '$host'\n");
 	}
 
 	$server = new RWhoServer();
