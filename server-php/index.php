@@ -119,71 +119,13 @@ function handle_legacy_request($server) {
 }
 
 function handle_jsonrpc_request($server) {
-	$call_id = null;
 	$request = file_get_contents("php://input");
-	$request = json_decode($request, true, 64);
+	$response = \JsonRpc\dispatch($request, $server);
 
-	try {
-		if (!$request) {
-			throw new \JsonRpc\RpcParseError();
-		}
-		if (!is_array($request)) {
-			throw new \JsonRpc\RpcMalformedObjectError();
-		}
-		if (@$request["jsonrpc"] !== "2.0") {
-			throw new \JsonRpc\RpcMalformedObjectError();
-		}
-		if (!isset($request["method"])) {
-			throw new \JsonRpc\RpcMalformedObjectError();
-		}
-		$method = $request["method"];
-		$params = @$request["params"];
-		if (!array_key_exists("id", $request)) {
-			$call_id = new \JsonRpc\Absent();
-		} else {
-			$call_id = $request["id"];
-			if (!is_null($call_id)
-			&& !is_string($call_id)
-			&& !is_numeric($call_id)) {
-				throw new \JsonRpc\RpcMalformedObjectError();
-			}
-		}
-		if (!is_string($method)) {
-			throw new \JsonRpc\RpcMalformedObjectError();
-		}
-		if (preg_match("/^_|^rpc[._]/", $method)) {
-			throw new \JsonRpc\RpcBadMethodError();
-		}
-		if (!method_exists($server, $method)) {
-			throw new \JsonRpc\RpcBadMethodError();
-		}
-		if ($params === null) {
-			$result = $server->$method();
-		} elseif (is_array($params)) {
-			$result = $server->$method(...$params);
-		} else {
-			throw new \JsonRpc\RpcMalformedObjectError();
-		}
-		$response = [
-			"jsonrpc" => "2.0",
-			"result" => $result,
-			"id" => $call_id,
-		];
-	} catch (\JsonRpc\RpcException $e) {
-		$response = [
-			"jsonrpc" => "2.0",
-			"error" => [
-				"code" => $e->getCode(),
-				"message" => $e->getMessage(),
-			],
-			"id" => $call_id,
-		];
-	}
-
-	if ($call_id instanceof \JsonRpc\Absent) {
+	if ($response === null) {
+		/* Notification */
 		die();
 	} else {
-		$response = json_encode($response);
 		header("Content-Type: application/json");
 		die($response);
 	}
