@@ -609,11 +609,11 @@ function get_rhost() {
 	if ($h !== false) return _strip_addr($h);
 
 	$h = getenv("REMOTEHOST");
-	if ($h !== false) return strip_addr($h);
+	if ($h !== false) return _strip_addr($h);
 
 	if (defined("STDIN")) {
 		$h = stream_socket_get_name(constant("STDIN"), true);
-		if ($h !== false) return strip_addr($h);
+		if ($h !== false) return _strip_addr($h);
 	}
 }
 
