@@ -128,7 +128,8 @@ if (isset($_REQUEST["action"])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	\JsonRpc\handle_posted_request($server);
+	$rpc = new \JsonRpc\Server();
+	$rpc->handle_posted_request($server);
 } else {
 	header("Status: 405 Method Not Allowed");
 }
