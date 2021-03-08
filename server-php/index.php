@@ -60,9 +60,9 @@ function check_authentication() {
 }
 
 function handle_legacy_request() {
-	if (strlen($_POST["fqdn"]))
+	if (isset($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
-	elseif (strlen($_POST["host"]))
+	elseif (isset($_POST["host"]))
 		$host = $_POST["host"];
 	else
 		die("error: host not specified\n");
