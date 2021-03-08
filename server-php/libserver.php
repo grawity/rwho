@@ -1,6 +1,8 @@
 <?php
 namespace RWho;
 
+require_once(__DIR__."/libjsonrpc.php");
+
 openlog("rwho-server", null, LOG_DAEMON);
 
 function pdo_fmterr($st) {
@@ -171,14 +173,14 @@ class RWhoServer {
 	}
 }
 
-class UnauthorizedHostError extends \Exception {
+class UnauthorizedHostError extends \JsonRpc\RpcException {
 	function __construct() {
 		$this->code = 403;
 		$this->message = "Client not authorized to update this host";
 	}
 }
 
-class KodResponseError extends \Exception {
+class KodResponseError extends \JsonRpc\RpcException {
 	function __construct($message) {
 		$this->code = 410;
 		$this->message = "$message";
