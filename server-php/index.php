@@ -84,7 +84,6 @@ function handle_legacy_request() {
 	$server = new RWhoServer($auth_id, $auth_required);
 
 	try {
-		$server->authorize($host);
 		switch ($action) {
 			case "insert":
 				$data = json_decode($_POST["utmp"]);

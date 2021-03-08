@@ -108,7 +108,7 @@ class RWhoServer {
 		$this->auth_required = $auth_required;
 	}
 
-	function authorize($host) {
+	function _authorize($host) {
 		$auth_id = $this->auth_id;
 		$auth_required = $this->auth_required;
 
@@ -133,6 +133,7 @@ class RWhoServer {
 	}
 
 	function PutEntries($host, $entries) {
+		$this->_authorize($host);
 		host_update($host);
 		utmp_delete_host($host);
 		foreach ($entries as $entry) {
@@ -141,6 +142,7 @@ class RWhoServer {
 	}
 
 	function InsertEntries($host, $entries) {
+		$this->_authorize($host);
 		host_update($host);
 		foreach ($entries as $entry) {
 			utmp_insert($host, $entry);
@@ -148,6 +150,7 @@ class RWhoServer {
 	}
 
 	function RemoveEntries($host, $entries) {
+		$this->_authorize($host);
 		host_update($host);
 		foreach ($entries as $entry) {
 			utmp_delete($host, $entry);
@@ -155,6 +158,7 @@ class RWhoServer {
 	}
 
 	function ClearEntries($host) {
+		$this->_authorize($host);
 		host_delete($host);
 		utmp_delete_host($host);
 	}
