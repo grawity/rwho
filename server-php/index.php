@@ -73,12 +73,6 @@ function handle_legacy_request() {
 	else
 		die("error: action not specified\n");
 
-	$kod_msg = get_host_kodmsg($host);
-	if ($kod_msg) {
-		xsyslog(LOG_NOTICE, "Rejected with KOD message (\"$kod_msg\")");
-		die("KOD: $kod_msg\n");
-	}
-
 	$auth_id = check_authentication();
 	$auth_required = Config::getbool("server.auth_required", false);
 	$server = new RWhoServer($auth_id, $auth_required);
@@ -123,6 +117,8 @@ function handle_legacy_request() {
 	} catch (UnauthorizedHostError $e) {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
+	} catch (KodResponseError $e) {
+		die("KOD: $kod_msg\n");
 	}
 }
 

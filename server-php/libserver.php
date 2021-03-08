@@ -112,6 +112,13 @@ class RWhoServer {
 		$auth_id = $this->auth_id;
 		$auth_required = $this->auth_required;
 
+		// Check by host, not auth_id, to match anonymous clients as well.
+		$kod_msg = get_host_kodmsg($host);
+		if ($kod_msg) {
+			xsyslog(LOG_NOTICE, "Rejected client with KOD message (\"$kod_msg\")");
+			throw new KodResponseError($kod_msg);
+		}
+
 		if ($auth_id === null) {
 			// No auth header, or account was unknown
 			if (!$auth_required) {
@@ -168,5 +175,12 @@ class UnauthorizedHostError extends \Exception {
 	function __construct() {
 		$this->code = 403;
 		$this->message = "Client not authorized to update this host";
+	}
+}
+
+class KodResponseError extends \Exception {
+	function __construct($message) {
+		$this->code = 410;
+		$this->message = "$message";
 	}
 }
