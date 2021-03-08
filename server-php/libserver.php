@@ -17,16 +17,6 @@ function pdo_die($st) {
 	die("error: $err\n");
 }
 
-function get_host_pwent($host) {
-	Config::parse(__DIR__."/../accounts.conf");
-	return Config::get("auth.pw.$host");
-}
-
-function get_host_kodmsg($host) {
-	Config::parse(__DIR__."/../accounts.conf");
-	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
-}
-
 function check_authorization($host) {
 	$client_ip = @$_SERVER["REMOTE_ADDR"];
 	$client_name = "host '$host' from $client_ip";
