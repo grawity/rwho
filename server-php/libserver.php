@@ -1,6 +1,7 @@
 <?php
 namespace RWho;
 
+require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/libjsonrpc.php");
 
 openlog("rwho-server", null, LOG_DAEMON);
@@ -20,6 +21,11 @@ function pdo_die($st) {
 }
 
 // Host information
+
+function get_host_kodmsg($host) {
+	Config::parse(__DIR__."/../accounts.conf");
+	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
+}
 
 function host_update($host) {
 	$dbh = DB::connect();

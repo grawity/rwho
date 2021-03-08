@@ -15,11 +15,6 @@ function get_host_pwent($host) {
 	return Config::get("auth.pw.$host");
 }
 
-function get_host_kodmsg($host) {
-	Config::parse(__DIR__."/../accounts.conf");
-	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
-}
-
 function die_require_http_basic() {
 	header("Status: 401");
 	header("WWW-Authenticate: Basic realm=\"rwho\"");
