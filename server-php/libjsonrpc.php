@@ -1,6 +1,12 @@
 <?php
 namespace JsonRpc;
 
+class Absent {
+	/* Sentinel value indicating that no call ID was present
+	 * and that the request was a notification without reply.
+	 */
+}
+
 class RpcException extends \Exception {
 }
 
