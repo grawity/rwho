@@ -5,6 +5,7 @@ header("Content-Type: text/plain; charset=utf-8");
 
 require(__DIR__."/../lib-php/librwho.php");
 require(__DIR__."/libserver.php");
+require(__DIR__."/libjsonrpc.php");
 
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
@@ -80,7 +81,6 @@ function handle_legacy_request() {
 
 	$auth_id = check_authentication();
 	$auth_required = Config::getbool("server.auth_required", false);
-
 	$server = new RWhoServer($auth_id, $auth_required);
 
 	try {
@@ -124,9 +124,72 @@ function handle_legacy_request() {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
 	}
-
-	}
 }
 
-if (isset($_REQUEST["action"]))
+function handle_jsonrpc_request() {
+	$auth_id = check_authentication();
+	$auth_required = Config::getbool("server.auth_required", false);
+	$server = new RWhoServer($auth_id, $auth_required);
+
+	$callid = null;
+
+	$request = file_get_contents("php://input");
+	$request = json_decode($request, true, 64);
+
+	try {
+		if (!$request) {
+			throw new \JsonRpc\RpcParseError();
+		}
+		if (@$request["jsonrpc"] !== "2.0") {
+			throw new \JsonRpc\RpcMalformedObjectError();
+		}
+		if (!isset($request["method"])) {
+			throw new \JsonRpc\RpcMalformedObjectError();
+		}
+		$method = $request["method"];
+		$params = @$request["params"];
+		$callid = @$request["id"];
+		if (preg_match("/^_|^rpc[._]/", $method)) {
+			throw new \JsonRpc\RpcBadMethodError();
+		}
+		if (!method_exists($server, $method)) {
+			throw new \JsonRpc\RpcBadMethodError();
+		}
+		if ($params === null) {
+			$result = $server->$method();
+		} elseif (is_array($params)) {
+			$result = $server->$method(...$params);
+		} else {
+			throw new \JsonRpc\RpcMalformedObjectError();
+		}
+		$response = [
+			"jsonrpc" => "2.0",
+			"result" => $result,
+			"id" => $callid,
+		];
+	} catch (\JsonRpc\RpcException $e) {
+		$response = [
+			"jsonrpc" => "2.0",
+			"error" => [
+				"code" => $e->getCode(),
+				"message" => $e->getMessage(),
+			],
+			"id" => $callid,
+		];
+	}
+
+	$response = json_encode($response);
+	header("Content-Type: application/json");
+	die($response);
+}
+
+if (isset($_REQUEST["action"])) {
 	handle_legacy_request();
+	exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+	handle_jsonrpc_request();
+} else {
+	header("Status: 405 Method Not Allowed");
+}
