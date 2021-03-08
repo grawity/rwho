@@ -1,7 +1,7 @@
 <?php
 namespace RWho;
 
-require_once(__DIR__."/libjsonrpc.php");
+require_once(__DIR__."/../lib-php/libjsonrpc.php");
 
 openlog("rwho-server", null, LOG_DAEMON);
 

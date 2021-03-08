@@ -3,9 +3,9 @@ namespace RWho;
 
 header("Content-Type: text/plain; charset=utf-8");
 
-require(__DIR__."/../lib-php/librwho.php");
-require(__DIR__."/libserver.php");
-require_once(__DIR__."/libjsonrpc.php");
+require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/libjsonrpc.php");
+require_once(__DIR__."/libserver.php");
 
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
