@@ -1,10 +1,9 @@
 <?php
 namespace RWho;
 
-header("Content-Type: text/plain; charset=utf-8");
-
-require(__DIR__."/../lib-php/librwho.php");
-require(__DIR__."/libserver.php");
+require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/libjsonrpc.php");
+require_once(__DIR__."/libserver.php");
 
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
@@ -59,7 +58,9 @@ function check_authentication() {
 	}
 }
 
-function handle_legacy_request() {
+function handle_legacy_request($server) {
+	header("Content-Type: text/plain; charset=utf-8");
+
 	if (isset($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
 	elseif (isset($_POST["host"]))
@@ -72,61 +73,55 @@ function handle_legacy_request() {
 	else
 		die("error: action not specified\n");
 
-	$kod_msg = get_host_kodmsg($host);
-	if ($kod_msg) {
-		xsyslog(LOG_NOTICE, "Rejected with KOD message (\"$kod_msg\")");
-		die("KOD: $kod_msg\n");
-	}
-
-	$auth_id = check_authentication();
-	$auth_required = Config::getbool("server.auth_required", false);
-
-	$server = new RWhoServer($auth_id, $auth_required);
-
 	try {
 		switch ($action) {
 			case "insert":
-				$data = json_decode($_POST["utmp"]);
+				$data = json_decode($_POST["utmp"], true);
 				if (!is_array($data)) {
 					die("error: no data\n");
 				}
 				$server->InsertEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "delete":
-				$data = json_decode($_POST["utmp"]);
+				$data = json_decode($_POST["utmp"], true);
 				if (!is_array($data)) {
 					die("error: no data\n");
 				}
 				$server->RemoveEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "put":
-				$data = json_decode($_POST["utmp"]);
+				$data = json_decode($_POST["utmp"], true);
 				if (!is_array($data)) {
 					die("error: no data\n");
 				}
 				$server->PutEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "destroy":
 				$server->ClearEntries($host);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			default:
-				print "error: unknown action\n";
+				die("error: unknown action\n");
 		}
 	} catch (UnauthorizedHostError $e) {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
-	}
-
+	} catch (KodResponseError $e) {
+		die("KOD: ".$e->getMessage()."\n");
 	}
 }
 
-if (isset($_REQUEST["action"]))
-	handle_legacy_request();
+$auth_id = check_authentication();
+$auth_required = Config::getbool("server.auth_required", false);
+$server = new RWhoServer($auth_id, $auth_required);
+
+if (isset($_REQUEST["action"])) {
+	handle_legacy_request($server);
+	exit();
+}
+
+if ($_SERVER["REQUEST_METHOD"] === "POST") {
+	$rpc = new \JsonRpc\Server();
+	$rpc->handle_posted_request($server);
+} else {
+	header("Status: 405 Method Not Allowed");
+}
