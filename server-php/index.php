@@ -53,70 +53,83 @@ function check_authentication() {
 	}
 }
 
-function handle_legacy_request($server) {
-	header("Content-Type: text/plain; charset=utf-8");
+class RWhoApiServerApp {
+	function __construct() {
+	}
 
-	if (isset($_POST["fqdn"]))
-		$host = $_POST["fqdn"];
-	elseif (isset($_POST["host"]))
-		$host = $_POST["host"];
-	else
-		die("error: host not specified\n");
+	function handle_legacy_request($server) {
+		header("Content-Type: text/plain; charset=utf-8");
 
-	if (isset($_REQUEST["action"]))
-		$action = $_REQUEST["action"];
-	else
-		die("error: action not specified\n");
+		if (isset($_POST["fqdn"]))
+			$host = $_POST["fqdn"];
+		elseif (isset($_POST["host"]))
+			$host = $_POST["host"];
+		else
+			die("error: host not specified\n");
 
-	try {
-		switch ($action) {
-			case "insert":
-				$data = json_decode($_POST["utmp"], true);
-				if (!is_array($data)) {
-					die("error: no data\n");
-				}
-				$server->InsertEntries($host, $data);
-				die("OK\n");
-			case "delete":
-				$data = json_decode($_POST["utmp"], true);
-				if (!is_array($data)) {
-					die("error: no data\n");
-				}
-				$server->RemoveEntries($host, $data);
-				die("OK\n");
-			case "put":
-				$data = json_decode($_POST["utmp"], true);
-				if (!is_array($data)) {
-					die("error: no data\n");
-				}
-				$server->PutEntries($host, $data);
-				die("OK\n");
-			case "destroy":
-				$server->ClearEntries($host);
-				die("OK\n");
-			default:
-				die("error: unknown action\n");
+		if (isset($_REQUEST["action"]))
+			$action = $_REQUEST["action"];
+		else
+			die("error: action not specified\n");
+
+		try {
+			switch ($action) {
+				case "insert":
+					$data = json_decode($_POST["utmp"], true);
+					if (!is_array($data)) {
+						die("error: no data\n");
+					}
+					$server->InsertEntries($host, $data);
+					die("OK\n");
+				case "delete":
+					$data = json_decode($_POST["utmp"], true);
+					if (!is_array($data)) {
+						die("error: no data\n");
+					}
+					$server->RemoveEntries($host, $data);
+					die("OK\n");
+				case "put":
+					$data = json_decode($_POST["utmp"], true);
+					if (!is_array($data)) {
+						die("error: no data\n");
+					}
+					$server->PutEntries($host, $data);
+					die("OK\n");
+				case "destroy":
+					$server->ClearEntries($host);
+					die("OK\n");
+				default:
+					die("error: unknown action\n");
+			}
+		} catch (UnauthorizedHostError $e) {
+			header("Status: 403");
+			die("error: account '$auth_id' not authorized for host '$host'\n");
+		} catch (KodResponseError $e) {
+			die("KOD: ".$e->getMessage()."\n");
 		}
-	} catch (UnauthorizedHostError $e) {
-		header("Status: 403");
-		die("error: account '$auth_id' not authorized for host '$host'\n");
-	} catch (KodResponseError $e) {
-		die("KOD: ".$e->getMessage()."\n");
+	}
+
+	function handle_json_request() {
+		if ($_SERVER["REQUEST_METHOD"] === "POST") {
+			$rpc = new \JsonRpc\Server();
+			$rpc->handle_posted_request($server);
+		} else {
+			header("Status: 405 Method Not Allowed");
+		}
+	}
+
+	function handle_request() {
+		$auth_id = check_authentication();
+		$auth_required = Config::getbool("server.auth_required", false);
+		$server = new RWhoServer($auth_id, $auth_required);
+
+		if (isset($_REQUEST["action"])) {
+			$this->handle_legacy_request($server);
+		} else {
+			$this->handle_json_request($server);
+		}
 	}
 }
 
-$auth_id = check_authentication();
-$auth_required = Config::getbool("server.auth_required", false);
-$server = new RWhoServer($auth_id, $auth_required);
-
-if (isset($_REQUEST["action"])) {
-	handle_legacy_request($server);
-	exit();
-}
-
-if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	$rpc = new \JsonRpc\Server();
-	$rpc->handle_posted_request($server);
-} else {
-	header("Status: 405 Method Not Allowed");
-}
+$app = new RWhoApiServerApp();
+$app->handle_request();
