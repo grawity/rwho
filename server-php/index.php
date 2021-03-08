@@ -60,7 +60,7 @@ function check_authentication() {
 	}
 }
 
-function handle_legacy_request() {
+function handle_legacy_request($server) {
 	if (isset($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
 	elseif (isset($_POST["host"]))
@@ -72,10 +72,6 @@ function handle_legacy_request() {
 		$action = $_REQUEST["action"];
 	else
 		die("error: action not specified\n");
-
-	$auth_id = check_authentication();
-	$auth_required = Config::getbool("server.auth_required", false);
-	$server = new RWhoServer($auth_id, $auth_required);
 
 	try {
 		switch ($action) {
@@ -122,11 +118,7 @@ function handle_legacy_request() {
 	}
 }
 
-function handle_jsonrpc_request() {
-	$auth_id = check_authentication();
-	$auth_required = Config::getbool("server.auth_required", false);
-	$server = new RWhoServer($auth_id, $auth_required);
-
+function handle_jsonrpc_request($server) {
 	$call_id = null;
 	$request = file_get_contents("php://input");
 	$request = json_decode($request, true, 64);
@@ -178,13 +170,17 @@ function handle_jsonrpc_request() {
 	die($response);
 }
 
+$auth_id = check_authentication();
+$auth_required = Config::getbool("server.auth_required", false);
+$server = new RWhoServer($auth_id, $auth_required);
+
 if (isset($_REQUEST["action"])) {
-	handle_legacy_request();
+	handle_legacy_request($server);
 	exit();
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	handle_jsonrpc_request();
+	handle_jsonrpc_request($server);
 } else {
 	header("Status: 405 Method Not Allowed");
 }
