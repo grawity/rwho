@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 import errno
+import ipaddress
 import os
 from pprint import pprint
 import pyinotify
+import re
 import select
 import signal
 import socket
@@ -29,6 +31,7 @@ class RwhoAgent():
         self.config = ConfigReader(config_path or self.CONFIG_PATH)
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
         self.ignored_users = {"root"}
+        self.attempt_rdns = True
         self.last_upload = -1
         self.wake_interval = 1*15
         self.update_interval = 1*60
@@ -67,11 +70,33 @@ class RwhoAgent():
         with open(self.KOD_PATH, "w") as fh:
             fh.write(message)
 
+    def _try_rdns(self, addr):
+        if addr.startswith(("tmux(")):
+            return addr
+        elif m := re.match(r"^(.+)( via mosh \[\d+\])$", addr):
+            return self._try_rdns(m.group(1)) + m.group(2)
+        else:
+            try:
+                _ = ipaddress.ip_address(addr)
+            except ValueError:
+                return addr
+            else:
+                try:
+                    host, _ = socket.getnameinfo((addr, 9), 0)
+                except Exception as e:
+                    log_err("getnameinfo(%r) failed: %r", addr, e)
+                    return addr
+                else:
+                    return host or addr
+
     def enum_sessions(self):
         sessions = [*enum_sessions()]
         if self.ignored_users:
             sessions = [s for s in sessions
                         if s["user"] not in self.ignored_users]
+        if self.attempt_rdns:
+            for s in sessions:
+                s["host"] = self._try_rdns(s["host"])
         return sessions
 
     def refresh(self):
