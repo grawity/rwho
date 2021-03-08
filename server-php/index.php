@@ -1,8 +1,6 @@
 <?php
 namespace RWho;
 
-header("Content-Type: text/plain; charset=utf-8");
-
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/libjsonrpc.php");
 require_once(__DIR__."/libserver.php");
@@ -61,6 +59,8 @@ function check_authentication() {
 }
 
 function handle_legacy_request($server) {
+	header("Content-Type: text/plain; charset=utf-8");
+
 	if (isset($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
 	elseif (isset($_POST["host"]))
@@ -81,34 +81,26 @@ function handle_legacy_request($server) {
 					die("error: no data\n");
 				}
 				$server->InsertEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "delete":
 				$data = json_decode($_POST["utmp"], true);
 				if (!is_array($data)) {
 					die("error: no data\n");
 				}
 				$server->RemoveEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "put":
 				$data = json_decode($_POST["utmp"], true);
 				if (!is_array($data)) {
 					die("error: no data\n");
 				}
 				$server->PutEntries($host, $data);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			case "destroy":
 				$server->ClearEntries($host);
-				print "OK\n";
-				break;
-
+				die("OK\n");
 			default:
-				print "error: unknown action\n";
+				die("error: unknown action\n");
 		}
 	} catch (UnauthorizedHostError $e) {
 		header("Status: 403");
