@@ -116,19 +116,18 @@ class RWhoServer {
 			// No auth header, or account was unknown
 			if (!$auth_required) {
 				xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
-				return true;
 			} else {
 				// XXX: This can't happen because check_authn() already exits in this case.
 				xsyslog(LOG_WARNING, "Denying anonymous client to update host '$host'");
+				throw new UnauthorizedHostError();
 			}
 		} else {
 			// Valid auth for known account
 			if ($auth_id === $host) {
 				xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
-				return true;
 			} else {
 				xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
-				return false;
+				throw new UnauthorizedHostError();
 			}
 		}
 	}
@@ -158,5 +157,12 @@ class RWhoServer {
 	function ClearEntries($host) {
 		host_delete($host);
 		utmp_delete_host($host);
+	}
+}
+
+class UnauthorizedHostError extends \Exception {
+	function __construct() {
+		$this->code = 403;
+		$this->message = "Client not authorized to update this host";
 	}
 }

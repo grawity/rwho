@@ -80,47 +80,52 @@ function handle_legacy_request() {
 
 	$auth_id = check_authentication();
 	$auth_required = Config::getbool("server.auth_required", false);
+
 	$server = new RWhoServer($auth_id, $auth_required);
-	if (!$server->authorize($host)) {
+
+	try {
+		$server->authorize($host);
+		switch ($action) {
+			case "insert":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->InsertEntries($host, $data);
+				print "OK\n";
+				break;
+
+			case "delete":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->RemoveEntries($host, $data);
+				print "OK\n";
+				break;
+
+			case "put":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->PutEntries($host, $data);
+				print "OK\n";
+				break;
+
+			case "destroy":
+				$server->ClearEntries($host);
+				print "OK\n";
+				break;
+
+			default:
+				print "error: unknown action\n";
+		}
+	} catch (UnauthorizedHostError $e) {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
 	}
 
-	switch ($action) {
-		case "insert":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->InsertEntries($host, $data);
-			print "OK\n";
-			break;
-
-		case "delete":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->RemoveEntries($host, $data);
-			print "OK\n";
-			break;
-
-		case "put":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->PutEntries($host, $data);
-			print "OK\n";
-			break;
-
-		case "destroy":
-			$server->ClearEntries($host);
-			print "OK\n";
-			break;
-
-		default:
-			print "error: unknown action\n";
 	}
 }
 
