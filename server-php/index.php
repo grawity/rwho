@@ -59,30 +59,6 @@ function check_authentication() {
 	}
 }
 
-function check_authorization($auth_id, $host) {
-	$auth_required = Config::getbool("server.auth_required", false);
-
-	if ($auth_id === null) {
-		// No auth header, or account was unknown
-		if (!$auth_required) {
-			xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
-			return true;
-		} else {
-			// XXX: This can't happen because check_authn() already exits in this case.
-			xsyslog(LOG_WARNING, "Denying anonymous client to update host '$host'");
-		}
-	} else {
-		// Valid auth for known account
-		if ($auth_id === $host) {
-			xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
-			return true;
-		} else {
-			xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
-			return false;
-		}
-	}
-}
-
 function handle_legacy_request() {
 	if (strlen($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
@@ -103,12 +79,12 @@ function handle_legacy_request() {
 	}
 
 	$auth_id = check_authentication();
-	if (!check_authorization($auth_id, $host)) {
+	$auth_required = Config::getbool("server.auth_required", false);
+	$server = new RWhoServer($auth_id, $auth_required);
+	if (!$server->authorize($host)) {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
 	}
-
-	$server = new RWhoServer();
 
 	switch ($action) {
 		case "insert":

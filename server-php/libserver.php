@@ -101,6 +101,38 @@ function utmp_delete_host($host) {
 // API actions
 
 class RWhoServer {
+	private $auth_id;
+
+	function __construct($auth_id, $auth_required) {
+		$this->auth_id = $auth_id;
+		$this->auth_required = $auth_required;
+	}
+
+	function authorize($host) {
+		$auth_id = $this->auth_id;
+		$auth_required = $this->auth_required;
+
+		if ($auth_id === null) {
+			// No auth header, or account was unknown
+			if (!$auth_required) {
+				xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
+				return true;
+			} else {
+				// XXX: This can't happen because check_authn() already exits in this case.
+				xsyslog(LOG_WARNING, "Denying anonymous client to update host '$host'");
+			}
+		} else {
+			// Valid auth for known account
+			if ($auth_id === $host) {
+				xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
+				return true;
+			} else {
+				xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
+				return false;
+			}
+		}
+	}
+
 	function PutEntries($host, $entries) {
 		host_update($host);
 		utmp_delete_host($host);
