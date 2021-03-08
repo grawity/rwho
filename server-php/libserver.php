@@ -52,7 +52,7 @@ function host_delete($host) {
 // User session information
 
 function utmp_insert($host, $entry) {
-	$user = canonicalize_user($entry->user, $entry->uid, $entry->host);
+	$user = canonicalize_user($entry["user"], $entry["uid"], $entry["host"]);
 	$dbh = DB::connect();
 	$st = $dbh->prepare('
 		INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
@@ -62,11 +62,11 @@ function utmp_insert($host, $entry) {
 		pdo_die($dbh);
 	$st->bindValue(":host", $host);
 	$st->bindValue(":user", $user);
-	$st->bindValue(":rawuser", $entry->user);
-	$st->bindValue(":uid", $entry->uid);
-	$st->bindValue(":rhost", $entry->host);
-	$st->bindValue(":line", $entry->line);
-	$st->bindValue(":time", $entry->time);
+	$st->bindValue(":rawuser", $entry["user"]);
+	$st->bindValue(":uid", $entry["uid"]);
+	$st->bindValue(":rhost", $entry["host"]);
+	$st->bindValue(":line", $entry["line"]);
+	$st->bindValue(":time", $entry["time"]);
 	$st->bindValue(":updated", time());
 	if (!$st->execute())
 		pdo_die($st);
@@ -81,8 +81,8 @@ function utmp_delete($host, $entry) {
 	if (!$st)
 		pdo_die($dbh);
 	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $entry->user);
-	$st->bindValue(":line", $entry->line);
+	$st->bindValue(":user", $entry["user"]);
+	$st->bindValue(":line", $entry["line"]);
 	if (!$st->execute())
 		pdo_die($st);
 }
