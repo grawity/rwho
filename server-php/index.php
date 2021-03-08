@@ -127,8 +127,7 @@ function handle_jsonrpc_request() {
 	$auth_required = Config::getbool("server.auth_required", false);
 	$server = new RWhoServer($auth_id, $auth_required);
 
-	$callid = null;
-
+	$call_id = null;
 	$request = file_get_contents("php://input");
 	$request = json_decode($request, true, 64);
 
@@ -144,7 +143,7 @@ function handle_jsonrpc_request() {
 		}
 		$method = $request["method"];
 		$params = @$request["params"];
-		$callid = @$request["id"];
+		$call_id = @$request["id"];
 		if (preg_match("/^_|^rpc[._]/", $method)) {
 			throw new \JsonRpc\RpcBadMethodError();
 		}
@@ -161,7 +160,7 @@ function handle_jsonrpc_request() {
 		$response = [
 			"jsonrpc" => "2.0",
 			"result" => $result,
-			"id" => $callid,
+			"id" => $call_id,
 		];
 	} catch (\JsonRpc\RpcException $e) {
 		$response = [
@@ -170,7 +169,7 @@ function handle_jsonrpc_request() {
 				"code" => $e->getCode(),
 				"message" => $e->getMessage(),
 			],
-			"id" => $callid,
+			"id" => $call_id,
 		];
 	}
 
