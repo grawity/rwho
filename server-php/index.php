@@ -106,7 +106,7 @@ function handle_legacy_request($server) {
 		header("Status: 403");
 		die("error: account '$auth_id' not authorized for host '$host'\n");
 	} catch (KodResponseError $e) {
-		die("KOD: $kod_msg\n");
+		die("KOD: ".$e->getMessage()."\n");
 	}
 }
 
