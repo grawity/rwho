@@ -118,19 +118,6 @@ function handle_legacy_request($server) {
 	}
 }
 
-function handle_jsonrpc_request($server) {
-	$request = file_get_contents("php://input");
-	$response = \JsonRpc\dispatch($request, $server);
-
-	if ($response === null) {
-		/* Notification */
-		die();
-	} else {
-		header("Content-Type: application/json");
-		die($response);
-	}
-}
-
 $auth_id = check_authentication();
 $auth_required = Config::getbool("server.auth_required", false);
 $server = new RWhoServer($auth_id, $auth_required);
@@ -141,7 +128,7 @@ if (isset($_REQUEST["action"])) {
 }
 
 if ($_SERVER["REQUEST_METHOD"] === "POST") {
-	handle_jsonrpc_request($server);
+	\JsonRpc\handle_posted_request($server);
 } else {
 	header("Status: 405 Method Not Allowed");
 }

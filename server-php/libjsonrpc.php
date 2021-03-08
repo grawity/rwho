@@ -99,3 +99,14 @@ function dispatch($request, $server) {
 		return $response;
 	}
 }
+
+function handle_posted_request($server) {
+	$request = file_get_contents("php://input");
+	$response = dispatch($request, $server);
+	if ($response === null) {
+		die();
+	} else {
+		header("Content-Type: application/json");
+		die($response);
+	}
+}
