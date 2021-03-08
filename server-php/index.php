@@ -4,21 +4,11 @@ namespace RWho;
 header("Content-Type: text/plain; charset=utf-8");
 
 require(__DIR__."/../lib-php/librwho.php");
+require(__DIR__."/libserver.php");
 
-openlog("rwho-server", null, LOG_DAEMON);
-
-function pdo_fmterr($st) {
-	list ($sqlstate, $code, $msg) = $st->errorInfo();
-	if ($code === null)
-		return "[$sqlstate] internal PDO error";
-	else
-		return "[$sqlstate] $msg ($code)";
-}
-
-function pdo_die($st) {
-	$err = pdo_fmterr($st);
-	header("Status: 500");
-	die("error: $err\n");
+function xsyslog($level, $message) {
+	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
+	return syslog($level, $message);
 }
 
 function get_host_pwent($host) {
@@ -31,182 +21,48 @@ function get_host_kodmsg($host) {
 	return Config::get("auth.kod.$host", Config::get("auth.kod.all"));
 }
 
-function check_authorization($host) {
-	$client_ip = @$_SERVER["REMOTE_ADDR"];
-	$client_name = "host '$host' from $client_ip";
+function die_require_http_basic() {
+	header("Status: 401");
+	header("WWW-Authenticate: Basic realm=\"rwho\"");
+	die();
+}
 
-	$kod_msg = get_host_kodmsg($host);
-	if ($kod_msg) {
-		syslog(LOG_NOTICE, "$client_name rejected (KOD enabled: \"$kod_msg\")");
-		die("KOD: $kod_msg\n");
-	}
+function check_authentication() {
+	$auth_required = Config::getbool("server.auth_required", false);
 
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
-	$auth_required = Config::getbool("server.auth_required", false);
 
-	if ($auth_id) {
-		if ($auth_id === $host) {
-			$db_pw = get_host_pwent($host);
-			// TODO: add authorization methods without password auth
-			// (split authn and authz)
-			if ($db_pw) {
-				if (password_verify($auth_pw, $db_pw)) {
-					syslog(LOG_DEBUG, "$client_name accepted (authenticated)");
-					return true;
-				} else {
-					syslog(LOG_NOTICE, "$client_name rejected (bad password)");
-					return false;
-				}
-			} elseif ($auth_required) {
-				syslog(LOG_NOTICE, "$client_name rejected (not found in credential table)");
-				return false;
+	if (isset($auth_id) && isset($auth_pw)) {
+		$db_pw = get_host_pwent($auth_id);
+		if ($db_pw) {
+			if (password_verify($auth_pw, $db_pw)) {
+				xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
+				return $auth_id;
 			} else {
-				syslog(LOG_DEBUG, "$client_name accepted (authentication provided but not needed)");
-				return true;
+				xsyslog(LOG_WARNING, "Rejecting client '$auth_id' (authentication failure)");
+				die_require_http_basic();
 			}
 		} else {
-			syslog(LOG_NOTICE, "$client_name auth '$auth_id' rejected (username mismatch)");
-			return false;
+			xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
+			// Fall through - if there is no such username, apply the same rules as for anonymous clients.
 		}
+	}
+
+	if ($auth_required) {
+		xsyslog(LOG_WARNING, "Rejecting anonymous client (configuration requires auth)");
+		die_require_http_basic();
 	} else {
-		$db_pw = get_host_pwent($host);
-		if ($db_pw || $auth_required) {
-			syslog(LOG_NOTICE, "$client_name rejected (authentication required but missing)");
-			return false;
-		} else {
-			syslog(LOG_DEBUG, "$client_name accepted (without authentication)");
-			return true;
-		}
-	}
-
-	if ($db_pw) {
-	} else {
-		if (!$auth_id) {
-		}
-	}
-
-	syslog(LOG_NOTICE, "$client_name accepted (authentication not implemented)");
-	return true;
-}
-
-// Host information
-
-function host_update($host) {
-	$dbh = DB::connect();
-	$st = $dbh->prepare('
-		INSERT INTO hosts (host, last_update, last_addr)
-		VALUES (:host, :time, :addr)
-		ON DUPLICATE KEY UPDATE last_update=:xtime, last_addr=:xaddr
-		');
-	if (!$st)
-		pdo_die($dbh);
-	$time = time();
-	$addr = $_SERVER["REMOTE_ADDR"];
-	$st->bindValue(":host", $host);
-	$st->bindValue(":time", $time);
-	$st->bindValue(":addr", $addr);
-	$st->bindValue(":xtime", $time);
-	$st->bindValue(":xaddr", $addr);
-	if (!$st->execute())
-		pdo_die($st);
-}
-
-function host_delete($host) {
-	$dbh = DB::connect();
-	$st = $dbh->prepare('DELETE FROM hosts WHERE host=:host');
-	if (!$st)
-		pdo_die($dbh);
-	$st->bindValue(":host", $host);
-	if (!$st->execute())
-		pdo_die($st);
-}
-
-// User session information
-
-function utmp_insert($host, $entry) {
-	$user = canonicalize_user($entry->user, $entry->uid, $entry->host);
-	$dbh = DB::connect();
-	$st = $dbh->prepare('
-		INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
-		VALUES (:host, :user, :rawuser, :uid, :rhost, :line, :time, :updated)
-		');
-	if (!$st)
-		pdo_die($dbh);
-	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $user);
-	$st->bindValue(":rawuser", $entry->user);
-	$st->bindValue(":uid", $entry->uid);
-	$st->bindValue(":rhost", $entry->host);
-	$st->bindValue(":line", $entry->line);
-	$st->bindValue(":time", $entry->time);
-	$st->bindValue(":updated", time());
-	if (!$st->execute())
-		pdo_die($st);
-}
-
-function utmp_delete($host, $entry) {
-	$dbh = DB::connect();
-	$st = $dbh->prepare('DELETE FROM utmp
-			     WHERE host=:host
-			     AND rawuser=:user
-			     AND line=:line');
-	if (!$st)
-		pdo_die($dbh);
-	$st->bindValue(":host", $host);
-	$st->bindValue(":user", $entry->user);
-	$st->bindValue(":line", $entry->line);
-	if (!$st->execute())
-		pdo_die($st);
-}
-
-function utmp_delete_host($host) {
-	$dbh = DB::connect();
-	$st = $dbh->prepare('DELETE FROM utmp
-			     WHERE host=:host');
-	if (!$st)
-		pdo_die($dbh);
-	$st->bindValue(":host", $host);
-	if (!$st->execute())
-		pdo_die($st);
-}
-
-// API actions
-
-class RWhoServer {
-	function PutEntries($host, $entries) {
-		host_update($host);
-		utmp_delete_host($host);
-		foreach ($entries as $entry) {
-			utmp_insert($host, $entry);
-		}
-	}
-
-	function InsertEntries($host, $entries) {
-		host_update($host);
-		foreach ($entries as $entry) {
-			utmp_insert($host, $entry);
-		}
-	}
-
-	function RemoveEntries($host, $entries) {
-		host_update($host);
-		foreach ($entries as $entry) {
-			utmp_delete($host, $entry);
-		}
-	}
-
-	function ClearEntries($host) {
-		host_delete($host);
-		utmp_delete_host($host);
+		xsyslog(LOG_DEBUG, "Allowing anonymous client with no auth");
+		return null;
 	}
 }
 
 function handle_legacy_request() {
-	if (strlen($_POST["fqdn"]))
+	if (isset($_POST["fqdn"]))
 		$host = $_POST["fqdn"];
-	elseif (strlen($_POST["host"]))
+	elseif (isset($_POST["host"]))
 		$host = $_POST["host"];
 	else
 		die("error: host not specified\n");
@@ -216,49 +72,59 @@ function handle_legacy_request() {
 	else
 		die("error: action not specified\n");
 
-	if (!check_authorization($host)) {
-		header("Status: 401");
-		header("WWW-Authenticate: Basic realm=\"rwho\"");
-		die("error: not authorized\n");
+	$kod_msg = get_host_kodmsg($host);
+	if ($kod_msg) {
+		xsyslog(LOG_NOTICE, "Rejected with KOD message (\"$kod_msg\")");
+		die("KOD: $kod_msg\n");
 	}
 
-	$server = new RWhoServer();
+	$auth_id = check_authentication();
+	$auth_required = Config::getbool("server.auth_required", false);
 
-	switch ($action) {
-		case "insert":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->InsertEntries($host, $data);
-			print "OK\n";
-			break;
+	$server = new RWhoServer($auth_id, $auth_required);
 
-		case "delete":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->RemoveEntries($host, $data);
-			print "OK\n";
-			break;
+	try {
+		switch ($action) {
+			case "insert":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->InsertEntries($host, $data);
+				print "OK\n";
+				break;
 
-		case "put":
-			$data = json_decode($_POST["utmp"]);
-			if (!is_array($data)) {
-				die("error: no data\n");
-			}
-			$server->PutEntries($host, $data);
-			print "OK\n";
-			break;
+			case "delete":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->RemoveEntries($host, $data);
+				print "OK\n";
+				break;
 
-		case "destroy":
-			$server->ClearEntries($host);
-			print "OK\n";
-			break;
+			case "put":
+				$data = json_decode($_POST["utmp"]);
+				if (!is_array($data)) {
+					die("error: no data\n");
+				}
+				$server->PutEntries($host, $data);
+				print "OK\n";
+				break;
 
-		default:
-			print "error: unknown action\n";
+			case "destroy":
+				$server->ClearEntries($host);
+				print "OK\n";
+				break;
+
+			default:
+				print "error: unknown action\n";
+		}
+	} catch (UnauthorizedHostError $e) {
+		header("Status: 403");
+		die("error: account '$auth_id' not authorized for host '$host'\n");
+	}
+
 	}
 }
 
