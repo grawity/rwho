@@ -1,0 +1,23 @@
+### RWho server configuration
+
+[server]
+# Deny updates from anonymous clients
+#auth_required = true
+
+[auth.pw]
+# HTTP Basic authentication. Each key corresponds to a username (typically the
+# server's FQDN), the value must be a hash compatible with password_verify().
+#
+# Clients who specify unknown usernames aren't rejected outright, but are
+# treated the same as anonymous clients (see server.auth_required).
+kremvax.example.com = $5$fJWY8mpdJT5aaAKs$D/hBtRq5ZicMNUtrIgbXdLfjH5Qg1RTvc6/vhXxI3h4
+
+[auth.kod]
+# "Kiss-o'-Death" responses. Each key corresponds to a RWho FQDN (*not* the
+# username, as anonymous clients do not send one), the value is a free-form
+# message.
+#
+# If present, will request the agent to immediately exit and stop contacting
+# the server. (Any sessions currently in database will have to be purged after
+# expiry.)
+badhost.evilgeniuses.int = Go away!
