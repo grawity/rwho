@@ -27,8 +27,8 @@ html::header("address", 30);
 		<a href="?full">Expanded view</a>
 <?php } ?>
 		or output as
-		<a href="?<?= H(mangle_query(array("fmt" => "json"))) ?>">JSON</a>,
-		<a href="?<?= H(mangle_query(array("fmt" => "xml"))) ?>">XML</a>,
+		<a href="?<?= H(mangle_query(["fmt" => "json"])) ?>">JSON</a>,
+		<a href="?<?= H(mangle_query(["fmt" => "xml"])) ?>">XML</a>,
 <?php if (Config::has("finger.host")) { ?>
 		<a href="<?= H(make_finger_addr()) ?>">text</a>,
 <?php } ?>

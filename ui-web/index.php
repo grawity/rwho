@@ -26,15 +26,15 @@ function output_json($data) {
 	}
 
 	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode(array(
-		"time"		=> time(),
-		"query"		=> array(
-			"user"		=> query::$user,
-			"host"		=> query::$host,
-			"summary"	=> !query::$detailed,
-		),
-		"utmp"		=> $data,
-	))."\n";
+	print json_encode([
+		"time" => time(),
+		"query" => [
+			"user" => query::$user,
+			"host" => query::$host,
+			"summary" => !query::$detailed,
+		],
+		"utmp" => $data,
+	])."\n";
 }
 
 function output_xml($data) {

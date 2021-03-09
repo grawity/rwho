@@ -11,22 +11,22 @@ class query {
 }
 
 function output_json($data) {
-	$d = array();
+	$d = [];
 	foreach ($data as $row) {
-		$d[] = array(
-			"host"		=> $row["host"],
-			"address"	=> $row["last_addr"],
-			"users"		=> $row["users"],
-			"entries"	=> $row["entries"],
-			"updated"	=> $row["last_update"],
-		);
+		$d[] = [
+			"host" => $row["host"],
+			"address" => $row["last_addr"],
+			"users" => $row["users"],
+			"entries" => $row["entries"],
+			"updated" => $row["last_update"],
+		];
 	}
 
 	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode(array(
-		"time"		=> time(),
-		"hosts"		=> $d,
-	))."\n";
+	print json_encode([
+		"time" => time(),
+		"hosts" => $d,
+	])."\n";
 }
 
 function output_xml($data) {
