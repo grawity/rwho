@@ -2,7 +2,7 @@
 namespace RWho;
 
 require_once(__DIR__."/../lib-php/librwho.php");
-require_once(__DIR__."/../lib-php/libjsonrpc.php");
+require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/libserver.php");
 
 function xsyslog($level, $message) {
