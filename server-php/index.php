@@ -3,7 +3,7 @@ namespace RWho;
 
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
-require_once(__DIR__."/libserver.php");
+require_once(__DIR__."/../lib-php/server_api.php");
 
 Config::parse(__DIR__."/../server.conf");
 
