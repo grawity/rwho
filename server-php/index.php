@@ -58,7 +58,7 @@ class RWhoApiServerApp {
 	function __construct() {
 	}
 
-	function handle_legacy_request($server) {
+	function handle_legacy_request($api) {
 		header("Content-Type: text/plain; charset=utf-8");
 
 		if (isset($_POST["fqdn"]))
@@ -80,24 +80,24 @@ class RWhoApiServerApp {
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$server->InsertEntries($host, $data);
+					$api->InsertEntries($host, $data);
 					die("OK\n");
 				case "delete":
 					$data = json_decode($_POST["utmp"], true);
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$server->RemoveEntries($host, $data);
+					$api->RemoveEntries($host, $data);
 					die("OK\n");
 				case "put":
 					$data = json_decode($_POST["utmp"], true);
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$server->PutEntries($host, $data);
+					$api->PutEntries($host, $data);
 					die("OK\n");
 				case "destroy":
-					$server->ClearEntries($host);
+					$api->ClearEntries($host);
 					die("OK\n");
 				default:
 					die("error: unknown action\n");
@@ -110,10 +110,10 @@ class RWhoApiServerApp {
 		}
 	}
 
-	function handle_json_request($server) {
+	function handle_json_request($api) {
 		if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			$rpc = new \JsonRpc\Server();
-			$rpc->handle_posted_request($server);
+			$rpc->handle_posted_request($api);
 		} else {
 			header("Status: 405 Method Not Allowed");
 		}
@@ -122,12 +122,12 @@ class RWhoApiServerApp {
 	function handle_request() {
 		$auth_id = check_authentication();
 		$auth_required = Config::getbool("server.auth_required", false);
-		$server = new RWhoServer($auth_id, $auth_required);
+		$api = new RWhoApiInterface($auth_id, $auth_required);
 
 		if (isset($_REQUEST["action"])) {
-			$this->handle_legacy_request($server);
+			$this->handle_legacy_request($api);
 		} else {
-			$this->handle_json_request($server);
+			$this->handle_json_request($api);
 		}
 	}
 }

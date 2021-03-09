@@ -109,7 +109,7 @@ function utmp_delete_host($host) {
 
 // API actions
 
-class RWhoServer {
+class RWhoApiInterface {
 	private $auth_id;
 
 	function __construct($auth_id, $auth_required) {
