@@ -63,16 +63,20 @@ function output_xml($data) {
 	foreach ($data as $row) {
 		$rowx = $root->appendChild($doc->createElement("row"));
 
-		unset($row["rowid"]);
-
 		$date = date("c", $row["updated"]);
 		$rowx->appendChild($doc->createAttribute("updated"))
 			->appendChild($doc->createTextNode($date));
-		unset($row["updated"]);
+
+		if (is_stale($row["updated"]))
+			$rowx->appendChild($doc->createAttribute("stale"))
+				->appendChild($doc->createTextNode("true"));
 
 		if ($row["is_summary"])
 			$rowx->appendChild($doc->createAttribute("summary"))
 				->appendChild($doc->createTextNode("true"));
+
+		unset($row["rowid"]);
+		unset($row["updated"]);
 		unset($row["is_summary"]);
 
 		foreach ($row as $k => $v)
