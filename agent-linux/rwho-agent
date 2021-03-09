@@ -76,13 +76,17 @@ sub parse_bool {
 sub parse_conf {
 	my ($fh) = @_;
 	my %data = ();
+	my $section = "";
 	while (<$fh>) {
 		chomp;
 		if (!/^[^;#]/) {
 			next;
 		}
+		elsif (/^\[(\S+)\]$/) {
+			$section = "$1.";
+		}
 		elsif (/^(\S+)\s*=\s*(.*)$/) {
-			$data{$1} = $2;
+			$data{$section.$1} = $2;
 		}
 		else {
 			_warn("syntax error in config: line $.: '$_'");

@@ -12,14 +12,18 @@ CONFIG="$RWHO_DIR/rwho.conf"
 
 if [[ -s $CONFIG ]]; then
 	cre='^[^;#]'
+	sre='^\[([^\s]+)\]$'
 	are='^([^\s]+)\s*=\s*(.*)$'
+	section=''
 	while read -r line; do
 		if ! [[ $line =~ $cre ]]; then
 			continue
+		elif [[ $line =~ $sre ]]; then
+			section=${BASH_REMATCH[1]}
 		elif [[ $line =~ $are ]]; then
 			key=${BASH_REMATCH[1]}
 			val=${BASH_REMATCH[2]}
-			case $key in
+			case "$section$key" in
 			'finger.host')
 				RWHO_HOST=$val;;
 			'agent.notify_url')

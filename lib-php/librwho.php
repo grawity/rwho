@@ -10,14 +10,19 @@ class Config {
 		$fh = fopen($file, "r");
 		if (!$fh)
 			return;
+		$section = "";
 		while (($line = fgets($fh)) !== false) {
 			$line = rtrim($line);
 			if (!preg_match('/^[^;#]/', $line)) {
 				continue;
 			}
+			elseif (preg_match('/^\[(\S+)\]$/', $line, $m)) {
+				list ($_, $key) = $m;
+				$section = "$key.";
+			}
 			elseif (preg_match('/^(\S+)\s*=\s*(.*)$/', $line, $m)) {
 				list ($_, $key, $val) = $m;
-				self::$data[$key] = $val;
+				self::$data[$section.$key] = $val;
 			}
 			else {
 				# XXX: warn about syntax error

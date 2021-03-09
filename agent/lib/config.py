@@ -12,13 +12,16 @@ class ConfigReader():
     def reload(self):
         with open(self.path, "r") as fh:
             self.data = {}
+            section = ""
             for i, line in enumerate(fh):
                 line = line.rstrip("\r\n")
                 if not re.match(r"^[^;#]", line):
                     continue
+                elif m := re.match(r"^\[(\S+)\]$", line):
+                    section = m.group(1) + "."
                 elif m := re.match(r"^(\S+)\s*=\s*(.*)$", line):
                     key, val = m.groups()
-                    self.data[key] = val
+                    self.data[section + key] = val
                 else:
                     raise ConfigSyntaxError("%s:%d: no assignment in %r" % (self.path, i+1, line))
 
