@@ -109,7 +109,7 @@ class RWhoApiServerApp {
 		}
 	}
 
-	function handle_json_request() {
+	function handle_json_request($server) {
 		if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			$rpc = new \JsonRpc\Server();
 			$rpc->handle_posted_request($server);
