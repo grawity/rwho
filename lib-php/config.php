@@ -33,3 +33,75 @@ function parse_file($file) {
 	}
 	return $data;
 }
+
+class Configuration {
+	function __construct($file=null) {
+		$this->_data = [];
+		if ($file !== null) {
+			$this->load($file);
+		}
+	}
+
+	function load($file) {
+		$this->_data = array_merge($this->_data, parse_file($file));
+	}
+
+	function set($key, $value) {
+		$this->_data[$key] = $value;
+	}
+
+	function merge($data) {
+		$this->_data = array_merge($this->_data, $data);
+	}
+
+	function has($key) {
+		return array_key_exists($key, $this->_data);
+	}
+
+	function get($key, $default=null) {
+		if (!array_key_exists($key, $this->_data))
+			return $default;
+		return $this->_data[$key];
+	}
+
+	function get_bool($key, $default=false) {
+		if (!array_key_exists($key, $this->_data))
+			return $default;
+		$value = $this->_data[$key];
+		if ($value === "true" || $value === "yes")
+			return true;
+		elseif ($value === "false" || $value === "no")
+			return false;
+		else
+			return (bool) $value;
+	}
+
+	function get_list($key) {
+		if (!array_key_exists($key, $this->_data))
+			return [];
+		return preg_split("/\s+/", $this->_data[$key]);
+	}
+
+	function get_rel_time($key, $default=0) {
+		if (!array_key_exists($key, $this->_data))
+			return $default;
+		$re = '/^
+			(?:(?<w>\d+)w)?
+			(?:(?<d>\d+)d)?
+			(?:(?<h>\d+)h)?
+			(?:(?<m>\d+)m)?
+			(?:(?<s>\d+)s?)?
+		$/x';
+		$value = $this->_data[$key];
+		if (preg_match($re, $value, $m)) {
+			return
+				+ intval(@$m["w"]) * 1*60*60*24*7
+				+ intval(@$m["d"]) * 1*60*60*24
+				+ intval(@$m["h"]) * 1*60*60
+				+ intval(@$m["m"]) * 1*60
+				+ intval(@$m["s"]) * 1;
+		} else {
+			return $default;
+		}
+	}
+}

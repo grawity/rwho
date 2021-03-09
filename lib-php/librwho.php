@@ -6,66 +6,34 @@ require_once(__DIR__."/../lib-php/config.php");
 const MIN_UID = 1000;
 
 class Config {
-	static $data = array();
+	static $conf = null;
 
 	static function parse($file) {
-		self::$data = array_merge(self::$data, \RWho\Config\parse_file($file));
+		self::$conf->load($file);
 	}
 
 	static function has($key) {
-		return isset(self::$data[$key]);
+		return self::$conf->has($key);
 	}
 
 	static function set($key, $value) {
-		return self::$data[$key] = $value;
+		return self::$conf->set($key, $value);
 	}
 
 	static function get($key, $default=null) {
-		if (!self::has($key))
-			return $default;
-		return self::$data[$key];
+		return self::$conf->get($key, $default);
 	}
 
 	static function getbool($key, $default=false) {
-		$v = @self::$data[$key];
-		if (!isset($v))
-			return $default;
-		elseif ($v === "true" || $v === "yes")
-			return true;
-		elseif ($v === "false" || $v === "no")
-			return false;
-		else
-			return (bool) $v;
+		return self::$conf->get_bool($key, $default);
 	}
 
 	static function getlist($key) {
-		if (!self::has($key))
-			return array();
-		$v = self::$data[$key];
-		$l = preg_split("/\s+/", $v);
-		return $l;
+		return self::$conf->get_list($key);
 	}
 
 	static function getreltime($key, $default=0) {
-		$re = '/^
-			(?:(?<w>\d+)w)?
-			(?:(?<d>\d+)d)?
-			(?:(?<h>\d+)h)?
-			(?:(?<m>\d+)m)?
-			(?:(?<s>\d+)s?)?
-		$/x';
-		if (!self::has($key))
-			return $default;
-		if (is_int(self::$data[$key]))
-			return self::$data[$key];
-		if (!preg_match($re, self::$data[$key], $m))
-			return $default;
-		return
-			+ intval(@$m["w"]) * 1*60*60*24*7
-			+ intval(@$m["d"]) * 1*60*60*24
-			+ intval(@$m["h"]) * 1*60*60
-			+ intval(@$m["m"]) * 1*60
-			+ intval(@$m["s"]) * 1;
+		return self::$conf->get_rel_time($key, $default);
 	}
 }
 
@@ -93,7 +61,8 @@ class DB {
 	}
 }
 
-Config::$data = array(
+Config::$conf = new \RWho\Config\Configuration();
+Config::$conf->merge([
 	// maximum age before which the entry will be considered stale
 	// (e.g. the host temporarily down for some reason)
 	// default is 1 minute more than the rwhod periodic update time
@@ -101,12 +70,12 @@ Config::$data = array(
 	// maximum age before which the entry will be considered dead
 	// and not displayed in host list
 	"expire.host-dead" => "1d",
-	"finger.log" => false,
+	"finger.log" => "false",
 	"privacy.allow_addr" => "",
-	"privacy.allow_anonymous" => true,
-	"privacy.hide_rhost" => false,
-);
-Config::parse(__DIR__."/../rwho.conf");
+	"privacy.allow_anonymous" => "true",
+	"privacy.hide_rhost" => "false",
+]);
+Config::$conf->load(__DIR__."/../rwho.conf");
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
