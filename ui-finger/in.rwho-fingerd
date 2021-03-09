@@ -6,6 +6,8 @@ chdir(__DIR__."/..");
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
 
+Config::parse(__DIR__."/../server.conf");
+
 function finger_handle_query($input) {
 	list ($query, $detailed) = finger_parse($input);
 
