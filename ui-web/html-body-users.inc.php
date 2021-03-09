@@ -30,7 +30,7 @@ html::header("address", 30);
 		<a href="?<?= H(mangle_query(["fmt" => "json"])) ?>">JSON</a>,
 		<a href="?<?= H(mangle_query(["fmt" => "xml"])) ?>">XML</a>,
 <?php if (Config::has("finger.host")) { ?>
-		<a href="<?= H(make_finger_addr()) ?>">text</a>,
+		<a href="<?= H(query::make_finger_addr()) ?>">text</a>,
 <?php } ?>
 		or
 		<a href="hosts.php">list hosts</a>

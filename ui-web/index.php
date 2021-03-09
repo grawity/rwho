@@ -11,6 +11,21 @@ class query {
 	static $host;
 	static $detailed;
 	static $format;
+
+	static function make_finger_addr() {
+		global $config;
+
+		$host = $config->get("finger.host");
+		if (!isset($host))
+			return null;
+		$q = (string) self::$user;
+		if (strlen(self::$host))
+			$q .= "@".self::$host;
+		$q .= "@".$host;
+		if (self::$detailed and !(strlen(self::$user) or strlen(self::$host)))
+			$q = "/W ".$q;
+		return "//nullroute.eu.org/finger/?q=".urlencode($q);
+	}
 }
 
 function is_wildcard($str) {

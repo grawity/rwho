@@ -18,25 +18,10 @@ class html {
 
 function H($str) { return htmlspecialchars($str); }
 
-function make_finger_addr() {
-	global $config;
-
-	$host = $config->get("finger.host");
-	if (!isset($host))
-		return null;
-	$q = (string) query::$user;
-	if (strlen(query::$host))
-		$q .= "@".query::$host;
-	$q .= "@".$host;
-	if (query::$detailed and !(strlen(query::$user) or strlen(query::$host)))
-		$q = "/W ".$q;
-	return "//nullroute.eu.org/finger/?q=".urlencode($q);
-}
-
 $config = new \RWho\Config\Configuration();
 // Load database information from server.conf
 $config->load(__DIR__."/../server.conf");
-$config->load(__DIR__."/../client.conf");
+$config->load(__DIR__."/../rwho.conf");
 
 // XXX: Until everything is migrated over, load the settings into the legacy
 // global object as well.
