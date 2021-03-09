@@ -1,12 +1,17 @@
 #!/usr/bin/env php
 <?php
 namespace RWho;
-require __DIR__."/lib-php/librwho.php";
+
+require_once(__DIR__."/lib-php/librwho.php");
 
 function cleanup() {
-	$max_age = intval(Config::getreltime("cleanup.max-age",
-			  Config::getreltime("expire.host-dead")));
+	$config = Config::$conf;
+	$config->load(__DIR__."/server.conf");
+
+	$max_age = intval($config->get_rel_time("cleanup.max-age",
+			  $config->get_rel_time("expire.host-dead")));
 	fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
+
 	$dbh = DB::connect();
 	$rows = $dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
 	if ($rows === false) {
