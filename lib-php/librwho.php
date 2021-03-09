@@ -38,22 +38,31 @@ class DB {
 
 	static function connect() {
 		if (!isset(self::$dbh)) {
-			$options = [\PDO::ATTR_EMULATE_PREPARES => false];
-			#$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
-			if (@strlen($tmp = Config::get("db.tls_ca"))) {
-				$options[\PDO::MYSQL_ATTR_SSL_CA] = $tmp;
-			}
-			if (@strlen($tmp = Config::get("db.tls_cert"))) {
-				$options[\PDO::MYSQL_ATTR_SSL_CERT] = $tmp;
-			}
-			if (@strlen($tmp = Config::get("db.tls_key"))) {
-				$options[\PDO::MYSQL_ATTR_SSL_KEY] = $tmp;
-			}
-			self::$dbh = new \PDO(Config::get("db.pdo_driver"),
-						Config::get("db.username"),
-						Config::get("db.password"), $options);
+			$db = new RWhoDatabase(Config::$conf);
+			self::$dbh = $db->dbh;
 		}
 		return self::$dbh;
+	}
+}
+
+class RWhoDatabase {
+	public $dbh;
+
+	function __construct($config) {
+		$options = [\PDO::ATTR_EMULATE_PREPARES => false];
+		#$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
+		if (@strlen($tmp = $config->get("db.tls_ca"))) {
+			$options[\PDO::MYSQL_ATTR_SSL_CA] = $tmp;
+		}
+		if (@strlen($tmp = $config->get("db.tls_cert"))) {
+			$options[\PDO::MYSQL_ATTR_SSL_CERT] = $tmp;
+		}
+		if (@strlen($tmp = $config->get("db.tls_key"))) {
+			$options[\PDO::MYSQL_ATTR_SSL_KEY] = $tmp;
+		}
+		$this->dbh = new \PDO(Config::get("db.pdo_driver"),
+					Config::get("db.username"),
+					Config::get("db.password"), $options);
 	}
 }
 

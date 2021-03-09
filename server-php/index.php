@@ -12,25 +12,19 @@ function xsyslog($level, $message) {
 	return syslog($level, $message);
 }
 
-function get_host_pwent($host) {
-	return Config::get("auth.pw.$host");
-}
-
 function die_require_http_basic() {
 	header("Status: 401");
 	header("WWW-Authenticate: Basic realm=\"rwho\"");
 	die();
 }
 
-function check_authentication() {
-	$auth_required = Config::getbool("server.auth_required", false);
-
+function check_authentication($server, $auth_required=true) {
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
 
 	if (isset($auth_id) && isset($auth_pw)) {
-		$db_pw = get_host_pwent($auth_id);
+		$db_pw = $server->get_host_password($auth_id);
 		if ($db_pw) {
 			if (password_verify($auth_pw, $db_pw)) {
 				xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
@@ -56,6 +50,8 @@ function check_authentication() {
 
 class RWhoApiServerApp {
 	function __construct() {
+		$this->server = new RWhoServer();
+		$this->config = $this->server->config;
 	}
 
 	function handle_legacy_request($api) {
@@ -120,9 +116,9 @@ class RWhoApiServerApp {
 	}
 
 	function handle_request() {
-		$auth_id = check_authentication();
-		$auth_required = Config::getbool("server.auth_required", false);
-		$api = new RWhoApiInterface($auth_id, $auth_required);
+		$auth_required = $this->config->get_bool("server.auth_required", false);
+		$auth_id = check_authentication($this->server, $auth_required);
+		$api = new RWhoApiInterface($this->server, $auth_id);
 
 		if (isset($_REQUEST["action"])) {
 			$this->handle_legacy_request($api);
