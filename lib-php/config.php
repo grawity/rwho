@@ -79,7 +79,8 @@ class Configuration {
 	function get_list($key) {
 		if (!array_key_exists($key, $this->_data))
 			return [];
-		return preg_split("/\s+/", $this->_data[$key]);
+		$value = $this->_data[$key];
+		return preg_split('/,|\s/', $value, 0, PREG_SPLIT_NO_EMPTY);
 	}
 
 	function get_rel_time($key, $default=0) {
