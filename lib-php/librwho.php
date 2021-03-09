@@ -16,10 +16,6 @@ class Config {
 		return self::$conf->has($key);
 	}
 
-	static function set($key, $value) {
-		return self::$conf->set($key, $value);
-	}
-
 	static function get($key, $default=null) {
 		return self::$conf->get($key, $default);
 	}
