@@ -6,55 +6,52 @@ require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/libserver.php");
 
 Config::parse(__DIR__."/../server.conf");
-$config = Config::$conf;
 
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
 	return syslog($level, $message);
 }
 
-function die_require_http_basic() {
-	header("Status: 401");
-	header("WWW-Authenticate: Basic realm=\"rwho\"");
-	die();
-}
-
-function check_authentication($auth_required=true) {
-	global $config;
-
-	$auth_id = @$_SERVER["PHP_AUTH_USER"];
-	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
-	$auth_type = @$_SERVER["AUTH_TYPE"];
-
-	if (isset($auth_id) && isset($auth_pw)) {
-		$db_pw = $config->get("auth.pw.$auth_id", null);
-		if (!empty($db_pw)) {
-			if (password_verify($auth_pw, $db_pw)) {
-				xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
-				return $auth_id;
-			} else {
-				xsyslog(LOG_WARNING, "Rejecting client '$auth_id' (authentication failure)");
-				die_require_http_basic();
-			}
-		} else {
-			xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
-			// Fall through - if there is no such username, apply the same rules as for anonymous clients.
-		}
-	}
-
-	if ($auth_required) {
-		xsyslog(LOG_WARNING, "Rejecting anonymous client (configuration requires auth)");
-		die_require_http_basic();
-	} else {
-		xsyslog(LOG_DEBUG, "Allowing anonymous client with no auth");
-		return null;
-	}
-}
-
 class RWhoApiServerApp {
 	function __construct() {
 		$this->server = new RWhoServer();
 		$this->config = $this->server->config;
+	}
+
+	function die_require_http_basic() {
+		header("Status: 401");
+		header("WWW-Authenticate: Basic realm=\"rwho\"");
+		die();
+	}
+
+	function check_authentication($auth_required) {
+		$auth_id = @$_SERVER["PHP_AUTH_USER"];
+		$auth_pw = @$_SERVER["PHP_AUTH_PW"];
+		$auth_type = @$_SERVER["AUTH_TYPE"];
+
+		if (isset($auth_id) && isset($auth_pw)) {
+			$db_pw = $this->config->get("auth.pw.$auth_id", null);
+			if (!empty($db_pw)) {
+				if (password_verify($auth_pw, $db_pw)) {
+					xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
+					return $auth_id;
+				} else {
+					xsyslog(LOG_WARNING, "Rejecting client '$auth_id' (authentication failure)");
+					$this->die_require_http_basic();
+				}
+			} else {
+				xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
+				// Fall through - if there is no such username, apply the same rules as for anonymous clients.
+			}
+		}
+
+		if ($auth_required) {
+			xsyslog(LOG_WARNING, "Rejecting anonymous client (configuration requires auth)");
+			$this->die_require_http_basic();
+		} else {
+			xsyslog(LOG_DEBUG, "Allowing anonymous client with no auth");
+			return null;
+		}
 	}
 
 	function handle_legacy_request($api) {
@@ -120,7 +117,7 @@ class RWhoApiServerApp {
 
 	function handle_request() {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
-		$auth_id = check_authentication($auth_required);
+		$auth_id = $this->check_authentication($auth_required);
 		$api = new RWhoApiInterface($this->server, $auth_id);
 
 		if (isset($_REQUEST["action"])) {
