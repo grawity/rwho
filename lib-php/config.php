@@ -7,7 +7,7 @@ class ConfigurationSyntaxError extends \Exception {
 	}
 }
 
-function parse_file($file) {
+function _parse_config_file($file) {
 	$data = [];
 	$fh = fopen($file, "r");
 	if ($fh) {
@@ -43,7 +43,7 @@ class Configuration {
 	}
 
 	function load($file) {
-		$this->_data = array_merge($this->_data, parse_file($file));
+		$this->_data = array_merge($this->_data, _parse_config_file($file));
 	}
 
 	function set($key, $value) {

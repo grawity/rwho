@@ -5,7 +5,7 @@ require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/../lib-php/server_api.php");
 
-class RWhoApiServerApp {
+class ApiServerApp {
 	function __construct() {
 		$this->config = new \RWho\Config\Configuration();
 		$this->config->load(__DIR__."/../server.conf");
@@ -125,5 +125,5 @@ class RWhoApiServerApp {
 	}
 }
 
-$app = new RWhoApiServerApp();
+$app = new ApiServerApp();
 $app->handle_request();
