@@ -3,10 +3,22 @@
 This program is similar to the [`who`][who] command, but maintains a central
 list of currently logged in accounts across multiple servers.
 
+```
+$ rwho
+USER         HOST         LINE       FROM
+grawity      ember        {45}       (tmux)
+             land         pts/3      2a06:e881:108:2:f9b7:abcd:fdxy:xyzt
+             sky          pts/0      2a02:7b40:50d1:hjkl::1
+             star         {13}       (tmux)
+nobody       ember        pts/14     2001:778:e27f:0:9618:82ff:fexy:xyzt
+             star         pts/9      star.nullroute.eu.org
+             star         pts/1      78-59-999-999.static.zebra.lt
+```
+
 It was originally written in mid-2000s for a public-access Linux "[shell
-account][]" network (similar to the _~tilde clubs~_ of nowadays), back when you
-still had this sense of community around it... and when letting other people
-know your IP address didn't matter so much.
+account][]" network (similar to the _\~tilde clubs\~_ of nowadays), back when
+you still had this sense of community around it... and when letting other
+people know your IP address didn't matter so much.
 
 Nowadays, of course, it really shouldn't be used without carefully considering
 the privacy implications.
