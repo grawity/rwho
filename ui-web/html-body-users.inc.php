@@ -1,4 +1,8 @@
-<?php namespace RWho; ?>
+<?php
+namespace RWho;
+
+$finger_url = query::make_finger_addr();
+?>
 <?php if ($data !== false) { ?>
 <!-- user session table -->
 
@@ -29,8 +33,8 @@ html::header("address", 30);
 		or output as
 		<a href="?<?= H(mangle_query(["fmt" => "json"])) ?>">JSON</a>,
 		<a href="?<?= H(mangle_query(["fmt" => "xml"])) ?>">XML</a>,
-<?php if (Config::has("finger.host")) { ?>
-		<a href="<?= H(query::make_finger_addr()) ?>">text</a>,
+<?php if (!empty($finger_url)) { ?>
+		<a href="<?= H($finger_url) ?>">text</a>,
 <?php } ?>
 		or
 		<a href="hosts.php">list hosts</a>

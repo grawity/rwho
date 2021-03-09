@@ -11,11 +11,10 @@
 [web]
 # Additional stylesheet URL for the web UI
 stylesheet = /custom.css
-
-[finger]
 # If a Finger hostname is set, the web interface will automatically add links
 # to the text-based version through the Finger Web Gateway.
-host = localhost
+finger.host = localhost
+finger.gateway = https://nullroute.eu.org/finger/?q=%s
 
 [finger.ldap]
 # Parameters for LDAP planFile retrieval
