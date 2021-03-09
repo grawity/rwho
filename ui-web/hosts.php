@@ -2,8 +2,8 @@
 namespace RWho;
 error_reporting(E_ALL^E_NOTICE);
 
-require __DIR__."/../lib-php/librwho.php";
-require "util.inc.php";
+require_once(__DIR__."/../lib-php/librwho.php");
+require_once("util.inc.php");
 
 class query {
 	static $present;
@@ -11,7 +11,9 @@ class query {
 }
 
 function output_json($data) {
-	$max_age = Config::getreltime("expire.mark-stale");
+	global $config;
+
+	$max_age = $config->get_rel_time("expire.mark-stale");
 
 	$d = array();
 	foreach ($data as $row) {
