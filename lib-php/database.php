@@ -27,6 +27,14 @@ class Database {
 		$this->dbh = new \PDO($dsn, $user, $pass, $options);
 	}
 
+	function begin() {
+		$this->dbh->beginTransaction();
+	}
+
+	function commit() {
+		$this->dbh->commit();
+	}
+
 	/* "Active hosts" table */
 
 	function host_update($host, $addr) {

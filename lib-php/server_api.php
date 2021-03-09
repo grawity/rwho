@@ -98,27 +98,35 @@ class RWhoApiInterface {
 
 	function PutEntries($host, $entries) {
 		$this->_authorize($host);
+		$this->db->begin();
 		$this->_host_update($host);
 		$this->db->utmp_delete_all($host);
 		$this->_insert_entries($host, $entries);
+		$this->db->commit();
 	}
 
 	function InsertEntries($host, $entries) {
 		$this->_authorize($host);
+		$this->db->begin();
 		$this->_host_update($host);
 		$this->_insert_entries($host, $entries);
+		$this->db->commit();
 	}
 
 	function RemoveEntries($host, $entries) {
 		$this->_authorize($host);
+		$this->db->begin();
 		$this->_host_update($host);
 		$this->_remove_entries($host, $entries);
+		$this->db->commit();
 	}
 
 	function ClearEntries($host) {
 		$this->_authorize($host);
+		$this->db->begin();
 		$this->db->host_delete($host);
 		$this->db->utmp_delete_all($host);
+		$this->db->commit();
 	}
 }
 
