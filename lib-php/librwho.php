@@ -16,11 +16,6 @@ class Config {
 				continue;
 			elseif ($line[0] === ";" || $line[0] === "#")
 				continue;
-			elseif (preg_match('/^\s+(.*)$/', $line, $m)) {
-				list ($_, $val) = $m;
-				if (isset($key))
-					self::$data[$key] .= $line;
-			}
 			elseif (preg_match('/^(\S+)\s*=\s*(.*)$/', $line, $m)) {
 				list ($_, $key, $val) = $m;
 				self::$data[$key] = $val;
