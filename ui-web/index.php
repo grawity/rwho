@@ -224,9 +224,9 @@ if (query::$format == "html") {
 	html::$title .= strlen(query::$host) ? "<em>".H(query::$host)."</em>" : "all servers";
 	html::$refresh = 3;
 
-	require "html-header.inc.php";
-	require "html-body-users.inc.php";
-	@include "html-footer.inc.php";
+	require("html-header.inc.php");
+	require("html-body-users.inc.php");
+	require("html-footer.inc.php");
 }
 elseif (query::$format == "html-xhr") {
 	output_html($data, $plan);

@@ -114,9 +114,9 @@ $data = retrieve_hosts();
 if (query::$format == "html") {
 	html::$title = "Active hosts";
 	html::$refresh = 5;
-	require "html-header.inc.php";
-	require "html-body-hosts.inc.php";
-	@include "html-footer.inc.php";
+	require("html-header.inc.php");
+	require("html-body-hosts.inc.php");
+	require("html-footer.inc.php");
 }
 elseif (query::$format == "html-xhr") {
 	output_html($data);
