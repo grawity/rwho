@@ -2,6 +2,7 @@
 namespace RWho;
 
 require_once(__DIR__."/../lib-php/config.php");
+require_once(__DIR__."/../lib-php/database.php");
 
 const MIN_UID = 1000;
 
@@ -38,31 +39,10 @@ class DB {
 
 	static function connect() {
 		if (!isset(self::$dbh)) {
-			$db = new RWhoDatabase(Config::$conf);
+			$db = new Database(Config::$conf);
 			self::$dbh = $db->dbh;
 		}
 		return self::$dbh;
-	}
-}
-
-class RWhoDatabase {
-	public $dbh;
-
-	function __construct($config) {
-		$options = [\PDO::ATTR_EMULATE_PREPARES => false];
-		#$options[\PDO::ATTR_ERRMODE] = \PDO::ERRMODE_EXCEPTION;
-		if (@strlen($tmp = $config->get("db.tls_ca"))) {
-			$options[\PDO::MYSQL_ATTR_SSL_CA] = $tmp;
-		}
-		if (@strlen($tmp = $config->get("db.tls_cert"))) {
-			$options[\PDO::MYSQL_ATTR_SSL_CERT] = $tmp;
-		}
-		if (@strlen($tmp = $config->get("db.tls_key"))) {
-			$options[\PDO::MYSQL_ATTR_SSL_KEY] = $tmp;
-		}
-		$this->dbh = new \PDO(Config::get("db.pdo_driver"),
-					Config::get("db.username"),
-					Config::get("db.password"), $options);
 	}
 }
 

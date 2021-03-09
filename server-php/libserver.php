@@ -2,6 +2,8 @@
 namespace RWho;
 
 require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/config.php");
+require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
 
 Config::parse(__DIR__."/../server.conf");
@@ -28,6 +30,9 @@ class RWhoServer {
 	function __construct() {
 		$this->config = new \RWho\Config\Configuration();
 		$this->config->load(__DIR__."/../server.conf");
+
+		$db = new \RWho\Database($this->config);
+		$this->dbh = $db->dbh;
 	}
 
 	function get_host_password($host) {
@@ -40,8 +45,7 @@ class RWhoServer {
 	}
 
 	function host_update($host) {
-		$dbh = DB::connect();
-		$st = $dbh->prepare('
+		$st = $this->dbh->prepare('
 			INSERT INTO hosts (host, last_update, last_addr)
 			VALUES (:host, :time, :addr)
 			ON DUPLICATE KEY UPDATE last_update=:xtime, last_addr=:xaddr
@@ -60,8 +64,7 @@ class RWhoServer {
 	}
 
 	function host_delete($host) {
-		$dbh = DB::connect();
-		$st = $dbh->prepare('DELETE FROM hosts WHERE host=:host');
+		$st = $this->dbh->prepare('DELETE FROM hosts WHERE host=:host');
 		if (!$st)
 			pdo_die($dbh);
 		$st->bindValue(":host", $host);
@@ -73,8 +76,7 @@ class RWhoServer {
 
 	function utmp_insert($host, $entry) {
 		$user = canonicalize_user($entry["user"], $entry["uid"], $entry["host"]);
-		$dbh = DB::connect();
-		$st = $dbh->prepare('
+		$st = $this->dbh->prepare('
 			INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
 			VALUES (:host, :user, :rawuser, :uid, :rhost, :line, :time, :updated)
 			');
@@ -93,8 +95,7 @@ class RWhoServer {
 	}
 
 	function utmp_delete($host, $entry) {
-		$dbh = DB::connect();
-		$st = $dbh->prepare('DELETE FROM utmp
+		$st = $this->dbh->prepare('DELETE FROM utmp
 			     	     WHERE host=:host
 			     	     AND rawuser=:user
 			     	     AND line=:line');
@@ -108,8 +109,7 @@ class RWhoServer {
 	}
 
 	function utmp_delete_host($host) {
-		$dbh = DB::connect();
-		$st = $dbh->prepare('DELETE FROM utmp
+		$st = $this->dbh->prepare('DELETE FROM utmp
 			     	     WHERE host=:host');
 		if (!$st)
 			pdo_die($dbh);

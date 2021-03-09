@@ -7,15 +7,15 @@ require_once(__DIR__."/lib-php/librwho.php");
 function cleanup() {
 	$config = Config::$conf;
 	$config->load(__DIR__."/server.conf");
+	$db = new \RWho\Database($config);
 
 	$max_age = intval($config->get_rel_time("cleanup.max-age",
 			  $config->get_rel_time("expire.host-dead")));
 	fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
 
-	$dbh = DB::connect();
-	$rows = $dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
+	$rows = $db->dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
 	if ($rows === false) {
-		$err = $dbh->errorInfo();
+		$err = $db->dbh->errorInfo();
 		fwrite(STDERR, "error: ".implode("; ", $err)."\n");
 	}
 	fwrite(STDOUT, "done: purged $rows rows\n");
