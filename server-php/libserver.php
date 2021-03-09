@@ -35,15 +35,6 @@ class RWhoServer {
 		$this->dbh = $db->dbh;
 	}
 
-	function get_host_password($host) {
-		return $this->config->get("auth.pw.$host");
-	}
-
-	function get_host_kod($host) {
-		return $this->config->get("auth.kod.$host",
-			$this->config->get("auth.kod.all"));
-	}
-
 	function host_update($host) {
 		$st = $this->dbh->prepare('
 			INSERT INTO hosts (host, last_update, last_addr)
@@ -136,7 +127,7 @@ class RWhoApiInterface {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
 
 		// Check by host, not auth_id, to match anonymous clients as well.
-		$kod_msg = $this->server->get_host_kod($host);
+		$kod_msg = $this->config->get("auth.kod.$host", $this->config->get("auth.kod.all"));
 		if ($kod_msg) {
 			xsyslog(LOG_NOTICE, "Rejected client with KOD message (\"$kod_msg\")");
 			throw new KodResponseError($kod_msg);

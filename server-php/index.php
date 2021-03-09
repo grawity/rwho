@@ -6,6 +6,7 @@ require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/libserver.php");
 
 Config::parse(__DIR__."/../server.conf");
+$config = Config::$conf;
 
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
@@ -18,14 +19,16 @@ function die_require_http_basic() {
 	die();
 }
 
-function check_authentication($server, $auth_required=true) {
+function check_authentication($auth_required=true) {
+	global $config;
+
 	$auth_id = @$_SERVER["PHP_AUTH_USER"];
 	$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 	$auth_type = @$_SERVER["AUTH_TYPE"];
 
 	if (isset($auth_id) && isset($auth_pw)) {
-		$db_pw = $server->get_host_password($auth_id);
-		if ($db_pw) {
+		$db_pw = $config->get("auth.pw.$auth_id", null);
+		if (!empty($db_pw)) {
 			if (password_verify($auth_pw, $db_pw)) {
 				xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
 				return $auth_id;
@@ -117,7 +120,7 @@ class RWhoApiServerApp {
 
 	function handle_request() {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
-		$auth_id = check_authentication($this->server, $auth_required);
+		$auth_id = check_authentication($auth_required);
 		$api = new RWhoApiInterface($this->server, $auth_id);
 
 		if (isset($_REQUEST["action"])) {
