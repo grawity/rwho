@@ -1,10 +1,5 @@
+# RWho UI configuration
 # vim: ft=dosini
-
-# if set, web interface will add a finger gateway link
-;finger.host = localhost
-;finger.ldap.uri = ldapi:///
-;finger.ldap.dn = uid=%s,ou=people,dc=nullroute,dc=eu,dc=org
-;finger.ldap.attr = planFile
 
 # trust these IP masks with private information
 ;privacy.allow_addr =
@@ -13,4 +8,17 @@
 # hide remote-host from anonymous queries
 ;privacy.hide_rhost = true
 
-;web.stylesheet = /custom.css
+[web]
+# Additional stylesheet URL for the web UI
+stylesheet = /custom.css
+
+[finger]
+# If a Finger hostname is set, the web interface will automatically add links
+# to the text-based version through the Finger Web Gateway.
+host = localhost
+
+[finger.ldap]
+# Parameters for LDAP planFile retrieval
+uri = ldapi:///
+user_dn = uid=%s,ou=People,o=Nullroute
+plan_attr = planFile

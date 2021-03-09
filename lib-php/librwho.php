@@ -396,8 +396,8 @@ function read_user_plan_ldap($user, $host) {
 		return null;
 
 	$ldap_uri = Config::get("finger.ldap.uri");
-	$ldap_dnf = Config::get("finger.ldap.dn");
-	$ldap_attr = Config::get("finger.ldap.attr");
+	$ldap_dnf = Config::get("finger.ldap.user_dn");
+	$ldap_attr = Config::get("finger.ldap.plan_attr");
 
 	if (!strlen($ldap_uri) || !strlen($ldap_dnf))
 		return null;
