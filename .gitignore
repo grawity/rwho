@@ -1,6 +1,4 @@
-/accounts.conf
-/accounts.conf.php
-/accounts.json
 /agent-linux/rwho-agent.1
-/config.php
+/agent.conf
 /rwho.conf
+/server.conf
