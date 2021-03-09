@@ -56,9 +56,6 @@ Config::$conf->merge([
 	// and not displayed in host list
 	"expire.host-dead" => "1d",
 	"finger.log" => "false",
-	"privacy.allow_addr" => "",
-	"privacy.allow_anonymous" => "true",
-	"privacy.hide_rhost" => "false",
 ]);
 Config::$conf->load(__DIR__."/../rwho.conf");
 

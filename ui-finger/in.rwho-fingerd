@@ -14,11 +14,14 @@ function finger_handle_query($input) {
 	$rhost = get_rhost();
 	$anon = true;
 
-	foreach (Config::getlist("privacy.allow_addr") as $addr)
+	foreach (Config::getlist("privacy.trusted_nets") as $addr)
 		if ($anon && ip_cidr($rhost, $addr))
 			$anon = false;
 
-	$accepted = $anon ? Config::getbool("privacy.allow_anonymous") : true;
+	if ($anon)
+		$accepted = !Config::getbool("privacy.deny_anonymous", false);
+	else
+		$accepted = true;
 
 	if (Config::getbool("finger.log")) {
 		$log_accepted = $accepted ? "accepted" : "refused";
@@ -51,7 +54,7 @@ function finger_handle_query($input) {
 	// normal queries
 
 	list ($q_user, $q_host) = parse_query($query);
-	$hide_rhost = $anon && Config::getbool("privacy.hide_rhost");
+	$hide_rhost = $anon && Config::getbool("privacy.hide_rhost", false);
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);

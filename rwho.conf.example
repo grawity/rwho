@@ -1,13 +1,6 @@
 # RWho UI configuration
 # vim: ft=dosini
 
-# trust these IP masks with private information
-;privacy.allow_addr =
-# allow queries from untrusted addresses
-;privacy.allow_anonymous = true
-# hide remote-host from anonymous queries
-;privacy.hide_rhost = true
-
 [web]
 # Additional stylesheet URL for the web UI
 stylesheet = /custom.css
@@ -21,3 +14,13 @@ finger.gateway = https://nullroute.eu.org/finger/?q=%s
 uri = ldapi:///
 user_dn = uid=%s,ou=People,o=Nullroute
 plan_attr = planFile
+
+[privacy]
+# Whether to completely block anonymous queries. (Default: false)
+# Note that currently only the Finger UI implements this setting.
+deny_anonymous = false
+# Hide user hostnames from anonymous queries. (Default: false)
+hide_rhost = true
+# Queries from these IP addresses are considered "authenticated" (making
+# private information visible). Comma-separated list of CIDR masks.
+trusted_nets = 192.0.2.0/24, 2001:db8:42::/64
