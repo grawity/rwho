@@ -1,14 +1,19 @@
 # RWho server configuration
 
-[server]
-# Deny updates from anonymous clients
-#auth_required = true
-
 [db]
 pdo_driver = mysql:host=localhost;dbname=rwho
 #tls_ca = /etc/ssl/certs/ca-certificates.crt
 username = rwho
 password = asdfhjkl
+
+[server]
+# Deny updates from anonymous clients
+#auth_required = true
+
+[cleanup]
+# Automatically delete stale entries (e.g. from crashed hosts) if they haven't
+# been refreshed in this amount of time. (Default: 1d)
+max_age = 1d
 
 [auth.pw]
 # HTTP Basic authentication. Each key corresponds to a username (typically the

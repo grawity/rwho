@@ -3,14 +3,14 @@
 namespace RWho;
 
 require_once(__DIR__."/lib-php/librwho.php");
+require_once(__DIR__."/lib-php/config.php");
 
 function cleanup() {
-	$config = Config::$conf;
+	$config = new \RWho\Config\Configuration();
 	$config->load(__DIR__."/server.conf");
 	$db = new \RWho\Database($config);
 
-	$max_age = intval($config->get_rel_time("cleanup.max-age",
-			  $config->get_rel_time("expire.host-dead")));
+	$max_age = $config->get_rel_time("cleanup.max_age", 86400);
 	fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
 
 	$rows = $db->dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
