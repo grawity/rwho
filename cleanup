@@ -12,12 +12,7 @@ function cleanup() {
 
 	$max_age = $config->get_rel_time("cleanup.max_age", 86400);
 	fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
-
-	$rows = $db->dbh->exec("DELETE FROM utmp WHERE updated < ".(time()-$max_age));
-	if ($rows === false) {
-		$err = $db->dbh->errorInfo();
-		fwrite(STDERR, "error: ".implode("; ", $err)."\n");
-	}
+	$rows = $db->utmp_delete_old(time()-$max_age);
 	fwrite(STDOUT, "done: purged $rows rows\n");
 	return $rows;
 }

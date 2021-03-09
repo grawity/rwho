@@ -92,4 +92,11 @@ class Database {
 		$st->bindValue(":host", $host);
 		$st->execute();
 	}
+
+	function utmp_delete_old($before) {
+		$st = $this->dbh->prepare("DELETE FROM utmp WHERE updated<:before");
+		$st->bindValue(":before", $before);
+		$st->execute();
+		return $st->rowCount();
+	}
 }
