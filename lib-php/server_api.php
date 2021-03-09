@@ -1,12 +1,10 @@
 <?php
-namespace RWho;
+namespace RWho\Server;
 
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
-
-Config::parse(__DIR__."/../server.conf");
 
 openlog("rwho-server", null, LOG_DAEMON);
 
@@ -63,7 +61,7 @@ class RWhoApiInterface {
 
 	function _insert_entries($host, $entries) {
 		foreach ($entries as $e) {
-			$user = canonicalize_user($e["user"], $e["uid"], $e["host"]);
+			$user = \RWho\canonicalize_user($e["user"], $e["uid"], $e["host"]);
 			$this->db->utmp_insert_one($host, $user, $e);
 		}
 	}
