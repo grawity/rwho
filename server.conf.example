@@ -1,4 +1,4 @@
-### RWho server configuration
+# RWho server configuration
 
 [server]
 # Deny updates from anonymous clients

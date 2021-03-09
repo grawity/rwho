@@ -453,8 +453,8 @@ if ($do_monitor) {
 
 if ($arg{config}) {
 	%conf = read_conf($arg{config});
-} elsif (-e "rwho.conf") {
-	%conf = read_conf("rwho.conf");
+} elsif (-e "/etc/rwho/agent.conf") {
+	%conf = read_conf("/etc/rwho/agent.conf");
 } else {
 	debug("no configuration file found");
 }

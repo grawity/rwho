@@ -6,10 +6,10 @@ ARGS=""
 
 if [ "$(whoami)" = "root" ]; then
 	PIDFILE="/run/rwho-agent.pid"
-	CONFIG="/etc/rwho.conf"
+	CONFIG="/etc/rwho/agent.conf"
 else
 	PIDFILE="${XDG_CACHE_HOME:-$HOME/.cache}/rwho/rwho-agent.$HOSTNAME.pid"
-	CONFIG="$RWHO_DIR/rwho.conf"
+	CONFIG="$RWHO_DIR/agent.conf"
 
 	PERL5LIB="$HOME/.local/lib/perl5"
 	export PERL5LIB

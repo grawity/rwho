@@ -1,0 +1,15 @@
+# RWho agent configuration
+
+[agent]
+#agent.notify_url = https://rwho.nullroute.eu.org/server/
+#agent.auth_username = [will use sys.fqdn if empty]
+#agent.auth_password = hunter2
+#agent.exclude_root = true
+#agent.exclude_users = smith|guest\d+
+#agent.include_users = jane
+#agent.min_uid = 1000
+
+[sys]
+# System identification overrides (only implemented by the Perl agent)
+#hostname =
+#fqdn =
