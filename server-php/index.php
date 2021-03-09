@@ -7,11 +7,6 @@ require_once(__DIR__."/libserver.php");
 
 Config::parse(__DIR__."/../server.conf");
 
-function xsyslog($level, $message) {
-	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
-	return syslog($level, $message);
-}
-
 class RWhoApiServerApp {
 	function __construct() {
 		$this->server = new RWhoServer();

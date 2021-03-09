@@ -10,6 +10,11 @@ Config::parse(__DIR__."/../server.conf");
 
 openlog("rwho-server", null, LOG_DAEMON);
 
+function xsyslog($level, $message) {
+	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
+	return syslog($level, $message);
+}
+
 function pdo_fmterr($st) {
 	list ($sqlstate, $code, $msg) = $st->errorInfo();
 	if ($code === null)
