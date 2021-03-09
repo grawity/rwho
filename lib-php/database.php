@@ -52,14 +52,14 @@ class Database {
 
 	/* "UTMP entries" aka "Logged in users" table */
 
-	function utmp_insert_one($host, $user, $entry) {
+	function utmp_insert_one($host, $entry) {
 		$st = $this->dbh->prepare("
 			INSERT INTO utmp (host, user, rawuser, uid, rhost, line, time, updated)
 			VALUES (:host, :user, :rawuser, :uid, :rhost, :line, :time, :updated)
 		");
 		$st->bindValue(":host", $host);
-		$st->bindValue(":user", $user);
-		$st->bindValue(":rawuser", $entry["user"]);
+		$st->bindValue(":user", $entry["user"]);
+		$st->bindValue(":rawuser", $entry["rawuser"]);
 		$st->bindValue(":uid", $entry["uid"]);
 		$st->bindValue(":rhost", $entry["host"]);
 		$st->bindValue(":line", $entry["line"]);
@@ -74,7 +74,7 @@ class Database {
 			WHERE host=:host AND rawuser=:rawuser AND line=:line
 		");
 		$st->bindValue(":host", $host);
-		$st->bindValue(":rawuser", $entry["user"]);
+		$st->bindValue(":rawuser", $entry["rawuser"]);
 		$st->bindValue(":line", $entry["line"]);
 		$st->execute();
 	}

@@ -13,6 +13,30 @@ function xsyslog($level, $message) {
 	return syslog($level, $message);
 }
 
+// canonicalize_utmp_user(utmp_entry& $entry) -> utmp_entry
+// canonicalize_user(str $user, int $uid, str $host) -> str $user
+//
+// Strip off the SSSD "@domain" suffix. This allows the same username from
+// multiple SSSD domains to be summarized under a single section.
+//
+// Deprecated (legacy Cluenet-era function).
+
+function canonicalize_utmp_user(&$entry) {
+	$entry["rawuser"] = $entry["user"];
+	$entry["user"] = canonicalize_user(
+				$entry["rawuser"],
+				$entry["uid"],
+				$entry["host"]);
+	return $entry;
+}
+
+function canonicalize_user($user, $uid, $host) {
+	$pos = strpos($user, "@");
+	if ($pos !== false)
+		$user = substr($user, 0, $pos);
+	return $user;
+}
+
 class RWhoApiInterface {
 	private $config;
 	private $auth_id;
@@ -60,15 +84,15 @@ class RWhoApiInterface {
 	}
 
 	function _insert_entries($host, $entries) {
-		foreach ($entries as $e) {
-			$user = \RWho\canonicalize_user($e["user"], $e["uid"], $e["host"]);
-			$this->db->utmp_insert_one($host, $user, $e);
+		foreach ($entries as $entry) {
+			$entry = canonicalize_utmp_user($entry);
+			$this->db->utmp_insert_one($host, $entry);
 		}
 	}
 
 	function _remove_entries($host, $entries) {
-		foreach ($entries as $e) {
-			$this->db->utmp_delete_all($host, $e);
+		foreach ($entries as $entry) {
+			$this->db->utmp_delete_all($host, $entry);
 		}
 	}
 
