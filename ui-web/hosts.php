@@ -11,7 +11,7 @@ class query {
 }
 
 function output_json($data) {
-	$max_age = Config::getreltime("expire");
+	$max_age = Config::getreltime("expire.mark-stale");
 
 	$d = array();
 	foreach ($data as $row) {

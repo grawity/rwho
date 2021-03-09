@@ -62,7 +62,7 @@ Config::$conf->merge([
 	// maximum age before which the entry will be considered stale
 	// (e.g. the host temporarily down for some reason)
 	// default is 1 minute more than the rwhod periodic update time
-	"expire" => "11m",
+	"expire.mark-stale" => "11m",
 	// maximum age before which the entry will be considered dead
 	// and not displayed in host list
 	"expire.host-dead" => "1d",
@@ -191,7 +191,7 @@ function summarize($utmp) {
 function retrieve_hosts($all=true) {
 	$db = DB::connect();
 
-	$stale_ts = time() - Config::getreltime("expire");
+	$stale_ts = time() - Config::getreltime("expire.mark-stale");
 	$dead_ts = time() - Config::getreltime("expire.host-dead");
 
 	$ignore_ts = $all ? $dead_ts : $stale_ts;
@@ -242,7 +242,7 @@ function __single_field_query($sql, $field) {
 // Count unique user names on all utmp records.
 
 function count_users() {
-	$max_ts = time() - Config::getreltime("expire");
+	$max_ts = time() - Config::getreltime("expire.mark-stale");
 	$sql = "SELECT COUNT(DISTINCT user) AS count
 		FROM utmp
 		WHERE updated >= $max_ts";
@@ -253,7 +253,7 @@ function count_users() {
 // Count all connections (utmp records).
 
 function count_conns() {
-	$max_ts = time() - Config::getreltime("expire");
+	$max_ts = time() - Config::getreltime("expire.mark-stale");
 	$sql = "SELECT COUNT(user) AS count
 		FROM utmp
 		WHERE updated >= $max_ts";
@@ -264,7 +264,7 @@ function count_conns() {
 // Count all currently active hosts, with or without users.
 
 function count_hosts() {
-	$max_ts = time() - Config::getreltime("expire");
+	$max_ts = time() - Config::getreltime("expire.mark-stale");
 	$sql = "SELECT COUNT(host) AS count
 		FROM hosts
 		WHERE last_update >= $max_ts";
@@ -272,7 +272,7 @@ function count_hosts() {
 }
 
 function is_stale($timestamp) {
-	return $timestamp < time() - Config::getreltime("expire");
+	return $timestamp < time() - Config::getreltime("expire.mark-stale");
 }
 
 // strip_domain(str $fqdn) -> str $hostname

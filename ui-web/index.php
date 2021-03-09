@@ -18,7 +18,7 @@ function is_wildcard($str) {
 }
 
 function output_json($data) {
-	$max_age = Config::getreltime("expire");
+	$max_age = Config::getreltime("expire.mark-stale");
 
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
