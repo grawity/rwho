@@ -1,3 +1,5 @@
+import re
+
 class ConfigSyntaxError(Exception):
     pass
 
@@ -12,19 +14,13 @@ class ConfigReader():
             self.data = {}
             for i, line in enumerate(fh):
                 line = line.rstrip("\r\n")
-                if not line:
+                if not re.match(r"^[^;#]", line):
                     continue
-                elif line.startswith("#"):
-                    continue
-                elif line.startswith(";"):
-                    continue
-                elif " = " not in line:
-                    raise ConfigSyntaxError("%s:%d: no assignment in %r" % (self.path, i+1, line))
+                elif m := re.match(r"^(\S+)\s*=\s*(.*)$", line):
+                    key, val = m.groups()
+                    self.data[key] = val
                 else:
-                    k, v = line.split(" = ", 1)
-                    k = k.strip()
-                    v = v.strip()
-                    self.data[k] = v
+                    raise ConfigSyntaxError("%s:%d: no assignment in %r" % (self.path, i+1, line))
 
     def get_str(self, key, default=None):
         return self.data.get(key, default)

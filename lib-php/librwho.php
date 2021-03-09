@@ -12,13 +12,15 @@ class Config {
 			return;
 		while (($line = fgets($fh)) !== false) {
 			$line = rtrim($line);
-			if (!strlen($line))
+			if (!preg_match('/^[^;#]/', $line)) {
 				continue;
-			elseif ($line[0] === ";" || $line[0] === "#")
-				continue;
+			}
 			elseif (preg_match('/^(\S+)\s*=\s*(.*)$/', $line, $m)) {
 				list ($_, $key, $val) = $m;
 				self::$data[$key] = $val;
+			}
+			else {
+				# XXX: warn about syntax error
 			}
 		}
 		fclose($fh);
