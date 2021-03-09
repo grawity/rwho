@@ -9,8 +9,8 @@ Config::parse(__DIR__."/../server.conf");
 
 class RWhoApiServerApp {
 	function __construct() {
-		$this->server = new RWhoServer();
-		$this->config = $this->server->config;
+		$this->config = new \RWho\Config\Configuration();
+		$this->config->load(__DIR__."/../server.conf");
 	}
 
 	function die_require_http_basic() {
@@ -113,7 +113,7 @@ class RWhoApiServerApp {
 	function handle_request() {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
 		$auth_id = $this->check_authentication($auth_required);
-		$api = new RWhoApiInterface($this->server, $auth_id);
+		$api = new RWhoApiInterface($this->config, $auth_id);
 
 		if (isset($_REQUEST["action"])) {
 			$this->handle_legacy_request($api);
