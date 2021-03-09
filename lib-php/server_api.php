@@ -39,16 +39,16 @@ function canonicalize_user($user, $uid, $host) {
 
 class RWhoApiInterface {
 	private $config;
-	private $auth_id;
+	private $environ;
 
-	function __construct($config, $auth_id) {
+	function __construct($config, $environ) {
 		$this->config = $config;
-		$this->auth_id = $auth_id;
+		$this->environ = $environ;
 		$this->db = new \RWho\Database($this->config);
 	}
 
 	function _authorize($host) {
-		$auth_id = $this->auth_id;
+		$auth_id = $this->environ["REMOTE_USER"];
 		$auth_required = $this->config->get_bool("server.auth_required", false);
 
 		// Check by host, not auth_id, to match anonymous clients as well.
@@ -79,8 +79,7 @@ class RWhoApiInterface {
 	}
 
 	function _host_update($host) {
-		$addr = $_SERVER["REMOTE_ADDR"];
-		$this->db->host_update($host, $addr);
+		$this->db->host_update($host, $this->environ["REMOTE_ADDR"]);
 	}
 
 	function _insert_entries($host, $entries) {

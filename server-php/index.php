@@ -17,7 +17,8 @@ class RWhoApiServerApp {
 		die();
 	}
 
-	function check_authentication($auth_required) {
+	function check_authentication() {
+		$auth_required = $this->config->get_bool("server.auth_required", false);
 		$auth_id = @$_SERVER["PHP_AUTH_USER"];
 		$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 		$auth_type = @$_SERVER["AUTH_TYPE"];
@@ -109,9 +110,12 @@ class RWhoApiServerApp {
 	}
 
 	function handle_request() {
-		$auth_required = $this->config->get_bool("server.auth_required", false);
-		$auth_id = $this->check_authentication($auth_required);
-		$api = new RWhoApiInterface($this->config, $auth_id);
+		$auth_id = $this->check_authentication();
+		$environ = [
+			"REMOTE_USER" => $auth_id,
+			"REMOTE_ADDR" => $_SERVER["REMOTE_ADDR"],
+		];
+		$api = new RWhoApiInterface($this->config, $environ);
 
 		if (isset($_REQUEST["action"])) {
 			$this->handle_legacy_request($api);
