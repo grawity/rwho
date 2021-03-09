@@ -18,8 +18,6 @@ function is_wildcard($str) {
 }
 
 function output_json($data) {
-	$max_age = Config::getreltime("expire.mark-stale");
-
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
 		if (is_stale($row["updated"])) {
@@ -35,7 +33,6 @@ function output_json($data) {
 			"host"		=> query::$host,
 			"summary"	=> !query::$detailed,
 		),
-		"maxage"	=> $max_age,
 		"utmp"		=> $data,
 	))."\n";
 }
