@@ -5,13 +5,14 @@ require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/libserver.php");
 
+Config::parse(__DIR__."/../server.conf");
+
 function xsyslog($level, $message) {
 	$message = "[".$_SERVER["REMOTE_ADDR"]."] $message";
 	return syslog($level, $message);
 }
 
 function get_host_pwent($host) {
-	Config::parse(__DIR__."/../accounts.conf");
 	return Config::get("auth.pw.$host");
 }
 
