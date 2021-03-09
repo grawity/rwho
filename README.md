@@ -43,6 +43,9 @@ The information can be displayed through a fancy web interface or through the
 traditional Finger protocol. See it in action via [HTTP][ex-http] or
 [Finger][ex-finger].
 
+  * There is support for showing the user's `~/.plan` file, either from the
+    filesystem or even from LDAP.
+
 [Finger]: https://en.wikipedia.org/wiki/Finger_protocol
 [ex-http]: https://rwho.nullroute.eu.org/
 [ex-finger]: https://nullroute.eu.org/finger/?q=%2Fw+grawity%40nullroute.eu.org
