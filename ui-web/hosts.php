@@ -73,7 +73,7 @@ function output_html($data) {
 		$fqdn = htmlspecialchars($row["host"]);
 		$host = Util\strip_domain($fqdn);
 
-		if ($app->client->is_stale($row["last_update"]))
+		if ($row["is_stale"])
 			print "<tr class=\"stale\">\n";
 		else
 			print "<tr>\n";
