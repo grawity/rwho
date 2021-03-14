@@ -1,4 +1,3 @@
-<?php namespace RWho; ?>
 <table id="rwho-sessions">
 	<thead>
 	<tr>

@@ -1,6 +1,3 @@
-<?php
-namespace RWho;
-?>
 <?php if ($data !== false) { ?>
 <!-- user session table -->
 

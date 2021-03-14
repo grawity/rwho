@@ -1,4 +1,3 @@
-<?php namespace RWho; ?>
 <?php if ($xhr_refresh) { ?>
 <script type="text/javascript">
 var settings = <?= json_encode([

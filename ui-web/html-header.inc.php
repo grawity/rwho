@@ -1,4 +1,3 @@
-<?php namespace RWho; ?>
 <!DOCTYPE html>
 <head>
 	<meta charset="utf-8">
