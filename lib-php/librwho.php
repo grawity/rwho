@@ -3,6 +3,7 @@ namespace RWho;
 
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/database.php");
+require_once(__DIR__."/../lib-php/client.php");
 
 const MIN_UID = 1000;
 
@@ -47,16 +48,10 @@ class DB {
 }
 
 Config::$conf = new \RWho\Config\Configuration();
-Config::$conf->merge([
-	// maximum age before which the entry will be considered stale
-	// (e.g. the host temporarily down for some reason)
-	// default is 1 minute more than the rwhod periodic update time
-	"expire.mark-stale" => "11m",
-	// maximum age before which the entry will be considered dead
-	// and not displayed in host list
-	"expire.host-dead" => "1d",
-]);
+Config::$conf->load(__DIR__."/../server.conf"); // for DB
 Config::$conf->load(__DIR__."/../rwho.conf");
+
+$CLIENT = new \RWho\Client(Config::$conf);
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
@@ -84,49 +79,8 @@ function parse_query($query) {
 // Both parameters optional.
 
 function retrieve($q_user, $q_host, $q_filter=true) {
-	$db = DB::connect();
-
-	$dead_ts = time() - Config::getreltime("expire.host-dead");
-
-	$sql = "SELECT * FROM utmp";
-	$conds = array();
-	if (strlen($q_user)) $conds[] = "user=:user";
-	if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
-	$conds[] = "updated >= $dead_ts";
-	$sql .= " WHERE ".implode(" AND ", $conds);
-
-	$st = $db->prepare($sql);
-	if (strlen($q_user)) $st->bindValue(":user", $q_user);
-	if (strlen($q_host)) {
-		$w_host = str_replace("_", "\\_", $q_host);
-		if (strpos($w_host, "%") === false)
-			$w_host .= ".%";
-
-		$st->bindValue(":host", $q_host);
-		$st->bindValue(":parthost", $w_host);
-	}
-	if (!$st->execute())
-		return null;
-
-	$data = array();
-	while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-		$row["is_summary"] = false;
-		$data[] = $row;
-	}
-
-	if ($q_filter)
-		foreach ($data as &$row)
-			$row["rhost"] = "none";
-
-	usort($data, function($a, $b) {
-		return strnatcmp($a["user"], $b["user"])
-		    ?: strnatcmp($a["host"], $b["host"])
-		    ?: strnatcmp($a["line"], $b["line"])
-		    ?: strnatcmp($a["rhost"], $b["rhost"])
-		    ;
-	});
-
-	return $data;
+	global $CLIENT;
+	return $CLIENT->retrieve($q_user, $q_host, $q_filter);
 }
 
 // summarize(utmp_entry[] $data) -> utmp_entry[]
