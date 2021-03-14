@@ -22,7 +22,4 @@ $config = new \RWho\Config\Configuration();
 // Load database information from server.conf
 $config->load(__DIR__."/../server.conf");
 $config->load(__DIR__."/../rwho.conf");
-
-// XXX: Until everything is migrated over, load the settings into the legacy
-// global object as well.
-Config::$conf->merge($config->_data);
+$client = new \RWho\Client($config);

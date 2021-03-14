@@ -3,6 +3,7 @@ namespace RWho;
 error_reporting(E_ALL^E_NOTICE);
 
 require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/client.php");
 require_once("util.inc.php");
 
 class query {
@@ -109,7 +110,7 @@ function output_html($data) {
 query::$present = true;
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = retrieve_hosts();
+$data = $client->retrieve_hosts();
 
 if (query::$format == "html") {
 	html::$title = "Active hosts";

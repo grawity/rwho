@@ -209,7 +209,7 @@ query::$detailed = (strlen(query::$user)
 		&& !isset($_GET["summary"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = retrieve(query::$user, query::$host, should_filter());
+$data = $client->retrieve(query::$user, query::$host, should_filter());
 
 if (!query::$detailed)
 	$data = summarize($data);
