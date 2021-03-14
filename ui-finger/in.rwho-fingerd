@@ -154,7 +154,7 @@ class RWhoFingerServer {
 			$line = array();
 			$flag = "";
 
-			if (is_stale($row["updated"])) {
+			if ($this->client->is_stale($row["updated"])) {
 				if (!$detailed)
 					continue;
 				$flag = "?";

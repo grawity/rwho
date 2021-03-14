@@ -65,6 +65,8 @@ function output_xml($data) {
 }
 
 function output_html($data) {
+	global $client;
+
 	if (!count($data)) {
 		print "<tr>\n";
 		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
@@ -78,7 +80,7 @@ function output_html($data) {
 		$fqdn = htmlspecialchars($row["host"]);
 		$host = strip_domain($fqdn);
 
-		if (is_stale($row["last_update"]))
+		if ($client->is_stale($row["last_update"]))
 			print "<tr class=\"stale\">\n";
 		else
 			print "<tr>\n";

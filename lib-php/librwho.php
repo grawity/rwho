@@ -75,10 +75,6 @@ function summarize($utmp) {
 	return $out;
 }
 
-function is_stale($timestamp) {
-	global $CLIENT; return $CLIENT->is_stale($timestamp);
-}
-
 // strip_domain(str $fqdn) -> str $hostname
 // Return the leftmost component of a dotted domain name.
 

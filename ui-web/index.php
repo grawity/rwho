@@ -37,9 +37,11 @@ function is_wildcard($str) {
 }
 
 function output_json($data) {
+	global $client;
+
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
-		if (is_stale($row["updated"])) {
+		if ($client->is_stale($row["updated"])) {
 			$row["stale"] = true;
 		}
 	}
@@ -57,6 +59,8 @@ function output_json($data) {
 }
 
 function output_xml($data) {
+	global $client;
+
 	header("Content-Type: application/xml");
 
 	$doc = new \DOMDocument("1.0", "utf-8");
@@ -86,7 +90,7 @@ function output_xml($data) {
 		$rowx->appendChild($doc->createAttribute("updated"))
 			->appendChild($doc->createTextNode($date));
 
-		if (is_stale($row["updated"]))
+		if ($client->is_stale($row["updated"]))
 			$rowx->appendChild($doc->createAttribute("stale"))
 				->appendChild($doc->createTextNode("true"));
 
@@ -107,6 +111,8 @@ function output_xml($data) {
 }
 
 function output_html($data, $plan) {
+	global $client;
+
 	$columns = 4; /* user+host+line+address */
 	if (query::$detailed)
 		$columns += 1; /* uid */
@@ -137,7 +143,7 @@ function output_html($data, $plan) {
 				? htmlspecialchars($row["rhost"])
 				: "(local)";
 
-			if (is_stale($row["updated"]))
+			if ($client->is_stale($row["updated"]))
 				print "<tr class=\"stale\">\n";
 			else
 				print "<tr>\n";
