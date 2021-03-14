@@ -78,7 +78,7 @@ class RWhoFingerServer {
 			$data = $this->client->retrieve_hosts();
 			if (!count($data))
 				die("No active hosts.\r\n");
-			output_hosts($data);
+			$this->output_hosts($data);
 			if ($detailed) {
 				$n_users = $this->client->count_users();
 				$n_conns = $this->client->count_conns();
@@ -105,7 +105,7 @@ class RWhoFingerServer {
 		if (count($data)) {
 			if (!$detailed)
 				$data = summarize($data);
-			output($data, $detailed);
+			$this->output($data, $detailed);
 		} else {
 			if ($has_user && $has_host)
 				printf("finger: '%s' is not logged in to %s.\r\n",
@@ -134,95 +134,95 @@ class RWhoFingerServer {
 		// display plan
 
 		if ($has_user) {
-			output_plan($q_user, $q_host);
+			$this->output_plan($q_user, $q_host);
 		}
 	}
-}
 
-function output($data, $detailed=false) {
-	if ($detailed) {
-		$fmt = "%-12s %1s %-22s %-10s %s\r\n";
-		$headers = array("USER", "", "HOST", "LINE", "FROM");
-	} else {
-		$fmt = "%-12s %-12s %-10s %s\r\n";
-		$headers = array("USER", "HOST", "LINE", "FROM");
-	}
-
-	vprintf($fmt, $headers);
-
-	$last = array("user" => null);
-	foreach ($data as $row) {
-		$line = array();
-		$flag = "";
-
-		if (is_stale($row["updated"])) {
-			if (!$detailed)
-				continue;
-			$flag = "?";
+	function output($data, $detailed=false) {
+		if ($detailed) {
+			$fmt = "%-12s %1s %-22s %-10s %s\r\n";
+			$headers = array("USER", "", "HOST", "LINE", "FROM");
+		} else {
+			$fmt = "%-12s %-12s %-10s %s\r\n";
+			$headers = array("USER", "HOST", "LINE", "FROM");
 		}
-		elseif ($row["uid"] == 0)
-			$flag = "#";
-		elseif ($row["uid"] < 25000)
-			$flag = "<";
 
-		$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
+		vprintf($fmt, $headers);
 
-		if ($detailed)
-			$line[] = $flag;
+		$last = array("user" => null);
+		foreach ($data as $row) {
+			$line = array();
+			$flag = "";
 
-		$line[] = $detailed
-				? $row["host"]
-				: substr(strip_domain($row["host"]), 0, 12);
+			if (is_stale($row["updated"])) {
+				if (!$detailed)
+					continue;
+				$flag = "?";
+			}
+			elseif ($row["uid"] == 0)
+				$flag = "#";
+			elseif ($row["uid"] < 25000)
+				$flag = "<";
 
-		$line[] = $row["is_summary"]
-				? "{".$row["line"]."}"
-				: $row["line"];
+			$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
 
-		if ($detailed)
-			$line[] = $row["rhost"];
-		else {
-			$len = strlen($row["rhost"]);
-			if ($len > 40)
-				$line[] = substr($row["rhost"], 0, 39).">";
-			elseif ($len > 0)
+			if ($detailed)
+				$line[] = $flag;
+
+			$line[] = $detailed
+					? $row["host"]
+					: substr(strip_domain($row["host"]), 0, 12);
+
+			$line[] = $row["is_summary"]
+					? "{".$row["line"]."}"
+					: $row["line"];
+
+			if ($detailed)
 				$line[] = $row["rhost"];
-			else
-				$line[] = "(local)";
+			else {
+				$len = strlen($row["rhost"]);
+				if ($len > 40)
+					$line[] = substr($row["rhost"], 0, 39).">";
+				elseif ($len > 0)
+					$line[] = $row["rhost"];
+				else
+					$line[] = "(local)";
+			}
+
+			vprintf($fmt, $line);
+
+			$last = $row;
 		}
-
-		vprintf($fmt, $line);
-
-		$last = $row;
 	}
-}
 
-function output_hosts($data) {
-	$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
-	$headers = array("HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED");
+	function output_hosts($data) {
+		$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
+		$headers = array("HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED");
 
-	vprintf($fmt, $headers);
+		vprintf($fmt, $headers);
 
-	foreach ($data as $row) {
-		printf($fmt,
-			substr(strip_domain($row["host"]), 0, 12),
-			$row["host"],
-			$row["users"],
-			$row["entries"],
-			interval($row["last_update"])
-		);
+		foreach ($data as $row) {
+			printf($fmt,
+				substr(strip_domain($row["host"]), 0, 12),
+				$row["host"],
+				$row["users"],
+				$row["entries"],
+				interval($row["last_update"])
+			);
+		}
 	}
-}
 
-function output_plan($user, $host) {
-	$text = read_user_plan($user, $host);
-	if ($text === null)
-		return;
+	function output_plan($user, $host) {
+		$text = read_user_plan($user, $host);
+		if ($text === null)
+			return;
 
-	print("\r\n");
-	print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
+		print("\r\n");
+		print(str_pad("--- Plan ---", 79, "-", STR_PAD_RIGHT)."\r\n");
 
-	foreach (preg_split('/\r?\n/', $text) as $line)
-		print("$line\r\n");
+		foreach (preg_split('/\r?\n/', $text) as $line)
+			print("$line\r\n");
+	}
 }
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
