@@ -11,7 +11,7 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 		];
 		foreach ($data as $row) {
 			$json["hosts"][] = [
-				"host" => $row["host"],
+				"host" => $row["fqdn"],
 				"address" => $row["last_addr"],
 				"users" => $row["users"],
 				"entries" => $row["entries"],
@@ -35,7 +35,7 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 			$el = $root->appendChild($doc->createElement("host"));
 
 			$el->appendChild($doc->createAttribute("name"))
-				->appendChild($doc->createTextNode($row["host"]));
+				->appendChild($doc->createTextNode($row["fqdn"]));
 
 			$el->appendChild($doc->createElement("address"))
 				->appendChild($doc->createTextNode($row["last_addr"]));
