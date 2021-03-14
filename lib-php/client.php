@@ -42,8 +42,7 @@ class Client {
 			$st->bindValue(":host", $q_host);
 			$st->bindValue(":parthost", $w_host);
 		}
-		if (!$st->execute())
-			return null;
+		$st->execute();
 
 		$data = array();
 		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
@@ -86,11 +85,7 @@ class Client {
 			GROUP BY host";
 
 		$st = $this->db->dbh->prepare($sql);
-		if (!$st->execute()) {
-			var_dump($st->errorInfo());
-			return null;
-		}
-
+		$st->execute();
 		$data = array();
 		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
 			$data[] = $row;
@@ -105,11 +100,7 @@ class Client {
 
 	function __single_field_query($sql, $field) {
 		$st = $this->db->dbh->prepare($sql);
-		if (!$st->execute()) {
-			var_dump($st->errorInfo());
-			return null;
-		}
-
+		$st->execute();
 		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
 			return $row[$field];
 		}
