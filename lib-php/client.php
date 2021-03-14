@@ -16,6 +16,9 @@ class Client {
 		// maximum age before which the entry will be considered dead
 		// and not displayed in host list
 		$this->config->set_default("expire.host-dead", "1d");
+
+		$this->_stale_age = $this->config->get_rel_time("expire.mark-stale");
+		$this->_dead_age = $this->config->get_rel_time("expire.host-dead");
 	}
 
 	// retrieve(str? $user, str? $host) -> utmp_entry[]
@@ -23,7 +26,7 @@ class Client {
 	// Both parameters optional.
 
 	function retrieve($q_user, $q_host, $q_filter=true) {
-		$dead_ts = time() - $this->config->get_rel_time("expire.host-dead");
+		$dead_ts = time() - $this->_dead_age;
 
 		$sql = "SELECT * FROM utmp";
 		$conds = array();
@@ -70,8 +73,8 @@ class Client {
 	// Retrieve all currently active hosts, with user and connection counts.
 
 	function retrieve_hosts($all=true) {
-		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
-		$dead_ts = time() - $this->config->get_rel_time("expire.host-dead");
+		$stale_ts = time() - $this->_stale_age;
+		$dead_ts = time() - $this->_dead_age;
 
 		$ignore_ts = $all ? $dead_ts : $stale_ts;
 
@@ -119,7 +122,7 @@ class Client {
 	// Count unique user names on all utmp records.
 
 	function count_users() {
-		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$stale_ts = time() - $this->_stale_age;
 		$sql = "SELECT COUNT(DISTINCT user) AS count
 			FROM utmp
 			WHERE updated >= $stale_ts";
@@ -130,7 +133,7 @@ class Client {
 	// Count all connections (utmp records).
 
 	function count_conns() {
-		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$stale_ts = time() - $this->_stale_age;
 		$sql = "SELECT COUNT(user) AS count
 			FROM utmp
 			WHERE updated >= $stale_ts";
@@ -141,7 +144,7 @@ class Client {
 	// Count all currently active hosts, with or without users.
 
 	function count_hosts() {
-		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$stale_ts = time() - $this->_stale_age;
 		$sql = "SELECT COUNT(host) AS count
 			FROM hosts
 			WHERE last_update >= $stale_ts";
@@ -152,7 +155,7 @@ class Client {
 	// Check whether the given timestamp should be considered "stale".
 
 	function is_stale($timestamp) {
-		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$stale_ts = time() - $this->_stale_age;
 		return $timestamp < $stale_ts;
 	}
 
