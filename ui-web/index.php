@@ -78,6 +78,7 @@ function output_xml($data, $user, $host, $detailed) {
 
 		unset($row["rowid"]);
 		unset($row["updated"]);
+		unset($row["is_stale"]);
 		unset($row["is_summary"]);
 
 		foreach ($row as $k => $v)
