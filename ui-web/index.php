@@ -3,11 +3,9 @@ namespace RWho;
 require_once("util.inc.php");
 
 class query {
-	static $present;
 	static $user;
 	static $host;
 	static $detailed;
-	static $format;
 }
 
 function output_json($data) {
@@ -181,9 +179,7 @@ function handle_users_request($app) {
 	/* TODO */
 	query::$user = $user;
 	query::$host = $host;
-	query::$present = $has_query;
 	query::$detailed = $detailed;
-	query::$format = $format;
 
 	$data = $app->client->retrieve($user, $host, $app->should_filter());
 	if (!$detailed)

@@ -16,7 +16,7 @@
 <h1>
 	<a href="//nullroute.eu.org">nullroute</a>
 	| <a href="//nullroute.eu.org/hosts.html">hosts</a>
-<?php if (query::$present) { ?>
+<?php if ($has_query) { ?>
 	| <a href=".">rwho</a>
 <?php } else { ?>
 	| rwho

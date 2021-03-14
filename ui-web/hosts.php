@@ -2,11 +2,6 @@
 namespace RWho;
 require_once("util.inc.php");
 
-class query {
-	static $present;
-	static $format;
-}
-
 function output_json($data) {
 	$d = [];
 	foreach ($data as $row) {
@@ -106,11 +101,8 @@ function output_html($data) {
 }
 
 function handle_hosts_request($app) {
+	$has_query = true;
 	$format = @$_GET["fmt"] ?? "html";
-
-	/* TODO */
-	query::$present = true;
-	query::$format = $format;
 
 	$data = $app->client->retrieve_hosts();
 
