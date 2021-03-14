@@ -1,6 +1,6 @@
 <?php
 namespace RWho;
-
+error_reporting(E_ALL);
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/client.php");
