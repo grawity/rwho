@@ -5,7 +5,7 @@ require_once(__DIR__."/../lib-php/client_app.php");
 
 class RWhoWebApp extends \RWho\ClientApplicationBase {
 	function should_filter() {
-		$rhost = \RWho\get_rhost();
+		$addr = \RWho\get_rhost();
 		$access = $this->_check_access($addr);
 		return ($access < \RWho\AC_TRUSTED);
 	}
