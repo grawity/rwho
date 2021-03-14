@@ -81,6 +81,9 @@ function output_xml($data, $user, $host, $detailed) {
 function output_html($data, $plan, $user, $host, $detailed) {
 	global $app;
 
+	$link_user = !strlen($user);
+	$link_host = !strlen($host);
+
 	$columns = 4; /* user+host+line+address */
 	if ($detailed)
 		$columns += 1; /* uid */
@@ -116,19 +119,16 @@ function output_html($data, $plan, $user, $host, $detailed) {
 			else
 				print "<tr>\n";
 
-			$linkuser = !strlen($user);
-			$linkhost = !strlen($host);
-
 			if ($detailed) {
 				print "\t<td>"
-					.($linkuser
+					.($link_user
 						? "<a href=\"?user=$user\">$user</a>"
 						: $user)
 					."</td>\n";
 			} else {
 				if ($k == 0)
 					print "\t<td rowspan=\"".count($data)."\">"
-						.($linkuser
+						.($link_user
 							? "<a href=\"?user=$user\">$user</a>"
 							: $user)
 						."</td>\n";
@@ -138,7 +138,7 @@ function output_html($data, $plan, $user, $host, $detailed) {
 				print "\t<td>$uid</td>\n";
 
 			print "\t<td>"
-				.($linkhost
+				.($link_host
 					? "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>"
 					: $host)
 				."</td>\n";
