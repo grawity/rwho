@@ -54,10 +54,6 @@ class Configuration {
 		$this->_data = array_merge($this->_data, $data);
 	}
 
-	function has($key) {
-		return array_key_exists($key, $this->_data);
-	}
-
 	function get($key, $default=null) {
 		if (!array_key_exists($key, $this->_data))
 			return $default;

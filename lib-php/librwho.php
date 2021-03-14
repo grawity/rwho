@@ -14,7 +14,7 @@ class Config {
 	}
 
 	static function has($key) {
-		return self::$conf->has($key);
+		return self::$conf->get($key, null) !== null;
 	}
 
 	static function get($key, $default=null) {
