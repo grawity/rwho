@@ -1,6 +1,5 @@
 <?php
 namespace RWho\Server;
-
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
 require_once(__DIR__."/../lib-php/server_api.php");

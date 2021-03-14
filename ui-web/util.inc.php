@@ -2,8 +2,7 @@
 namespace RWho;
 error_reporting(E_ALL);
 require_once(__DIR__."/../lib-php/librwho.php");
-require_once(__DIR__."/../lib-php/config.php");
-require_once(__DIR__."/../lib-php/client.php");
+require_once(__DIR__."/../lib-php/html_ui.php");
 
 class html {
 	static $columns = 0;
@@ -22,8 +21,6 @@ class html {
 
 function H($str) { return htmlspecialchars($str); }
 
-$config = new \RWho\Config\Configuration();
-// Load database information from server.conf
-$config->load(__DIR__."/../server.conf");
-$config->load(__DIR__."/../rwho.conf");
-$client = new \RWho\Client($config);
+$app = new \RWho\Web\RWhoWebApp();
+$config = $app->config;
+$client = $app->client;
