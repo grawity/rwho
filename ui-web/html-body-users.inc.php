@@ -66,7 +66,7 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 <?php } ?>
 		<td>
 <?php if ($link_host) { ?>
-			<a href="?host=<?= $h_fqdn ?>" title="fqdn"><?= $h_host ?></a>
+			<a href="?host=<?= $h_fqdn ?>" title="<?= $h_fqdn ?>"><?= $h_host ?></a>
 <?php } else { ?>
 			<?= $h_host ?>
 
