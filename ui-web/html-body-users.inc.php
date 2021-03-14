@@ -31,10 +31,10 @@ html::header("address", 30);
 		<a href="?full">Expanded view</a>
 <?php } ?>
 		or output as
-		<a href="?<?= H(Web\mangle_query(["fmt" => "json"])) ?>">JSON</a>,
-		<a href="?<?= H(Web\mangle_query(["fmt" => "xml"])) ?>">XML</a>,
+		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "json"])) ?>">JSON</a>,
+		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "xml"])) ?>">XML</a>,
 <?php if (!empty($finger_url)) { ?>
-		<a href="<?= H($finger_url) ?>">text</a>,
+		<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
 <?php } ?>
 		or
 		<a href="hosts.php">list hosts</a>

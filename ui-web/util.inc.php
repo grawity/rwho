@@ -14,5 +14,3 @@ class html {
 		self::$columns++;
 	}
 }
-
-function H($str) { return htmlspecialchars($str); }

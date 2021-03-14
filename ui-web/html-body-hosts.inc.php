@@ -17,8 +17,8 @@ html::header("updated", 7);
 	<td colspan="<?= html::$columns ?>">
 		<a href="./">Back to all sessions</a>
 		or output as
-		<a href="?<?= H(Web\mangle_query(["fmt" => "json"])) ?>">JSON</a>,
-		<a href="?<?= H(Web\mangle_query(["fmt" => "xml"])) ?>">XML</a>
+		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "json"])) ?>">JSON</a>,
+		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "xml"])) ?>">XML</a>
 	</td>
 </tr>
 </tfoot>

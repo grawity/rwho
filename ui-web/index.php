@@ -161,7 +161,7 @@ function output_html($data, $plan) {
 	if (strlen($plan)) {
 		print "<tr>\n";
 		print "\t<td colspan=\"".$columns."\">";
-		print "\t\t<pre class=\"plan\"><div class=\"plan-head\">~/.plan:</div><br><div class=\"plan-body\">".H($plan)."</div></pre>\n";
+		print "\t\t<pre class=\"plan\"><div class=\"plan-head\">~/.plan:</div><br><div class=\"plan-body\">".htmlspecialchars($plan)."</div></pre>\n";
 		print "\t</td>\n";
 		print "</tr>\n";
 	}
