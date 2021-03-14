@@ -53,28 +53,12 @@ class Client {
 		return $this->db->host_query($minimum_ts);
 	}
 
-	// Internal use only:
-	// __single_field_query(str $sql, str $field) -> mixed
-	// Return a single column from the first field of a SQL SELECT result.
-	// Useful for 'SELECT COUNT(x) AS count' kind of queries.
-
-	function __single_field_query($sql, $field) {
-		$st = $this->db->dbh->prepare($sql);
-		$st->execute();
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			return $row[$field];
-		}
-	}
-
 	// count_users() -> int
 	// Count unique user names on all utmp records.
 
 	function count_users() {
 		$stale_ts = time() - $this->_stale_age;
-		$sql = "SELECT COUNT(DISTINCT user) AS count
-			FROM utmp
-			WHERE updated >= $stale_ts";
-		return $this->__single_field_query($sql, "count");
+		return $this->db->utmp_count(true, $stale_ts);
 	}
 
 	// count_conns() -> int
@@ -82,10 +66,7 @@ class Client {
 
 	function count_conns() {
 		$stale_ts = time() - $this->_stale_age;
-		$sql = "SELECT COUNT(user) AS count
-			FROM utmp
-			WHERE updated >= $stale_ts";
-		return $this->__single_field_query($sql, "count");
+		return $this->db->utmp_count(false, $stale_ts);
 	}
 
 	// count_hosts() -> int
@@ -93,10 +74,7 @@ class Client {
 
 	function count_hosts() {
 		$stale_ts = time() - $this->_stale_age;
-		$sql = "SELECT COUNT(host) AS count
-			FROM hosts
-			WHERE last_update >= $stale_ts";
-		return $this->__single_field_query($sql, "count");
+		return $this->db->host_count($stale_ts);
 	}
 
 	// is_stale(int $time) -> bool

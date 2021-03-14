@@ -78,6 +78,18 @@ class Database {
 		$st->execute();
 	}
 
+	function host_count($minimum_ts=0) {
+		$sql = "SELECT COUNT(host) AS count
+			FROM hosts
+			WHERE last_update >= :time";
+		$st = $this->dbh->prepare($sql);
+		$st->bindValue(":time", $minimum_ts);
+		$st->execute();
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			return $row["count"];
+		}
+	}
+
 	/* "UTMP entries" aka "Logged in users" table */
 
 	function utmp_query($user, $host, $minimum_ts=0) {
@@ -143,5 +155,23 @@ class Database {
 		$st->bindValue(":before", $before);
 		$st->execute();
 		return $st->rowCount();
+	}
+
+	function utmp_count($group_users, $minimum_ts=0) {
+		if ($group_users) {
+			$sql = "SELECT COUNT(DISTINCT user) AS count
+				FROM utmp
+				WHERE updated >= :time";
+		} else {
+			$sql = "SELECT COUNT(user) AS count
+				FROM utmp
+				WHERE updated >= :time";
+		}
+		$st = $this->dbh->prepare($sql);
+		$st->bindValue(":time", $minimum_ts);
+		$st->execute();
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			return $row["count"];
+		}
 	}
 }
