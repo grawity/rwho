@@ -26,5 +26,5 @@
 </tr>
 </tfoot>
 
-<?php output_html($data); ?>
+<?php require("html-body-hosttable.inc.php"); ?>
 </table>

@@ -56,57 +56,17 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function output_html($data, $detailed) {
-	global $app;
-
-	if (!count($data)) {
-		print "<tr>\n";
-		print "\t<td colspan=\"".($detailed ? 5 : 4)."\" class=\"comment\">"
-			."No active hosts."
-			."</td>\n";
-		print "</tr>\n";
-		return;
-	}
-
-	foreach ($data as $k => $row) {
-		$fqdn = htmlspecialchars($row["host"]);
-		$host = Util\strip_domain($fqdn);
-
-		if ($row["is_stale"])
-			print "<tr class=\"stale\">\n";
-		else
-			print "<tr>\n";
-
-		print "\t<td>"
-			."<a href=\"./?host=$fqdn\" title=\"$fqdn\">$host</a>"
-			."</td>\n";
-
-		print "\t<td>"
-			.$fqdn
-			."</td>\n";
-
-		print "\t<td>"
-			.$row["users"]
-			."</td>\n";
-
-		print "\t<td>"
-			.$row["entries"]
-			."</td>\n";
-
-		print "\t<td>"
-			.\RWho\Util\interval($row["last_update"])
-			."</td>\n";
-
-		print "</tr>\n";
-	}
-}
-
 class HostListPage extends \RWho\Web\RWhoWebApp {
 	function handle_request() {
 		$has_query = true;
 		$format = @$_GET["fmt"] ?? "html";
 
 		$data = $this->client->retrieve_hosts();
+		foreach ($data as &$row) {
+			$row["fqdn"] = $row["host"];
+			$row["host"] = \RWho\Util\strip_domain($row["fqdn"]);
+			$row["last_update_age"] = \RWho\Util\interval($row["last_update"]);
+		}
 
 		if ($format == "html") {
 			$page_title = "Active hosts";
@@ -122,7 +82,7 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 			require("html-footer.inc.php");
 		}
 		elseif ($format == "html-xhr") {
-			output_html($data, $detailed);
+			require("html-body-hosttable.inc.php");
 		}
 		elseif ($format == "json") {
 			output_json($data);
