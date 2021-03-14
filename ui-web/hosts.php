@@ -55,20 +55,25 @@ class HostListPage extends RWhoWebApp {
 		print $doc->saveXML();
 	}
 
-	function output_html_full($data, $params) {
+	function output_html($data, $params, $xhr=false) {
 		extract($params);
 
-		$page_title = "Active hosts";
-		$page_css = $this->config->get("web.stylesheet", null);
-		$xhr_refresh = 3;
 		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
 		$xml_url = mangle_query(["fmt" => "xml"]);
 		$json_url = mangle_query(["fmt" => "json"]);
 		$finger_url = $this->make_finger_addr("*", null, false);
 
-		require("html-header.inc.php");
-		require("html-body-hosts.inc.php");
-		require("html-footer.inc.php");
+		if ($xhr) {
+			require("html-body-hosts.inc.php");
+		} else {
+			$page_title = "Active hosts";
+			$page_css = $this->config->get("web.stylesheet", null);
+			$xhr_refresh = 3;
+
+			require("html-header.inc.php");
+			require("html-body-hosts.inc.php");
+			require("html-footer.inc.php");
+		}
 	}
 
 	function output_html_xhr($data, $params) {
@@ -90,9 +95,9 @@ class HostListPage extends RWhoWebApp {
 		$params = compact("has_query");
 
 		if ($format == "html") {
-			$this->output_html_full($data, $params);
+			$this->output_html($data, $params, false);
 		} elseif ($format == "html-xhr") {
-			$this->output_html_xhr($data, $params);
+			$this->output_html($data, $params, true);
 		} elseif ($format == "json") {
 			$this->output_json($data);
 		} elseif ($format == "xml") {
