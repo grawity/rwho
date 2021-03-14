@@ -39,8 +39,7 @@ function fetch_data() {
 
 function handle_data(data) {
 	var table = document.getElementById("rwho-sessions");
-	var body = table.getElementsByTagName("tbody")[0];
-	body.innerHTML = data;
+	table.innerHTML = data;
 }
 
 function is_visible() {

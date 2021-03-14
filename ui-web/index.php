@@ -114,7 +114,7 @@ class UserListPage extends RWhoWebApp {
 
 		$data_by_user = group_by_user($data);
 
-		require("html-body-usertable.inc.php");
+		require("html-body-users.inc.php");
 	}
 
 	function handle_request() {
