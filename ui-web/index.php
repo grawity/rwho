@@ -14,10 +14,11 @@ function output_json($data) {
 	global $app;
 
 	foreach ($data as &$row) {
+		$row["stale"] = $row["is_stale"];
+		$row["summary"] = $row["is_summary"];
 		unset($row["rowid"]);
-		if ($app->client->is_stale($row["updated"])) {
-			$row["stale"] = true;
-		}
+		unset($row["is_stale"]);
+		unset($row["is_summary"]);
 	}
 
 	header("Content-Type: text/plain; charset=utf-8");
@@ -64,7 +65,7 @@ function output_xml($data) {
 		$rowx->appendChild($doc->createAttribute("updated"))
 			->appendChild($doc->createTextNode($date));
 
-		if ($app->client->is_stale($row["updated"]))
+		if ($row["is_stale"])
 			$rowx->appendChild($doc->createAttribute("stale"))
 				->appendChild($doc->createTextNode("true"));
 
@@ -117,7 +118,7 @@ function output_html($data, $plan) {
 				? htmlspecialchars($row["rhost"])
 				: "(local)";
 
-			if ($app->client->is_stale($row["updated"]))
+			if ($row["is_stale"])
 				print "<tr class=\"stale\">\n";
 			else
 				print "<tr>\n";

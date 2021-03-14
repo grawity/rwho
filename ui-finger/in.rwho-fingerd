@@ -47,7 +47,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			$line = [];
 			$flag = "";
 
-			if ($this->client->is_stale($row["updated"])) {
+			if ($row["is_stale"]) {
 				if (!$detailed)
 					continue;
 				$flag = "?";
