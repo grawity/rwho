@@ -1,9 +1,9 @@
 <?php
-namespace RWho;
+namespace RWho\Web;
 require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
-class HostListPage extends \RWho\Web\RWhoWebApp {
+class HostListPage extends RWhoWebApp {
 	function output_json($data) {
 		$json = [
 			"time" => time(),
@@ -61,9 +61,9 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 		$page_title = "Active hosts";
 		$page_css = $this->config->get("web.stylesheet", null);
 		$xhr_refresh = 3;
-		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = Web\mangle_query(["fmt" => "xml"]);
-		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = mangle_query(["fmt" => "xml"]);
+		$json_url = mangle_query(["fmt" => "json"]);
 		$finger_url = $this->make_finger_addr("*", null, false);
 
 		require("html-header.inc.php");

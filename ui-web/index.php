@@ -1,5 +1,5 @@
 <?php
-namespace RWho;
+namespace RWho\Web;
 require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
@@ -13,7 +13,7 @@ function group_by_user($data) {
 	return $grouped;
 }
 
-class UserListPage extends \RWho\Web\RWhoWebApp {
+class UserListPage extends RWhoWebApp {
 	function output_json($data, $params) {
 		extract($params);
 
@@ -99,9 +99,9 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 		$page_css = $this->config->get("web.stylesheet", null);
 
 		$xhr_refresh = 3;
-		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = Web\mangle_query(["fmt" => "xml"]);
-		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = mangle_query(["fmt" => "xml"]);
+		$json_url = mangle_query(["fmt" => "json"]);
 		$finger_url = $this->make_finger_addr($user, $host, $detailed);
 
 		require("html-header.inc.php");
