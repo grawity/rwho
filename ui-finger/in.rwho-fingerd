@@ -56,88 +56,6 @@ class RWhoFingerServer {
 		}
 	}
 
-	function handle_query($input) {
-		list ($query, $detailed) = finger_parse($input);
-
-		$rhost = get_rhost();
-		$access = $this->_check_access($rhost);
-
-		if ($this->config->get_bool("finger.log", true)) {
-			$log_accepted = ($access) ? "accepted" : "refused";
-			$log_qry = rtrim($input, "\r\n");
-			$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
-			syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
-		}
-
-		if (!$access)
-			die("Access denied.\r\n");
-
-		// special "list hosts" query
-
-		if ($query === "*") {
-			$data = $this->client->retrieve_hosts();
-			if (!count($data))
-				die("No active hosts.\r\n");
-			$this->output_hosts($data);
-			if ($detailed) {
-				$n_users = $this->client->count_users();
-				$n_conns = $this->client->count_conns();
-				$n_hosts = count($data);
-				print("\r\n");
-				printf("(%d users over %d connections on %d hosts)\r\n",
-					$n_users, $n_conns, $n_hosts);
-			}
-			return;
-		}
-
-		// normal queries
-
-		list ($q_user, $q_host) = parse_query($query);
-		$hide_rhost = ($access <= AC_LIMITED);
-
-		$has_user = strlen($q_user);
-		$has_host = strlen($q_host);
-
-		$data = $this->client->retrieve($q_user, $q_host, $hide_rhost);
-
-		// display login info
-
-		if (count($data)) {
-			if (!$detailed)
-				$data = summarize($data);
-			$this->output($data, $detailed);
-		} else {
-			if ($has_user && $has_host)
-				printf("finger: '%s' is not logged in to %s.\r\n",
-					$q_user, $q_host);
-			elseif ($has_user)
-				printf("finger: '%s' is not logged in.\r\n",
-					$q_user);
-			elseif ($has_host)
-				printf("finger: Nobody is logged in to %s.\r\n",
-					$q_host);
-			else
-				print("finger: Nobody is logged in.\r\n");
-		}
-
-		// display stats
-
-		if ($detailed && !$has_user && !$has_host) {
-			$n_users = $this->client->count_users();
-			$n_conns = count($data);
-			$n_hosts = $this->client->count_hosts();
-			print("\r\n");
-			printf("(%d users over %d connections on %d hosts)\r\n",
-				$n_users, $n_conns, $n_hosts);
-		}
-
-		// display plan
-
-		if ($has_user) {
-			$this->output_plan($q_user, $q_host);
-		}
-	}
-
 	function output($data, $detailed=false) {
 		if ($detailed) {
 			$fmt = "%-12s %1s %-22s %-10s %s\r\n";
@@ -222,6 +140,88 @@ class RWhoFingerServer {
 
 		foreach (preg_split('/\r?\n/', $text) as $line)
 			print("$line\r\n");
+	}
+
+	function handle_query($input) {
+		list ($query, $detailed) = finger_parse($input);
+
+		$rhost = get_rhost();
+		$access = $this->_check_access($rhost);
+
+		if ($this->config->get_bool("finger.log", true)) {
+			$log_accepted = ($access) ? "accepted" : "refused";
+			$log_qry = rtrim($input, "\r\n");
+			$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
+			syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
+		}
+
+		if (!$access)
+			die("Access denied.\r\n");
+
+		// special "list hosts" query
+
+		if ($query === "*") {
+			$data = $this->client->retrieve_hosts();
+			if (!count($data))
+				die("No active hosts.\r\n");
+			$this->output_hosts($data);
+			if ($detailed) {
+				$n_users = $this->client->count_users();
+				$n_conns = $this->client->count_conns();
+				$n_hosts = count($data);
+				print("\r\n");
+				printf("(%d users over %d connections on %d hosts)\r\n",
+					$n_users, $n_conns, $n_hosts);
+			}
+			return;
+		}
+
+		// normal queries
+
+		list ($q_user, $q_host) = parse_query($query);
+		$hide_rhost = ($access <= AC_LIMITED);
+
+		$has_user = strlen($q_user);
+		$has_host = strlen($q_host);
+
+		$data = $this->client->retrieve($q_user, $q_host, $hide_rhost);
+
+		// display login info
+
+		if (count($data)) {
+			if (!$detailed)
+				$data = summarize($data);
+			$this->output($data, $detailed);
+		} else {
+			if ($has_user && $has_host)
+				printf("finger: '%s' is not logged in to %s.\r\n",
+					$q_user, $q_host);
+			elseif ($has_user)
+				printf("finger: '%s' is not logged in.\r\n",
+					$q_user);
+			elseif ($has_host)
+				printf("finger: Nobody is logged in to %s.\r\n",
+					$q_host);
+			else
+				print("finger: Nobody is logged in.\r\n");
+		}
+
+		// display stats
+
+		if ($detailed && !$has_user && !$has_host) {
+			$n_users = $this->client->count_users();
+			$n_conns = count($data);
+			$n_hosts = $this->client->count_hosts();
+			print("\r\n");
+			printf("(%d users over %d connections on %d hosts)\r\n",
+				$n_users, $n_conns, $n_hosts);
+		}
+
+		// display plan
+
+		if ($has_user) {
+			$this->output_plan($q_user, $q_host);
+		}
 	}
 }
 
