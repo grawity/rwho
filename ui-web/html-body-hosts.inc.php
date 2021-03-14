@@ -15,12 +15,12 @@
 		<td colspan="5">
 			<a href="./">Back to all sessions</a>
 			or output as
-			<a href="?<?= htmlspecialchars($json_url) ?>">JSON</a>,
+			<a href="<?= htmlspecialchars($json_url) ?>">JSON</a>,
 <?php if (!empty($finger_url)) { ?>
-			<a href="?<?= htmlspecialchars($xml_url) ?>">XML</a>,
+			<a href="<?= htmlspecialchars($xml_url) ?>">XML</a>,
 			<a href="<?= htmlspecialchars($finger_url) ?>">text</a>
 <?php } else { ?>
-			<a href="?<?= htmlspecialchars($xml_url) ?>">XML</a>
+			<a href="<?= htmlspecialchars($xml_url) ?>">XML</a>
 <?php } ?>
 		</td>
 	</tr>

@@ -24,8 +24,8 @@
 			<a href="?full">Expanded view</a>
 <?php } ?>
 			or output as
-			<a href="?<?= htmlspecialchars($json_url) ?>">JSON</a>,
-			<a href="?<?= htmlspecialchars($xml_url) ?>">XML</a>,
+			<a href="<?= htmlspecialchars($json_url) ?>">JSON</a>,
+			<a href="<?= htmlspecialchars($xml_url) ?>">XML</a>,
 <?php if (!empty($finger_url)) { ?>
 			<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
 <?php } ?>
