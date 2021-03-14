@@ -120,37 +120,6 @@ function interval($start, $end = null) {
 	}
 }
 
-// http_build_query(dict<str,str> $items) -> str $query
-// Format an assoc array of query items to a query string
-
-function http_build_query($items) {
-	$query = array();
-	foreach ($items as $key => $value) {
-		if ($value === null or !strlen($value))
-			$query[] = urlencode($key);
-		else
-			$query[] = urlencode($key)."=".urlencode($value);
-	}
-	return implode("&", $query);
-}
-
-// mangle_query(dict<str,str> $add, list<str> $remove) -> str $query
-// Add and remove given items from current query string
-
-function mangle_query($add, $remove=null) {
-	parse_str($_SERVER["QUERY_STRING"], $query);
-
-	if ($add !== null)
-		foreach ($add as $key => $value)
-			$query[$key] = $value;
-
-	if ($remove !== null)
-		foreach ($remove as $key)
-			unset($query[$key]);
-
-	return http_build_query($query);
-}
-
 // stripsuffix(str $str, str $suffix) -> str
 // Remove an exact suffix if present.
 
