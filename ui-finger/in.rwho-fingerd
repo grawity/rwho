@@ -2,8 +2,7 @@
 <?php
 namespace RWho;
 require_once(__DIR__."/../lib-php/librwho.php");
-require_once(__DIR__."/../lib-php/config.php");
-require_once(__DIR__."/../lib-php/client.php");
+require_once(__DIR__."/../lib-php/client_app.php");
 
 function finger_parse($input) {
 	$input = rtrim($input, "\r\n");
@@ -21,15 +20,7 @@ const AC_DENIED = 0;	// Deny access completely
 const AC_LIMITED = 1;	// Show limited information (no rhost)
 const AC_TRUSTED = 2;	// Show all information
 
-class RWhoFingerServer {
-	function __construct() {
-		$this->config = new \RWho\Config\Configuration();
-		$this->config->load(__DIR__."/../server.conf"); // for DB information
-		$this->config->load(__DIR__."/../rwho.conf");
-
-		$this->client = new \RWho\Client($this->config);
-	}
-
+class RWhoFingerServer extends \RWho\ClientApplicationBase {
 	function _is_rhost_trusted($host) {
 		$nets = $this->config->get_list("privacy.trusted_nets");
 		foreach ($nets as $net) {
