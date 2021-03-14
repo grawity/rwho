@@ -1,9 +1,6 @@
 <?php
 namespace RWho;
-error_reporting(E_ALL^E_NOTICE);
-
-require __DIR__."/../lib-php/librwho.php";
-require "util.inc.php";
+require_once("util.inc.php");
 
 class query {
 	static $present;

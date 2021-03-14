@@ -1,9 +1,5 @@
 <?php
 namespace RWho;
-error_reporting(E_ALL^E_NOTICE);
-
-require_once(__DIR__."/../lib-php/librwho.php");
-require_once(__DIR__."/../lib-php/client.php");
 require_once("util.inc.php");
 
 class query {
