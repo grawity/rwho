@@ -38,8 +38,10 @@ function fetch_data() {
 }
 
 function handle_data(data) {
-	var div = document.getElementById("rwho-table-wrapper");
-	div.innerHTML = data;
+	var old_div = document.getElementById("rwho-table-wrapper");
+	var new_div = document.createElement("div");
+	new_div.innerHTML = data;
+	old_div.parentNode.replaceChild(new_div, old_div);
 }
 
 function is_visible() {
