@@ -1,6 +1,8 @@
 <?php
 namespace RWho;
 require_once("util.inc.php");
+require_once(__DIR__."/application.inc.php");
+require_once(__DIR__."/../lib-php/util.php");
 
 class query {
 	static $user;
@@ -109,7 +111,7 @@ function output_html($data, $plan) {
 			$user = htmlspecialchars($row["user"]);
 			$uid = intval($row["uid"]);
 			$fqdn = htmlspecialchars($row["host"]);
-			$host = strip_domain($fqdn);
+			$host = Util\strip_domain($fqdn);
 			$line = htmlspecialchars($row["line"]);
 			$rhost = strlen($row["rhost"])
 				? htmlspecialchars($row["rhost"])

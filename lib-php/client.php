@@ -1,6 +1,7 @@
 <?php
 namespace RWho;
 require_once(__DIR__."/../lib-php/database.php");
+require_once(__DIR__."/../lib-php/util.php");
 
 const MIN_UID = 1000;
 
@@ -237,7 +238,7 @@ class Client {
 				$updated = array();
 
 				foreach ($sessions as $entry) {
-					$from = normalize_host($entry["rhost"]);
+					$from = \RWho\Util\normalize_host($entry["rhost"]);
 					if ($from === "(detached)")
 						continue;
 					@$byfrom[$from][] = $entry["line"];

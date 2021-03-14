@@ -1,5 +1,5 @@
 <?php
-namespace RWho;
+namespace RWho\Util;
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
@@ -75,17 +75,6 @@ function interval($start, $end = null) {
 		case $m > 1:		return "{$m}m {$s}s";
 		default:		return "{$s} secs";
 	}
-}
-
-// stripsuffix(str $str, str $suffix) -> str
-// Remove an exact suffix if present.
-
-function stripsuffix($str, $suffix) {
-	$len = -strlen($suffix);
-	if (substr_compare($str, $suffix, $len) === 0)
-		return substr($str, 0, $len);
-	else
-		return $str;
 }
 
 // ip_expand(str $addr) -> str?

@@ -1,6 +1,8 @@
 <?php
 namespace RWho;
 require_once("util.inc.php");
+require_once(__DIR__."/application.inc.php");
+require_once(__DIR__."/../lib-php/util.php");
 
 function output_json($data) {
 	$d = [];
@@ -69,7 +71,7 @@ function output_html($data) {
 
 	foreach ($data as $k => $row) {
 		$fqdn = htmlspecialchars($row["host"]);
-		$host = strip_domain($fqdn);
+		$host = Util\strip_domain($fqdn);
 
 		if ($app->client->is_stale($row["last_update"]))
 			print "<tr class=\"stale\">\n";
@@ -93,7 +95,7 @@ function output_html($data) {
 			."</td>\n";
 
 		print "\t<td>"
-			.interval($row["last_update"])
+			.\RWho\Util\interval($row["last_update"])
 			."</td>\n";
 
 		print "</tr>\n";
