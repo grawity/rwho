@@ -171,9 +171,9 @@ function handle_users_request($app) {
 	$user = @$_GET["user"] ?? "";
 	$host = @$_GET["host"] ?? "";
 	$has_query = (strlen($user) || strlen($host));
-	if (@$_GET["full"])
+	if (isset($_GET["full"]))
 		$detailed = true;
-	elseif (@$_GET["summary"])
+	elseif (isset($_GET["summary"]))
 		$detailed = false;
 	else
 		$detailed = (strlen($user) || strlen($host));
