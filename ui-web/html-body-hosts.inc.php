@@ -2,11 +2,11 @@
 <table id="rwho-sessions">
 	<thead>
 	<tr>
-		<th style="min-width: 9ex">host</th>
-		<th style="min-width: 20ex">fqdn</th>
-		<th style="min-width: 7ex">users</th>
-		<th style="min-width: 7ex">lines</th>
-		<th style="min-width: 7ex">updated</th>
+		<th style="min-width: 9ex">Host</th>
+		<th style="min-width: 20ex">Domain</th>
+		<th style="min-width: 7ex">Users</th>
+		<th style="min-width: 7ex">Lines</th>
+		<th style="min-width: 7ex">Updated</th>
 	</tr>
 	</thead>
 

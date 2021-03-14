@@ -23,6 +23,10 @@ table#rwho-sessions {
 	vertical-align: top;
 }
 
+#rwho-sessions th {
+	text-transform: lowercase;
+}
+
 #rwho-sessions .stale td:not([rowspan]) {
 	color: #aaa;
 	font-style: italic;

@@ -7,13 +7,13 @@ $columns = $detailed ? 5 : 4;
 <table id="rwho-sessions">
 	<thead>
 	<tr>
-		<th style="min-width: 15ex">user</th>
+		<th style="min-width: 15ex">User</th>
 <?php if ($detailed) { ?>
-		<th style="min-width: 5ex">uid</th>
+		<th style="min-width: 5ex">ID</th>
 <?php } ?>
-		<th style="min-width: 10ex">host</th>
-		<th style="min-width: 8ex">line</th>
-		<th style="min-width: 30ex">address</th>
+		<th style="min-width: 10ex">Host</th>
+		<th style="min-width: 8ex">Line</th>
+		<th style="min-width: 30ex">Address</th>
 	</tr>
 	</thead>
 
