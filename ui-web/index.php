@@ -14,10 +14,6 @@ function group_by_user($data) {
 }
 
 class UserListPage extends \RWho\Web\RWhoWebApp {
-	public $user;
-	public $host;
-	public $detailed;
-
 	function output_json($data, $params) {
 		extract($params);
 
