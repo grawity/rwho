@@ -111,7 +111,8 @@ function handle_hosts_request($app) {
 	if ($format == "html") {
 		$page_title = "Active hosts";
 		$page_css = $app->config->get("web.stylesheet", null);
-		html::$refresh = 5;
+		$page_xhr_refresh = 3;
+
 		require("html-header.inc.php");
 		require("html-body-hosts.inc.php");
 		require("html-footer.inc.php");
