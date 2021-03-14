@@ -1,7 +1,7 @@
 <?php
 namespace RWho;
 
-$finger_url = $app->make_finger_addr(query::$user, query::$host, query::$detailed);
+$finger_url = $app->make_finger_addr($user, $host, $detailed);
 ?>
 <?php if ($data !== false) { ?>
 <!-- user session table -->
@@ -11,7 +11,7 @@ $finger_url = $app->make_finger_addr(query::$user, query::$host, query::$detaile
 <tr>
 <?php
 html::header("user", 15);
-if (query::$detailed)
+if ($detailed)
 	html::header("uid", 5);
 html::header("host", 10);
 html::header("line", 8);
@@ -23,9 +23,9 @@ html::header("address", 30);
 <tfoot>
 <tr>
 	<td colspan="<?= html::$columns ?>">
-<?php if (strlen(query::$user) or strlen(query::$host)) { ?>
+<?php if (strlen($user) or strlen($host)) { ?>
 		<a href="?">Back to all sessions</a>
-<?php } elseif (query::$detailed) { ?>
+<?php } elseif ($detailed) { ?>
 		<a href="?">Back to normal view</a>
 <?php } else { ?>
 		<a href="?full">Expanded view</a>
