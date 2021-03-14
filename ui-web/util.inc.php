@@ -20,5 +20,3 @@ class html {
 }
 
 function H($str) { return htmlspecialchars($str); }
-
-$app = new \RWho\Web\RWhoWebApp();

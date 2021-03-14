@@ -215,5 +215,7 @@ function handle_users_request($app) {
 	}
 }
 
+$app = new \RWho\Web\RWhoWebApp();
+
 handle_users_request($app);
 ?>

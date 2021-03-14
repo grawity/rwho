@@ -128,5 +128,7 @@ function handle_hosts_request($app) {
 	}
 }
 
+$app = new \RWho\Web\RWhoWebApp();
+
 handle_hosts_request($app);
 ?>
