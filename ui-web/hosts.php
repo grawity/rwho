@@ -4,9 +4,12 @@ require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
 function output_json($data) {
-	$d = [];
+	$json = [
+		"time" => time(),
+		"hosts" => [],
+	];
 	foreach ($data as $row) {
-		$d[] = [
+		$json["hosts"][] = [
 			"host" => $row["host"],
 			"address" => $row["last_addr"],
 			"users" => $row["users"],
@@ -16,10 +19,7 @@ function output_json($data) {
 	}
 
 	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode([
-		"time" => time(),
-		"hosts" => $d,
-	])."\n";
+	print json_encode($json);
 }
 
 function output_xml($data) {

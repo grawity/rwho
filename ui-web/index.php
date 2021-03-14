@@ -14,24 +14,28 @@ function group_by_user($data) {
 }
 
 function output_json($data, $user, $host, $detailed) {
-	foreach ($data as &$row) {
-		$row["stale"] = $row["is_stale"];
-		$row["summary"] = $row["is_summary"];
-		unset($row["rowid"]);
-		unset($row["is_stale"]);
-		unset($row["is_summary"]);
-	}
-
-	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode([
+	$json = [
 		"time" => time(),
 		"query" => [
 			"user" => $user,
 			"host" => $host,
 			"summary" => !$detailed,
 		],
-		"utmp" => $data,
-	])."\n";
+		"utmp" => [],
+	];
+	foreach ($data as $row) {
+		$json["utmp"][] = [
+			"user" => $row["user"],
+			"uid" => $row["uid"],
+			"host" => $row["host"],
+			"line" => $row["line"],
+			"rhost" => $row["rhost"],
+			"stale" => $row["is_stale"],
+			"summary" => $row["is_summary"],
+		];
+	}
+	header("Content-Type: text/plain; charset=utf-8");
+	print json_encode($json);
 }
 
 function output_xml($data, $user, $host, $detailed) {
