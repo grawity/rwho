@@ -4,7 +4,6 @@ $link_host = !strlen($host);
 $columns = $detailed ? 5 : 4;
 ?>
 <div id="rwho-table-wrapper">
-<?php if ($data !== false) { ?>
 <table id="rwho-sessions">
 	<thead>
 	<tr>
@@ -93,7 +92,4 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 	</tr>
 <?php } ?>
 </table>
-<?php } else { // data === false ?>
-<p>Could not retrieve <code>rwho</code> information.</p>
-<?php }; ?>
 </div>
