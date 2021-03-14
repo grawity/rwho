@@ -40,7 +40,7 @@ function mangle_query($add, $remove=null) {
 
 class RWhoWebApp extends \RWho\ClientApplicationBase {
 	function should_filter() {
-		$addr = \RWho\get_rhost();
+		$addr = $_SERVER["REMOTE_ADDR"];
 		$access = $this->_check_access($addr);
 		return ($access < \RWho\AC_TRUSTED);
 	}

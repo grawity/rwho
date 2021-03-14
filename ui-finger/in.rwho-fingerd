@@ -4,6 +4,20 @@ namespace RWho;
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/client_app.php");
 
+function get_rhost() {
+	$addr = @$_SERVER["REMOTE_ADDR"];
+	if (!isset($addr))
+		$addr = @$_ENV["REMOTE_HOST"];
+	if (!isset($addr))
+		$addr = @$_ENV["REMOTEHOST"];
+	if (!isset($addr) && defined("STDIN"))
+		$addr = stream_socket_get_name(constant("STDIN"), true);
+	/* Strip v6mapped prefix added by xinetd */
+	if (isset($addr) && $addr !== false)
+		$addr = preg_replace("/^::ffff:/", "", $addr);
+	return $addr;
+}
+
 function finger_parse($input) {
 	$input = rtrim($input, "\r\n");
 	if ($input === "/W" or substr($input, 0, 3) === "/W ") {
@@ -17,7 +31,6 @@ function finger_parse($input) {
 }
 
 class RWhoFingerServer extends \RWho\ClientApplicationBase {
-
 	function output($data, $detailed=false) {
 		if ($detailed) {
 			$fmt = "%-12s %1s %-22s %-10s %s\r\n";
