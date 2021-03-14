@@ -7,12 +7,12 @@ list of currently logged in accounts across multiple servers.
 $ rwho
 USER         HOST         LINE       FROM
 grawity      ember        {45}       (tmux)
-             land         pts/3      2a06:e881:108:2:f9b7:abcd:fdxy:xyzt
+             land         pts/3      2a06:e881:108:2:64e6:9d86:856:b93c
              sky          pts/0      2a02:7b40:50d1:hjkl::1
              star         {13}       (tmux)
-nobody       ember        pts/14     2001:778:e27f:0:9618:82ff:fexy:xyzt
+nobody       ember        pts/14     2001:778:e27f:0:9618:82ff:fe38:e480
              star         pts/9      star.nullroute.eu.org
-             star         pts/1      78-59-999-999.static.zebra.lt
+             star         pts/1      78-59-7-25.static.zebra.lt
 ```
 
 It was originally written in mid-2000s for a public-access Linux "[shell
