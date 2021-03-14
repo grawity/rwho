@@ -75,27 +75,6 @@ function summarize($utmp) {
 	return $out;
 }
 
-// count_users() -> int
-// Count unique user names on all utmp records.
-
-function count_users() {
-	global $CLIENT; return $CLIENT->count_users();
-}
-
-// count_conns() -> int
-// Count all connections (utmp records).
-
-function count_conns() {
-	global $CLIENT; return $CLIENT->count_conns();
-}
-
-// count_hosts() -> int
-// Count all currently active hosts, with or without users.
-
-function count_hosts() {
-	global $CLIENT; return $CLIENT->count_hosts();
-}
-
 function is_stale($timestamp) {
 	global $CLIENT; return $CLIENT->is_stale($timestamp);
 }

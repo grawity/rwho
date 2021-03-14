@@ -80,8 +80,8 @@ class RWhoFingerServer {
 				die("No active hosts.\r\n");
 			output_hosts($data);
 			if ($detailed) {
-				$n_users = count_users();
-				$n_conns = count_conns();
+				$n_users = $this->client->count_users();
+				$n_conns = $this->client->count_conns();
 				$n_hosts = count($data);
 				print("\r\n");
 				printf("(%d users over %d connections on %d hosts)\r\n",
@@ -123,9 +123,9 @@ class RWhoFingerServer {
 		// display stats
 
 		if ($detailed && !$has_user && !$has_host) {
-			$n_users = count_users();
+			$n_users = $this->client->count_users();
 			$n_conns = count($data);
-			$n_hosts = count_hosts();
+			$n_hosts = $this->client->count_hosts();
 			print("\r\n");
 			printf("(%d users over %d connections on %d hosts)\r\n",
 				$n_users, $n_conns, $n_hosts);
