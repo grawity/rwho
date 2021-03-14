@@ -155,4 +155,100 @@ class Client {
 		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
 		return $timestamp < $stale_ts;
 	}
+
+	// _find_user_plan_file(str $user, str $host) -> str?
+	// Find the .plan file for a global user:
+	// * Will return null if user doesn't exist or has 0 < uid < 25000.
+	// * Will look for ~USER/.plan and /var/lib/plan/$USER in that order.
+	// $host is ignored in current implementation.
+
+	function _find_user_plan_file($user, $host) {
+		if (!function_exists("posix_getpwnam"))
+			return null;
+
+		$pw = @posix_getpwnam($user);
+		if (!$pw || ($pw["uid"] < MIN_UID && $pw["uid"] != 0))
+			return null;
+
+		$dir = $pw["dir"];
+		$path = @realpath("$dir/.plan");
+		if ($path && @is_file($path) && @is_readable($path))
+			return $path;
+
+		$path = "/var/lib/plan/{$pw["name"]}";
+		if (@is_file($path) && @is_readable($path))
+			return $path;
+
+		return null;
+	}
+
+	// _read_user_plan_ldap(str $user, str $host) -> str?
+	// Look up the .plan file's contents from a given user's LDAP entry.
+	// $host is ignored in current implementation.
+
+	function _read_user_plan_ldap($user, $host) {
+		if (!function_exists("ldap_connect"))
+			return null;
+
+		$ldap_uri = $this->config->get("finger.ldap.uri", "");
+		$ldap_dnf = $this->config->get("finger.ldap.user_dn", "");
+		$ldap_attr = $this->config->get("finger.ldap.plan_attr", "planFile");
+
+		if (!strlen($ldap_uri) || !strlen($ldap_dnf))
+			return null;
+
+		$ldap_dn = sprintf($ldap_dnf, $user);
+
+		$ldaph = ldap_connect($ldap_uri);
+		if (!$ldaph)
+			return null;
+
+		$ok = ldap_set_option($ldaph, LDAP_OPT_PROTOCOL_VERSION, 3);
+		if (!$ok)
+			return null;
+
+		$ok = ldap_bind($ldaph, null, null);
+		if (!$ok)
+			return null;
+
+		$res = @ldap_read($ldaph, $ldap_dn, "(objectClass=*)", array($ldap_attr));
+		if (!$res)
+			return null;
+
+		$data = ldap_get_entries($ldaph, $res);
+		if (!$data || !$data["count"])
+			return null;
+
+		$attr = strtolower($ldap_attr);
+		if (isset($data[0][$attr])) {
+			$text = $data[0][$attr][0];
+			$text = rtrim($text, "\r\n");
+			return $text;
+		} else {
+			return null;
+		}
+	}
+
+	// get_plan_file(str $user, str $host) -> str?
+	// Get the text of user's .plan file, first from filesystem, then from LDAP
+
+	function get_plan_file($user, $host) {
+		$path = $this->_find_user_plan_file($user, $host);
+		if ($path !== null) {
+			$fh = @fopen($path, "r");
+			if ($fh) {
+				$text = fread($fh, 65536);
+				$text = rtrim($text, "\r\n");
+				fclose($fh);
+				return $text;
+			}
+		}
+
+		$text = $this->_read_user_plan_ldap($user, $host);
+		if ($text !== null) {
+			return $text;
+		}
+
+		return null;
+	}
 }

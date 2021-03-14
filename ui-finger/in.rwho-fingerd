@@ -131,7 +131,7 @@ class RWhoFingerServer {
 	}
 
 	function output_plan($user, $host) {
-		$text = read_user_plan($user, $host);
+		$text = $this->client->get_plan_file($user, $host);
 		if ($text === null)
 			return;
 

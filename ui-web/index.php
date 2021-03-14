@@ -224,7 +224,7 @@ if (!query::$detailed)
 
 $plan = null;
 if (strlen(query::$user))
-	$plan = read_user_plan(query::$user, query::$host);
+	$plan = $client->get_plan_file(query::$user, query::$host);
 
 if (query::$format == "html") {
 	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";
