@@ -87,6 +87,36 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 		print $doc->saveXML();
 	}
 
+	function output_html_full($data, $params) {
+		extract($params);
+
+		$data_by_user = group_by_user($data);
+
+		// XXX: Doesn't make sense to use <em> because this also goes in <title>!
+		$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
+		$page_title .= " on ";
+		$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
+		$page_css = $this->config->get("web.stylesheet", null);
+
+		$xhr_refresh = 3;
+		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$finger_url = $this->make_finger_addr($user, $host, $detailed);
+
+		require("html-header.inc.php");
+		require("html-body-users.inc.php");
+		require("html-footer.inc.php");
+	}
+
+	function output_html_xhr($data, $params) {
+		extract($params);
+
+		$data_by_user = group_by_user($data);
+
+		require("html-body-usertable.inc.php");
+	}
+
 	function handle_request() {
 		$user = @$_GET["user"] ?? "";
 		$host = @$_GET["host"] ?? "";
@@ -107,29 +137,13 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 		if (strlen($user))
 			$plan = $this->client->get_plan_file($user, $host);
 
+		$params = compact("has_query", "user", "host", "detailed");
+
 		if ($format == "html") {
-			$data_by_user = group_by_user($data);
-
-			// XXX: Doesn't make sense to use <em> because this also goes in <title>!
-			$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
-			$page_title .= " on ";
-			$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
-			$page_css = $this->config->get("web.stylesheet", null);
-
-			$xhr_refresh = 3;
-			$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-			$xml_url = Web\mangle_query(["fmt" => "xml"]);
-			$json_url = Web\mangle_query(["fmt" => "json"]);
-			$finger_url = $this->make_finger_addr($user, $host, $detailed);
-
-			require("html-header.inc.php");
-			require("html-body-users.inc.php");
-			require("html-footer.inc.php");
+			$this->output_html_full($data, $params);
 		}
 		elseif ($format == "html-xhr") {
-			$data_by_user = group_by_user($data);
-
-			require("html-body-usertable.inc.php");
+			$this->output_html_xhr($data, $params);
 		}
 		elseif ($format == "json") {
 			$this->output_json($data, $user, $host, $detailed);

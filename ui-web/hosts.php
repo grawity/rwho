@@ -55,6 +55,28 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 		print $doc->saveXML();
 	}
 
+	function output_html_full($data, $params) {
+		extract($params);
+
+		$page_title = "Active hosts";
+		$page_css = $this->config->get("web.stylesheet", null);
+		$xhr_refresh = 3;
+		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$finger_url = $this->make_finger_addr("*", null, false);
+
+		require("html-header.inc.php");
+		require("html-body-hosts.inc.php");
+		require("html-footer.inc.php");
+	}
+
+	function output_html_xhr($data, $params) {
+		extract($params);
+
+		require("html-body-hosttable.inc.php");
+	}
+
 	function handle_request() {
 		$has_query = true;
 		$format = @$_GET["fmt"] ?? "html";
@@ -65,22 +87,13 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 			$row["host"] = \RWho\Util\strip_domain($row["fqdn"]);
 			$row["last_update_age"] = \RWho\Util\interval($row["last_update"]);
 		}
+		$params = compact("has_query");
 
 		if ($format == "html") {
-			$page_title = "Active hosts";
-			$page_css = $this->config->get("web.stylesheet", null);
-			$xhr_refresh = 3;
-			$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-			$xml_url = Web\mangle_query(["fmt" => "xml"]);
-			$json_url = Web\mangle_query(["fmt" => "json"]);
-			$finger_url = $this->make_finger_addr("*", null, false);
-
-			require("html-header.inc.php");
-			require("html-body-hosts.inc.php");
-			require("html-footer.inc.php");
+			$this->output_html_full($data, $params);
 		}
 		elseif ($format == "html-xhr") {
-			require("html-body-hosttable.inc.php");
+			$this->output_html_xhr($data, $params);
 		}
 		elseif ($format == "json") {
 			$this->output_json($data);
