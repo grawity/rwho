@@ -91,17 +91,13 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 
 		if ($format == "html") {
 			$this->output_html_full($data, $params);
-		}
-		elseif ($format == "html-xhr") {
+		} elseif ($format == "html-xhr") {
 			$this->output_html_xhr($data, $params);
-		}
-		elseif ($format == "json") {
+		} elseif ($format == "json") {
 			$this->output_json($data);
-		}
-		elseif ($format == "xml") {
+		} elseif ($format == "xml") {
 			$this->output_xml($data);
-		}
-		else {
+		} else {
 			header("Content-Type: text/plain; charset=utf-8", true, 406);
 			die("Unsupported output format.\n");
 		}
