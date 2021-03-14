@@ -89,8 +89,8 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 	}
 
 	function output_hosts($data) {
-		$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
-		$headers = ["HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED"];
+		$fmt = "%-12s %-26s %-5s %-5s %s%s\r\n";
+		$headers = ["HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED", ""];
 
 		vprintf($fmt, $headers);
 
@@ -100,7 +100,8 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 				$row["host"],
 				$row["users"],
 				$row["entries"],
-				Util\interval($row["last_update"])
+				Util\interval($row["last_update"]),
+				$row["is_stale"] ? " <!>" : ""
 			);
 		}
 	}
