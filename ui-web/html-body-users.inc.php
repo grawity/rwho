@@ -13,7 +13,7 @@ $columns = $detailed ? 5 : 4;
 <?php } ?>
 		<th style="min-width: 10ex">host</th>
 		<th style="min-width: 8ex">line</th>
-		<th style="min-width: 30ex">addess</th>
+		<th style="min-width: 30ex">address</th>
 	</tr>
 	</thead>
 
