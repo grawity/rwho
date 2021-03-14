@@ -8,8 +8,8 @@
 		<meta http-equiv="Refresh" content="10">
 	</noscript>
 	<link rel="stylesheet" href="rwho.css">
-<?php if ($config->get("web.stylesheet", null) !== null) { ?>
-	<link rel="stylesheet" href="<?= h($config->get("web.stylesheet")) ?>">
+<?php if ($app->config->get("web.stylesheet", null) !== null) { ?>
+	<link rel="stylesheet" href="<?= h($app->config->get("web.stylesheet")) ?>">
 <?php } ?>
 </head>
 

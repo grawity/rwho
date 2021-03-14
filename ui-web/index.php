@@ -15,11 +15,11 @@ function is_wildcard($str) {
 }
 
 function output_json($data) {
-	global $client;
+	global $app;
 
 	foreach ($data as &$row) {
 		unset($row["rowid"]);
-		if ($client->is_stale($row["updated"])) {
+		if ($app->client->is_stale($row["updated"])) {
 			$row["stale"] = true;
 		}
 	}
@@ -37,7 +37,7 @@ function output_json($data) {
 }
 
 function output_xml($data) {
-	global $client;
+	global $app;
 
 	header("Content-Type: application/xml");
 
@@ -68,7 +68,7 @@ function output_xml($data) {
 		$rowx->appendChild($doc->createAttribute("updated"))
 			->appendChild($doc->createTextNode($date));
 
-		if ($client->is_stale($row["updated"]))
+		if ($app->client->is_stale($row["updated"]))
 			$rowx->appendChild($doc->createAttribute("stale"))
 				->appendChild($doc->createTextNode("true"));
 
@@ -89,7 +89,7 @@ function output_xml($data) {
 }
 
 function output_html($data, $plan) {
-	global $client;
+	global $app;
 
 	$columns = 4; /* user+host+line+address */
 	if (query::$detailed)
@@ -121,7 +121,7 @@ function output_html($data, $plan) {
 				? htmlspecialchars($row["rhost"])
 				: "(local)";
 
-			if ($client->is_stale($row["updated"]))
+			if ($app->client->is_stale($row["updated"]))
 				print "<tr class=\"stale\">\n";
 			else
 				print "<tr>\n";
@@ -179,14 +179,14 @@ query::$detailed = (strlen(query::$user)
 		&& !isset($_GET["summary"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = $client->retrieve(query::$user, query::$host, $app->should_filter());
+$data = $app->client->retrieve(query::$user, query::$host, $app->should_filter());
 
 if (!query::$detailed)
 	$data = summarize($data);
 
 $plan = null;
 if (strlen(query::$user))
-	$plan = $client->get_plan_file(query::$user, query::$host);
+	$plan = $app->client->get_plan_file(query::$user, query::$host);
 
 if (query::$format == "html") {
 	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";

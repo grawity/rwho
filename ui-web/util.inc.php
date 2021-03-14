@@ -22,5 +22,3 @@ class html {
 function H($str) { return htmlspecialchars($str); }
 
 $app = new \RWho\Web\RWhoWebApp();
-$config = $app->config;
-$client = $app->client;

@@ -61,7 +61,7 @@ function output_xml($data) {
 }
 
 function output_html($data) {
-	global $client;
+	global $app;
 
 	if (!count($data)) {
 		print "<tr>\n";
@@ -76,7 +76,7 @@ function output_html($data) {
 		$fqdn = htmlspecialchars($row["host"]);
 		$host = strip_domain($fqdn);
 
-		if ($client->is_stale($row["last_update"]))
+		if ($app->client->is_stale($row["last_update"]))
 			print "<tr class=\"stale\">\n";
 		else
 			print "<tr>\n";
@@ -108,7 +108,7 @@ function output_html($data) {
 query::$present = true;
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = $client->retrieve_hosts();
+$data = $app->app->client->retrieve_hosts();
 
 if (query::$format == "html") {
 	html::$title = "Active hosts";
