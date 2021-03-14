@@ -97,6 +97,6 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 	}
 }
 
-$app = new UserListPage();
+$app = new HostListPage();
 $app->handle_request();
 ?>
