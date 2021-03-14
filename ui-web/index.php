@@ -8,25 +8,6 @@ class query {
 	static $host;
 	static $detailed;
 	static $format;
-
-	static function make_finger_addr() {
-		global $config;
-
-		$host = $config->get("web.finger.host", null);
-		$gateway = $config->get("web.finger.gateway", "//nullroute.eu.org/finger/?q=%s");
-
-		if (empty($host) || empty($gateway))
-			return null;
-
-		$q = (string) self::$user;
-		if (strlen(self::$host))
-			$q .= "@".self::$host;
-		$q .= "@".$host;
-		if (self::$detailed and !(strlen(self::$user) or strlen(self::$host)))
-			$q = "/W ".$q;
-
-		return sprintf($gateway, urlencode($q));
-	}
 }
 
 function is_wildcard($str) {

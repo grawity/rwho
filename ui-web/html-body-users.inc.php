@@ -1,7 +1,7 @@
 <?php
 namespace RWho;
 
-$finger_url = query::make_finger_addr();
+$finger_url = $app->make_finger_addr(query::$user, query::$host, query::$detailed);
 ?>
 <?php if ($data !== false) { ?>
 <!-- user session table -->

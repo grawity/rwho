@@ -12,4 +12,24 @@ class RWhoWebApp {
 
 		$this->client = new \RWho\Client($this->config);
 	}
+
+	function make_finger_addr($user, $host, $detailed) {
+		$user ??= "";
+		$host ??= "";
+
+		$host = $this->config->get("web.finger.host", null);
+		$gateway = $this->config->get("web.finger.gateway", "//nullroute.eu.org/finger/?q=%s");
+		if (empty($host) || empty($gateway))
+			return null;
+
+		if (strlen($host)) {
+			$q = $user."@".$host;
+		} else {
+			$q = $user;
+		}
+		if ($detailed && !(strlen($user) || strlen($host))) {
+			$q = "/W ".$q;
+		}
+		return sprintf($gateway, urlencode($q));
+	}
 }
