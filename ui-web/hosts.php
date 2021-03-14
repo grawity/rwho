@@ -57,12 +57,12 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function output_html($data) {
+function output_html($data, $detailed) {
 	global $app;
 
 	if (!count($data)) {
 		print "<tr>\n";
-		print "\t<td colspan=\"".html::$columns."\" class=\"comment\">"
+		print "\t<td colspan=\"".($detailed ? 5 : 4)."\" class=\"comment\">"
 			."No active hosts."
 			."</td>\n";
 		print "</tr>\n";
@@ -122,7 +122,7 @@ function handle_hosts_request($app) {
 		require("html-footer.inc.php");
 	}
 	elseif ($format == "html-xhr") {
-		output_html($data);
+		output_html($data, $detailed);
 	}
 	elseif ($format == "json") {
 		output_json($data);
