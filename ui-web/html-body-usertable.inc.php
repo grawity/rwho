@@ -59,7 +59,8 @@ $columns = $detailed ? 5 : 4;
 	<?php if (strlen($plan)) { ?>
 	<tr>
 		<td colspan="<?= $columns ?>">
-			<pre class="plan"><div class="plan-head">~/.plan:</div><br><div class="plan-body"><?= htmlspecialchars($plan) ?></div></pre>
+			<pre class="plan"><div class="plan-head">~/.plan:</div></pre>
+			<pre class="plan"><div class="plan-body"><?= htmlspecialchars($plan) ?></div></pre>
 		</td>
 	</tr>
 	<?php } ?>
