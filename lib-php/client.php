@@ -30,20 +30,13 @@ class Client {
 		$sql = "SELECT * FROM utmp";
 		$conds = array();
 		if (strlen($q_user)) $conds[] = "user=:user";
-		if (strlen($q_host)) $conds[] = "(host=:host OR host LIKE :parthost)";
+		if (strlen($q_host)) $conds[] = "host=:host";
 		$conds[] = "updated >= $dead_ts";
 		$sql .= " WHERE ".implode(" AND ", $conds);
 
 		$st = $this->db->dbh->prepare($sql);
 		if (strlen($q_user)) $st->bindValue(":user", $q_user);
-		if (strlen($q_host)) {
-			$w_host = str_replace("_", "\\_", $q_host);
-			if (strpos($w_host, "%") === false)
-				$w_host .= ".%";
-
-			$st->bindValue(":host", $q_host);
-			$st->bindValue(":parthost", $w_host);
-		}
+		if (strlen($q_host)) $st->bindValue(":host", $q_host);
 		$st->execute();
 
 		$data = array();
