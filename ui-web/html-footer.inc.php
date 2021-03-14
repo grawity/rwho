@@ -1,9 +1,9 @@
 <?php namespace RWho; ?>
-<?php if ($page_xhr_refresh) { ?>
+<?php if ($xhr_refresh) { ?>
 <script type="text/javascript">
 var settings = <?= json_encode([
-	"interval" => $page_xhr_refresh,
-	"args" => Web\mangle_query(["fmt" => "html-xhr"]),
+	"interval" => $xhr_refresh,
+	"args" => $xhr_url,
 ]) ?>;
 </script>
 <script type="text/javascript" src="xhr.js"></script>

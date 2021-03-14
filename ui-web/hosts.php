@@ -111,10 +111,10 @@ function handle_hosts_request($app) {
 	if ($format == "html") {
 		$page_title = "Active hosts";
 		$page_css = $app->config->get("web.stylesheet", null);
-		$page_xhr_refresh = 3;
-
-		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$xhr_refresh = 3;
+		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
 		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+		$json_url = Web\mangle_query(["fmt" => "json"]);
 		$finger_url = $app->make_finger_addr("*", null, false);
 
 		require("html-header.inc.php");
