@@ -1,4 +1,5 @@
 # RWho server configuration
+# vim: ft=dosini
 
 [db]
 pdo_driver = mysql:host=localhost;dbname=rwho
@@ -10,10 +11,10 @@ password = asdfhjkl
 # Deny updates from anonymous clients
 #auth_required = true
 
-[cleanup]
+[expire]
 # Automatically delete stale entries (e.g. from crashed hosts) if they haven't
 # been refreshed in this amount of time. (Default: 1d)
-max_age = 1d
+host_dead = 1d
 
 [auth.pw]
 # HTTP Basic authentication. Each key corresponds to a username (typically the

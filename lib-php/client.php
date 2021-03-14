@@ -11,11 +11,11 @@ class Client {
 		// maximum age before which the entry will be considered stale
 		// (e.g. the host temporarily down for some reason)
 		// default is 1 minute more than the rwhod periodic update time
-		$this->_stale_age = $this->config->get_rel_time("expire.mark-stale", 11*60);
+		$this->_stale_age = $this->config->get_rel_time("expire.mark_stale", 11*60);
 
 		// maximum age before which the entry will be considered dead
 		// and not displayed in host list
-		$this->_dead_age = $this->config->get_rel_time("expire.host-dead", 1*86400);
+		$this->_dead_age = $this->config->get_rel_time("expire.host_dead", 1*86400);
 	}
 
 	// retrieve(str? $user, str? $host) -> utmp_entry[]
@@ -87,8 +87,8 @@ class Client {
 	// Delete rows belonging to dead hosts
 
 	function purge_stale() {
-		$max_age = $this->config->get_rel_time("cleanup.max_age", 86400);
-		return $this->db->utmp_delete_old(time()-$max_age);
+		$dead_ts = time() - $this->_dead_age;
+		return $this->db->utmp_delete_old($dead_ts);
 	}
 
 	// _find_user_plan_file(str $user, str $host) -> str?

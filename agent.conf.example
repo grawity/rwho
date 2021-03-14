@@ -1,4 +1,5 @@
 # RWho agent configuration
+# vim: ft=dosini
 
 [agent]
 # Server API endpoint
