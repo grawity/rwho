@@ -16,9 +16,11 @@ function create_xhr() {
 }
 
 function fetch_data() {
+	/* Include timestamp to prevent IE 5 from caching the response forever */
+	var t = new Date().getTime();
 	var p = location.href.indexOf("?");
 	var url = (p >= 0 ? location.href.substr(0, p) : location.href) +
-			"?" + settings.args;
+			"?" + settings.args + "&" + "t=" + t;
 	var xhr = create_xhr();
 	waiting++;
 	xhr.open('GET', url, true);
