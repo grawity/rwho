@@ -24,36 +24,34 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 	}
 
 	function output_xml($data) {
-		header("Content-Type: application/xml");
-
 		$doc = new \DOMDocument("1.0", "utf-8");
 		$doc->formatOutput = true;
 
 		$root = $doc->appendChild($doc->createElement("rwho"));
-
 		$root->appendChild($doc->createAttribute("time"))
 			->appendChild($doc->createTextNode(date("c")));
 
 		foreach ($data as $row) {
-			$rowx = $root->appendChild($doc->createElement("host"));
+			$el = $root->appendChild($doc->createElement("host"));
 
-			$rowx->appendChild($doc->createAttribute("name"))
+			$el->appendChild($doc->createAttribute("name"))
 				->appendChild($doc->createTextNode($row["host"]));
 
-			$rowx->appendChild($doc->createElement("address"))
+			$el->appendChild($doc->createElement("address"))
 				->appendChild($doc->createTextNode($row["last_addr"]));
 
-			$rowx->appendChild($doc->createElement("users"))
+			$el->appendChild($doc->createElement("users"))
 				->appendChild($doc->createTextNode($row["users"]));
 
-			$rowx->appendChild($doc->createElement("entries"))
+			$el->appendChild($doc->createElement("entries"))
 				->appendChild($doc->createTextNode($row["entries"]));
 
 			$date = date("c", $row["last_update"]);
-			$rowx->appendChild($doc->createElement("updated"))
+			$el->appendChild($doc->createElement("updated"))
 				->appendChild($doc->createTextNode($date));
 		}
 
+		header("Content-Type: application/xml; charset=utf-8");
 		print $doc->saveXML();
 	}
 
