@@ -101,41 +101,42 @@ function output_html($data, $detailed) {
 	}
 }
 
-function handle_hosts_request($app) {
-	$has_query = true;
-	$format = @$_GET["fmt"] ?? "html";
+class HostListPage extends \RWho\Web\RWhoWebApp {
+	function handle_request() {
+		$has_query = true;
+		$format = @$_GET["fmt"] ?? "html";
 
-	$data = $app->client->retrieve_hosts();
+		$data = $this->client->retrieve_hosts();
 
-	if ($format == "html") {
-		$page_title = "Active hosts";
-		$page_css = $app->config->get("web.stylesheet", null);
-		$xhr_refresh = 3;
-		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = Web\mangle_query(["fmt" => "xml"]);
-		$json_url = Web\mangle_query(["fmt" => "json"]);
-		$finger_url = $app->make_finger_addr("*", null, false);
+		if ($format == "html") {
+			$page_title = "Active hosts";
+			$page_css = $this->config->get("web.stylesheet", null);
+			$xhr_refresh = 3;
+			$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
+			$xml_url = Web\mangle_query(["fmt" => "xml"]);
+			$json_url = Web\mangle_query(["fmt" => "json"]);
+			$finger_url = $this->make_finger_addr("*", null, false);
 
-		require("html-header.inc.php");
-		require("html-body-hosts.inc.php");
-		require("html-footer.inc.php");
-	}
-	elseif ($format == "html-xhr") {
-		output_html($data, $detailed);
-	}
-	elseif ($format == "json") {
-		output_json($data);
-	}
-	elseif ($format == "xml") {
-		output_xml($data);
-	}
-	else {
-		header("Content-Type: text/plain; charset=utf-8", true, 406);
-		die("Unsupported output format.\n");
+			require("html-header.inc.php");
+			require("html-body-hosts.inc.php");
+			require("html-footer.inc.php");
+		}
+		elseif ($format == "html-xhr") {
+			output_html($data, $detailed);
+		}
+		elseif ($format == "json") {
+			output_json($data);
+		}
+		elseif ($format == "xml") {
+			output_xml($data);
+		}
+		else {
+			header("Content-Type: text/plain; charset=utf-8", true, 406);
+			die("Unsupported output format.\n");
+		}
 	}
 }
 
-$app = new \RWho\Web\RWhoWebApp();
-
-handle_hosts_request($app);
+$app = new UserListPage();
+$app->handle_request();
 ?>

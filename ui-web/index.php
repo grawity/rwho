@@ -160,58 +160,63 @@ function output_html($data, $plan, $user, $host, $detailed) {
 	}
 }
 
-function handle_users_request($app) {
-	$user = @$_GET["user"] ?? "";
-	$host = @$_GET["host"] ?? "";
-	$has_query = (strlen($user) || strlen($host));
-	if (isset($_GET["full"]))
-		$detailed = true;
-	elseif (isset($_GET["summary"]))
-		$detailed = false;
-	else
-		$detailed = (strlen($user) || strlen($host));
-	$format = @$_GET["fmt"] ?? "html";
+class UserListPage extends \RWho\Web\RWhoWebApp {
+	public $user;
+	public $host;
+	public $detailed;
 
-	$data = $app->client->retrieve($user, $host, $app->should_filter());
-	if (!$detailed)
-		$data = $app->client->summarize($data);
+	function handle_request() {
+		$user = @$_GET["user"] ?? "";
+		$host = @$_GET["host"] ?? "";
+		$has_query = (strlen($user) || strlen($host));
+		if (isset($_GET["full"]))
+			$detailed = true;
+		elseif (isset($_GET["summary"]))
+			$detailed = false;
+		else
+			$detailed = (strlen($user) || strlen($host));
+		$format = @$_GET["fmt"] ?? "html";
 
-	$plan = null;
-	if (strlen($user))
-		$plan = $app->client->get_plan_file($user, $host);
+		$data = $this->client->retrieve($user, $host, $this->should_filter());
+		if (!$detailed)
+			$data = $this->client->summarize($data);
 
-	if ($format == "html") {
-		// XXX: Doesn't make sense to use <em> because this also goes in <title>!
-		$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
-		$page_title .= " on ";
-		$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
-		$page_css = $app->config->get("web.stylesheet", null);
-		$xhr_refresh = 3;
-		$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = Web\mangle_query(["fmt" => "xml"]);
-		$json_url = Web\mangle_query(["fmt" => "json"]);
-		$finger_url = $app->make_finger_addr($user, $host, $detailed);
+		$plan = null;
+		if (strlen($user))
+			$plan = $this->client->get_plan_file($user, $host);
 
-		require("html-header.inc.php");
-		require("html-body-users.inc.php");
-		require("html-footer.inc.php");
-	}
-	elseif ($format == "html-xhr") {
-		output_html($data, $plan, $user, $host, $detailed);
-	}
-	elseif ($format == "json") {
-		output_json($data, $user, $host, $detailed);
-	}
-	elseif ($format == "xml") {
-		output_xml($data, $user, $host, $detailed);
-	}
-	else {
-		header("Content-Type: text/plain; charset=utf-8", true, 406);
-		die("Unsupported output format.\n");
+		if ($format == "html") {
+			// XXX: Doesn't make sense to use <em> because this also goes in <title>!
+			$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
+			$page_title .= " on ";
+			$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
+			$page_css = $this->config->get("web.stylesheet", null);
+			$xhr_refresh = 3;
+			$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
+			$xml_url = Web\mangle_query(["fmt" => "xml"]);
+			$json_url = Web\mangle_query(["fmt" => "json"]);
+			$finger_url = $this->make_finger_addr($user, $host, $detailed);
+
+			require("html-header.inc.php");
+			require("html-body-users.inc.php");
+			require("html-footer.inc.php");
+		}
+		elseif ($format == "html-xhr") {
+			output_html($data, $plan, $user, $host, $detailed);
+		}
+		elseif ($format == "json") {
+			output_json($data, $user, $host, $detailed);
+		}
+		elseif ($format == "xml") {
+			output_xml($data, $user, $host, $detailed);
+		}
+		else {
+			header("Content-Type: text/plain; charset=utf-8", true, 406);
+			die("Unsupported output format.\n");
+		}
 	}
 }
 
-$app = new \RWho\Web\RWhoWebApp();
-
-handle_users_request($app);
+$app = new UserListPage();
+$app->handle_request();
 ?>
