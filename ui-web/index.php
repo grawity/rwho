@@ -14,8 +14,6 @@ function group_by_user($data) {
 }
 
 function output_json($data, $user, $host, $detailed) {
-	global $app;
-
 	foreach ($data as &$row) {
 		$row["stale"] = $row["is_stale"];
 		$row["summary"] = $row["is_summary"];
@@ -37,8 +35,6 @@ function output_json($data, $user, $host, $detailed) {
 }
 
 function output_xml($data, $user, $host, $detailed) {
-	global $app;
-
 	header("Content-Type: application/xml");
 
 	$doc = new \DOMDocument("1.0", "utf-8");
