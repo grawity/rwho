@@ -18,7 +18,9 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 	public $host;
 	public $detailed;
 
-	function output_json($data, $user, $host, $detailed) {
+	function output_json($data, $params) {
+		extract($params);
+
 		$json = [
 			"time" => time(),
 			"query" => [
@@ -44,7 +46,9 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 		print json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 	}
 
-	function output_xml($data, $user, $host, $detailed) {
+	function output_xml($data, $params) {
+		extract($params);
+
 		$doc = new \DOMDocument("1.0", "utf-8");
 		$doc->formatOutput = true;
 
@@ -137,7 +141,7 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 		if (strlen($user))
 			$plan = $this->client->get_plan_file($user, $host);
 
-		$params = compact("has_query", "user", "host", "detailed");
+		$params = compact("has_query", "user", "host", "detailed", "plan");
 
 		if ($format == "html") {
 			$this->output_html_full($data, $params);
@@ -146,10 +150,10 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 			$this->output_html_xhr($data, $params);
 		}
 		elseif ($format == "json") {
-			$this->output_json($data, $user, $host, $detailed);
+			$this->output_json($data, $params);
 		}
 		elseif ($format == "xml") {
-			$this->output_xml($data, $user, $host, $detailed);
+			$this->output_xml($data, $params);
 		}
 		else {
 			header("Content-Type: text/plain; charset=utf-8", true, 406);
