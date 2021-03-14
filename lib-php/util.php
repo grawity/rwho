@@ -19,7 +19,7 @@ function parse_query($query) {
 		$user = '';
 	if ($host === null)
 		$host = '';
-	return array($user, $host);
+	return [$user, $host];
 }
 
 // strip_domain(str $fqdn) -> str $hostname
@@ -62,7 +62,7 @@ function interval($start, $end = null) {
 	if ($end === null)
 		$end = time();
 	if ($start > $end)
-		list($start, $end) = array($end, $start);
+		list($start, $end) = [$end, $start];
 
 	$diff = $end - $start;
 	$diff -= $s = $diff % 60; $diff /= 60;

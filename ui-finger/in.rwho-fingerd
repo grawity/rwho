@@ -27,24 +27,24 @@ function finger_parse($input) {
 		$query = $input;
 		$detailed = false;
 	}
-	return array($query, $detailed);
+	return [$query, $detailed];
 }
 
 class RWhoFingerServer extends \RWho\ClientApplicationBase {
 	function output($data, $detailed=false) {
 		if ($detailed) {
 			$fmt = "%-12s %1s %-22s %-10s %s\r\n";
-			$headers = array("USER", "", "HOST", "LINE", "FROM");
+			$headers = ["USER", "", "HOST", "LINE", "FROM"];
 		} else {
 			$fmt = "%-12s %-12s %-10s %s\r\n";
-			$headers = array("USER", "HOST", "LINE", "FROM");
+			$headers = ["USER", "HOST", "LINE", "FROM"];
 		}
 
 		vprintf($fmt, $headers);
 
-		$last = array("user" => null);
+		$last = ["user" => null];
 		foreach ($data as $row) {
-			$line = array();
+			$line = [];
 			$flag = "";
 
 			if ($this->client->is_stale($row["updated"])) {
@@ -90,7 +90,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 
 	function output_hosts($data) {
 		$fmt = "%-12s %-26s %-5s %-5s %s\r\n";
-		$headers = array("HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED");
+		$headers = ["HOST", "DOMAIN NAME", "#USR", "#CON", "UPDATED"];
 
 		vprintf($fmt, $headers);
 

@@ -150,7 +150,7 @@ class Client {
 		if (!$ok)
 			return null;
 
-		$res = @ldap_read($ldaph, $ldap_dn, "(objectClass=*)", array($ldap_attr));
+		$res = @ldap_read($ldaph, $ldap_dn, "(objectClass=*)", [$ldap_attr]);
 		if (!$res)
 			return null;
 
@@ -173,16 +173,15 @@ class Client {
 	// will have no more than one entry for any user@host pair.
 
 	function summarize($utmp) {
-		$out = array();
-		$byuser = array();
+		$out = [];
+		$byuser = [];
 		foreach ($utmp as &$entry) {
 			$byuser[$entry["user"]][$entry["host"]][] = $entry;
 		}
 		foreach ($byuser as $user => &$byhost) {
 			foreach ($byhost as $host => &$sessions) {
-				$byfrom = array();
-				$updated = array();
-
+				$byfrom = [];
+				$updated = [];
 				foreach ($sessions as $entry) {
 					$from = \RWho\Util\normalize_host($entry["rhost"]);
 					if ($from === "(detached)")
@@ -193,7 +192,7 @@ class Client {
 				}
 				ksort($byfrom);
 				foreach ($byfrom as $from => &$lines) {
-					$out[] = array(
+					$out[] = [
 						"user" => $user,
 						"uid" => $uid,
 						"host" => $host,
@@ -202,7 +201,7 @@ class Client {
 						"rhost" => $from,
 						"is_summary" => count($lines) > 1,
 						"updated" => $updated[$from],
-					);
+					];
 				}
 			}
 		}

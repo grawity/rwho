@@ -6,7 +6,7 @@ require_once(__DIR__."/../lib-php/client_app.php");
 // Format an assoc array of query items to a query string
 
 function http_build_query($items) {
-	$query = array();
+	$query = [];
 	foreach ($items as $key => $value) {
 		if ($value === null or !strlen($value))
 			$query[] = urlencode($key);

@@ -100,7 +100,7 @@ function output_html($data, $plan) {
 		return;
 	}
 
-	$byuser = array();
+	$byuser = [];
 	foreach ($data as $row)
 		$byuser[$row["user"]][] = $row;
 
