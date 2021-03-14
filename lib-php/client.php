@@ -65,4 +65,36 @@ class Client {
 
 		return $data;
 	}
+
+	// retrieve_hosts() -> host_entry[]
+	// Retrieve all currently active hosts, with user and connection counts.
+
+	function retrieve_hosts($all=true) {
+		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$dead_ts = time() - $this->config->get_rel_time("expire.host-dead");
+
+		$ignore_ts = $all ? $dead_ts : $stale_ts;
+
+		$sql = "SELECT
+				hosts.*,
+				COUNT(DISTINCT utmp.user) AS users,
+				COUNT(utmp.user) AS entries
+			FROM hosts
+			LEFT OUTER JOIN utmp
+			ON hosts.host = utmp.host
+			WHERE last_update >= $ignore_ts
+			GROUP BY host";
+
+		$st = $this->db->dbh->prepare($sql);
+		if (!$st->execute()) {
+			var_dump($st->errorInfo());
+			return null;
+		}
+
+		$data = array();
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			$data[] = $row;
+		}
+		return $data;
+	}
 }

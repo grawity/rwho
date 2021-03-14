@@ -128,34 +128,8 @@ function summarize($utmp) {
 // Retrieve all currently active hosts, with user and connection counts.
 
 function retrieve_hosts($all=true) {
-	$db = DB::connect();
-
-	$stale_ts = time() - Config::getreltime("expire.mark-stale");
-	$dead_ts = time() - Config::getreltime("expire.host-dead");
-
-	$ignore_ts = $all ? $dead_ts : $stale_ts;
-
-	$sql = "SELECT
-			hosts.*,
-			COUNT(DISTINCT utmp.user) AS users,
-			COUNT(utmp.user) AS entries
-		FROM hosts
-		LEFT OUTER JOIN utmp
-		ON hosts.host = utmp.host
-		WHERE last_update >= $ignore_ts
-		GROUP BY host";
-
-	$st = $db->prepare($sql);
-	if (!$st->execute()) {
-		var_dump($st->errorInfo());
-		return null;
-	}
-
-	$data = array();
-	while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-		$data[] = $row;
-	}
-	return $data;
+	global $CLIENT;
+	return $CLIENT->retrieve_hosts($all);
 }
 
 // Internal use only:
