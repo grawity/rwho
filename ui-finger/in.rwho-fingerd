@@ -165,7 +165,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 
 		if (count($data)) {
 			if (!$detailed)
-				$data = summarize($data);
+				$data = $this->client->summarize($data);
 			$this->output($data, $detailed);
 		} else {
 			if ($has_user && $has_host)

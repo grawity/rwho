@@ -183,7 +183,7 @@ function handle_users_request($app) {
 
 	$data = $app->client->retrieve($user, $host, $app->should_filter());
 	if (!$detailed)
-		$data = \RWho\summarize($data);
+		$data = $app->client->summarize($data);
 
 	$plan = null;
 	if (strlen($user))

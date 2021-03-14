@@ -24,47 +24,6 @@ function parse_query($query) {
 	return array($user, $host);
 }
 
-// summarize(utmp_entry[] $data) -> utmp_entry[]
-// Sort utmp data by username and group by host. Resulting entries
-// will have no more than one entry for any user@host pair.
-
-function summarize($utmp) {
-	$out = array();
-	$byuser = array();
-	foreach ($utmp as &$entry) {
-		$byuser[$entry["user"]][$entry["host"]][] = $entry;
-	}
-	foreach ($byuser as $user => &$byhost) {
-		foreach ($byhost as $host => &$sessions) {
-			$byfrom = array();
-			$updated = array();
-
-			foreach ($sessions as $entry) {
-				$from = normalize_host($entry["rhost"]);
-				if ($from === "(detached)")
-					continue;
-				@$byfrom[$from][] = $entry["line"];
-				@$updated[$from] = max($updated[$from], $entry["updated"]);
-				$uid = $entry["uid"];
-			}
-			ksort($byfrom);
-			foreach ($byfrom as $from => &$lines) {
-				$out[] = array(
-					"user" => $user,
-					"uid" => $uid,
-					"host" => $host,
-					"line" => count($lines) == 1
-						? $lines[0] : count($lines),
-					"rhost" => $from,
-					"is_summary" => count($lines) > 1,
-					"updated" => $updated[$from],
-					);
-			}
-		}
-	}
-	return $out;
-}
-
 // strip_domain(str $fqdn) -> str $hostname
 // Return the leftmost component of a dotted domain name.
 
