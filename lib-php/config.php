@@ -50,6 +50,11 @@ class Configuration {
 		$this->_data[$key] = $value;
 	}
 
+	function set_default($key, $value) {
+		if (!array_key_exists($key, $this->_data))
+			$this->_data[$key] = $value;
+	}
+
 	function merge($data) {
 		$this->_data = array_merge($this->_data, $data);
 	}
