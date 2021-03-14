@@ -23,10 +23,12 @@ class Client {
 	// Both parameters optional.
 
 	function retrieve($user, $host, $hide_rhost=true) {
+		$stale_ts = time() - $this->_stale_age;
 		$dead_ts = time() - $this->_dead_age;
 		$data = $this->db->utmp_query($user, $host, $dead_ts);
 		foreach ($data as &$row) {
 			$row["is_summary"] = false;
+			$row["is_stale"] = ($row["updated"] < $stale_ts);
 			if ($hide_rhost) {
 				$row["rhost"] = "none";
 			}
