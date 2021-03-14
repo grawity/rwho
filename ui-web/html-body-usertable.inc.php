@@ -3,7 +3,6 @@ $link_user = !strlen($user);
 $link_host = !strlen($host);
 $columns = $detailed ? 5 : 4;
 ?>
-<?php if ($data_by_user) { ?>
 <?php foreach ($data_by_user as $userdata) { ?>
 <?php foreach ($userdata as $k => $row) { ?>
 <?php
@@ -50,7 +49,8 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 		</td>
 	</tr>
 <?php } ?>
-<?php } else { ?>
+
+<?php if (!$data_by_user) { ?>
 	<tr>
 		<td colspan="<?= $columns ?>" class="comment">Nobody is logged in.</td>
 	</tr>

@@ -1,4 +1,3 @@
-<?php if ($data) { ?>
 <?php foreach ($data as $row) { ?>
 	<tr class="<?= $row["is_stale"] ? "stale" : "" ?>">
 		<td><a href="?host=<?= htmlspecialchars($row["fqdn"]) ?>"><?= htmlspecialchars($row["host"]) ?></a></td>
@@ -8,7 +7,8 @@
 		<td><?= htmlspecialchars($row["last_update_age"]) ?></td>
 	</tr>
 <?php } ?>
-<?php } else { ?>
+
+<?php if (!$data) { ?>
 	<tr>
 		<td colspan="5" class="comment">No active hosts.</td>
 	</tr>
