@@ -7,6 +7,18 @@ chdir(__DIR__."/..");
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
 
+function finger_parse($input) {
+	$input = rtrim($input, "\r\n");
+	if ($input === "/W" or substr($input, 0, 3) === "/W ") {
+		$query = substr($input, 3);
+		$detailed = true;
+	} else {
+		$query = $input;
+		$detailed = false;
+	}
+	return array($query, $detailed);
+}
+
 const AC_DENIED = 0;	// Deny access completely
 const AC_LIMITED = 1;	// Show limited information (no rhost)
 const AC_TRUSTED = 2;	// Show all information
@@ -30,7 +42,7 @@ class RWhoFingerServer {
 		return false;
 	}
 
-	function check_access($rhost) {
+	function _check_access($rhost) {
 		$anon = true;
 		if ($this->_is_rhost_trusted($rhost)) {
 			$anon = false;
@@ -46,106 +58,90 @@ class RWhoFingerServer {
 			return AC_TRUSTED;
 		}
 	}
-}
 
-$SERVER = new RWhoFingerServer();
+	function handle_query($input) {
+		list ($query, $detailed) = finger_parse($input);
 
-function finger_handle_query($input) {
-	global $SERVER;
+		$rhost = get_rhost();
+		$anon = true;
 
-	list ($query, $detailed) = finger_parse($input);
+		$access = $this->_check_access($rhost);
 
-	$rhost = get_rhost();
-	$anon = true;
+		if ($this->config->get_bool("finger.log", true)) {
+			$log_accepted = ($access) ? "accepted" : "refused";
+			$log_qry = rtrim($input, "\r\n");
+			$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
+			syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
+		}
 
-	$access = $SERVER->check_access($rhost);
+		if (!$access)
+			die("Access denied.\r\n");
 
-	if ($SERVER->config->get_bool("finger.log", true)) {
-		$log_accepted = ($access) ? "accepted" : "refused";
-		$log_qry = rtrim($input, "\r\n");
-		$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
-		syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
-	}
+		// special "list hosts" query
 
-	if (!$access)
-		die("Access denied.\r\n");
+		if ($query === "*") {
+			$data = retrieve_hosts();
+			if (!count($data))
+				die("No active hosts.\r\n");
+			output_hosts($data);
+			if ($detailed) {
+				$n_users = count_users();
+				$n_conns = count_conns();
+				$n_hosts = count($data);
+				print("\r\n");
+				printf("(%d users over %d connections on %d hosts)\r\n",
+					$n_users, $n_conns, $n_hosts);
+			}
+			return;
+		}
 
-	// special "list hosts" query
+		// normal queries
 
-	if ($query === "*") {
-		$data = retrieve_hosts();
-		if (!count($data))
-			die("No active hosts.\r\n");
-		output_hosts($data);
-		if ($detailed) {
+		list ($q_user, $q_host) = parse_query($query);
+		$hide_rhost = ($access <= AC_LIMITED);
+
+		$has_user = strlen($q_user);
+		$has_host = strlen($q_host);
+
+		$data = retrieve($q_user, $q_host, $hide_rhost);
+
+		// display login info
+
+		if (count($data)) {
+			if (!$detailed)
+				$data = summarize($data);
+			output($data, $detailed);
+		} else {
+			if ($has_user && $has_host)
+				printf("finger: '%s' is not logged in to %s.\r\n",
+					$q_user, $q_host);
+			elseif ($has_user)
+				printf("finger: '%s' is not logged in.\r\n",
+					$q_user);
+			elseif ($has_host)
+				printf("finger: Nobody is logged in to %s.\r\n",
+					$q_host);
+			else
+				print("finger: Nobody is logged in.\r\n");
+		}
+
+		// display stats
+
+		if ($detailed && !$has_user && !$has_host) {
 			$n_users = count_users();
-			$n_conns = count_conns();
-			$n_hosts = count($data);
+			$n_conns = count($data);
+			$n_hosts = count_hosts();
 			print("\r\n");
 			printf("(%d users over %d connections on %d hosts)\r\n",
 				$n_users, $n_conns, $n_hosts);
 		}
-		return;
+
+		// display plan
+
+		if ($has_user) {
+			output_plan($q_user, $q_host);
+		}
 	}
-
-	// normal queries
-
-	list ($q_user, $q_host) = parse_query($query);
-	$hide_rhost = ($access <= AC_LIMITED);
-
-	$has_user = strlen($q_user);
-	$has_host = strlen($q_host);
-
-	$data = retrieve($q_user, $q_host, $hide_rhost);
-
-	// display login info
-
-	if (count($data)) {
-		if (!$detailed)
-			$data = summarize($data);
-		output($data, $detailed);
-	} else {
-		if ($has_user && $has_host)
-			printf("finger: '%s' is not logged in to %s.\r\n",
-				$q_user, $q_host);
-		elseif ($has_user)
-			printf("finger: '%s' is not logged in.\r\n",
-				$q_user);
-		elseif ($has_host)
-			printf("finger: Nobody is logged in to %s.\r\n",
-				$q_host);
-		else
-			print("finger: Nobody is logged in.\r\n");
-	}
-
-	// display stats
-
-	if ($detailed && !$has_user && !$has_host) {
-		$n_users = count_users();
-		$n_conns = count($data);
-		$n_hosts = count_hosts();
-		print("\r\n");
-		printf("(%d users over %d connections on %d hosts)\r\n",
-			$n_users, $n_conns, $n_hosts);
-	}
-
-	// display plan
-
-	if ($has_user) {
-		output_plan($q_user, $q_host);
-	}
-}
-
-function finger_parse($input) {
-	$input = rtrim($input, "\r\n");
-	if ($input === "/W" or substr($input, 0, 3) === "/W ") {
-		$query = substr($input, 3);
-		$detailed = true;
-	} else {
-		$query = $input;
-		$detailed = false;
-	}
-	return array($query, $detailed);
 }
 
 function output($data, $detailed=false) {
@@ -241,4 +237,6 @@ if (isset($_SERVER["REQUEST_URI"])) {
 } else {
 	$input = fgets(STDIN) or die();
 }
-finger_handle_query($input);
+
+$fingerd = new RWhoFingerServer();
+$fingerd->handle_query($input);
