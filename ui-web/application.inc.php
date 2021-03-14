@@ -1,6 +1,6 @@
 <?php
 namespace RWho\Web;
-require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/util.php");
 require_once(__DIR__."/../lib-php/client_app.php");
 
 function is_wildcard($str) {

@@ -138,5 +138,3 @@ function ip_cidr($host, $mask) {
 	}
 	return true;
 }
-
-return true;
