@@ -74,15 +74,6 @@ function parse_query($query) {
 	return array($user, $host);
 }
 
-// retrieve(str? $user, str? $host) -> utmp_entry[]
-// Retrieve all currently known sessions for given query.
-// Both parameters optional.
-
-function retrieve($q_user, $q_host, $q_filter=true) {
-	global $CLIENT;
-	return $CLIENT->retrieve($q_user, $q_host, $q_filter);
-}
-
 // summarize(utmp_entry[] $data) -> utmp_entry[]
 // Sort utmp data by username and group by host. Resulting entries
 // will have no more than one entry for any user@host pair.
@@ -122,14 +113,6 @@ function summarize($utmp) {
 		}
 	}
 	return $out;
-}
-
-// retrieve_hosts() -> host_entry[]
-// Retrieve all currently active hosts, with user and connection counts.
-
-function retrieve_hosts($all=true) {
-	global $CLIENT;
-	return $CLIENT->retrieve_hosts($all);
 }
 
 // Internal use only:
