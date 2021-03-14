@@ -3,6 +3,16 @@ namespace RWho;
 require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
+function group_by_user($data) {
+	$grouped = [];
+	foreach ($data as $row) {
+		$row["fqdn"] = $row["host"];
+		$row["host"] = \RWho\Util\strip_domain($row["fqdn"]);
+		$grouped[$row["user"]][] = $row;
+	}
+	return $grouped;
+}
+
 function output_json($data, $user, $host, $detailed) {
 	global $app;
 
@@ -78,18 +88,6 @@ function output_xml($data, $user, $host, $detailed) {
 	print $doc->saveXML();
 }
 
-function output_html($data, $plan, $user, $host, $detailed) {
-	global $app;
-
-	$data_by_user = [];
-	foreach ($data as $row) {
-		$row["fqdn"] = $row["host"];
-		$row["host"] = \RWho\Util\strip_domain($row["fqdn"]);
-		$data_by_user[$row["user"]][] = $row;
-	}
-	require(__DIR__."/html-body-usertable.inc.php");
-}
-
 class UserListPage extends \RWho\Web\RWhoWebApp {
 	public $user;
 	public $host;
@@ -116,11 +114,14 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 			$plan = $this->client->get_plan_file($user, $host);
 
 		if ($format == "html") {
+			$data_by_user = group_by_user($data);
+
 			// XXX: Doesn't make sense to use <em> because this also goes in <title>!
 			$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
 			$page_title .= " on ";
 			$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
 			$page_css = $this->config->get("web.stylesheet", null);
+
 			$xhr_refresh = 3;
 			$xhr_url = Web\mangle_query(["fmt" => "html-xhr"]);
 			$xml_url = Web\mangle_query(["fmt" => "xml"]);
@@ -132,7 +133,9 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 			require("html-footer.inc.php");
 		}
 		elseif ($format == "html-xhr") {
-			output_html($data, $plan, $user, $host, $detailed);
+			$data_by_user = group_by_user($data);
+
+			require("html-body-usertable.inc.php");
 		}
 		elseif ($format == "json") {
 			output_json($data, $user, $host, $detailed);

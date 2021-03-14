@@ -19,16 +19,8 @@ $columns = $detailed ? 5 : 4;
 
 			<tr class="<?= $row["is_stale"] ? "stale" : "" ?>">
 				<!-- User -->
-				<?php if ($detailed) { ?>
-				<td>
-					<?php if ($link_user) { ?>
-					<a href="?user=<?= $h_user ?>"><?= $h_user ?></a>
-					<?php } else { ?>
-					<?= $h_user ?>
-					<?php } ?>
-				</td>
-				<?php } elseif ($k == 0) { ?>
-				<td rowspan="<?= count($userdata) ?>">
+				<?php if ($detailed || $k == 0) { ?>
+				<td rowspan="<?= $detailed ? 1 : count($userdata) ?>">
 					<?php if ($link_user) { ?>
 					<a href="?user=<?= $h_user ?>"><?= $h_user ?></a>
 					<?php } else { ?>

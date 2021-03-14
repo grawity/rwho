@@ -39,7 +39,7 @@ namespace RWho;
 </tr>
 </tfoot>
 
-<?php output_html($data, $plan, $user, $host, $detailed); ?>
+<?php require("html-body-usertable.inc.php"); ?>
 </table>
 
 <?php } else { // data === false ?>
