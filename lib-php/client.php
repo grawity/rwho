@@ -50,7 +50,11 @@ class Client {
 		$stale_ts = time() - $this->_stale_age;
 		$dead_ts = time() - $this->_dead_age;
 		$minimum_ts = $all ? $dead_ts : $stale_ts;
-		return $this->db->host_query($minimum_ts);
+		$data = $this->db->host_query($minimum_ts);
+		foreach ($data as &$row) {
+			$row["is_stale"] = ($row["last_update"] < $stale_ts);
+		}
+		return $data;
 	}
 
 	// count_users() -> int
