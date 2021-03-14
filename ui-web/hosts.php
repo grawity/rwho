@@ -20,7 +20,7 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 		}
 
 		header("Content-Type: text/plain; charset=utf-8");
-		print json_encode($json);
+		print json_encode($json, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 	}
 
 	function output_xml($data) {
