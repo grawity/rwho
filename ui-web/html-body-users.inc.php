@@ -30,7 +30,7 @@
 			<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
 <?php } ?>
 			or
-			<a href="hosts.php">list hosts</a>
+			<a href="hosts">list hosts</a>
 		</td>
 	</tr>
 	</tfoot>
