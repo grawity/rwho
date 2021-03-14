@@ -2,10 +2,11 @@
 namespace RWho\Web;
 require_once(__DIR__."/../lib-php/client_app.php");
 
-// http_build_query(dict<str,str> $items) -> str $query
-// Format an assoc array of query items to a query string
+// _build_query(dict<str,str> $items) -> str $query
+// Format an assoc array of query items to an HTTP query string
+// Unlike the PHP built-in, this version supports items without a value.
 
-function http_build_query($items) {
+function _build_query($items) {
 	$query = [];
 	foreach ($items as $key => $value) {
 		if ($value === null or !strlen($value))
@@ -30,7 +31,7 @@ function mangle_query($add, $remove=null) {
 		foreach ($remove as $key)
 			unset($query[$key]);
 
-	return http_build_query($query);
+	return _build_query($query);
 }
 
 class RWhoWebApp extends \RWho\ClientApplicationBase {
