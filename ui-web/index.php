@@ -187,15 +187,17 @@ function output_html($data, $plan) {
 }
 
 function should_filter() {
+	global $config;
+
 	$anon = true;
 	$rhost = get_rhost();
-	foreach (Config::getlist("privacy.trusted_nets") as $addr)
+	foreach ($config->get_list("privacy.trusted_nets") as $addr)
 		if (ip_cidr($rhost, $addr)) {
 			$anon = false;
 			break;
 		}
 
-	if ($anon && Config::getbool("privacy.hide_rhost", false))
+	if ($anon && $config->get_bool("privacy.hide_rhost", false))
 		return true;
 	return false;
 }
