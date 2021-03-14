@@ -92,13 +92,8 @@ class UserListPage extends RWhoWebApp {
 
 		$data_by_user = group_by_user($data);
 
-		if (strlen($user) || strlen($host)) {
-			$normal_url = "?".mangle_query(["summary" => 1], ["full"]);
-			$expand_url = "?".mangle_query([], ["full", "summary"]);
-		} else {
-			$normal_url = "?".mangle_query([], ["full", "summary"]);
-			$expand_url = "?".mangle_query(["full" => 1], ["summary"]);
-		}
+		$normal_url = "?".mangle_query([], ["full"]);
+		$expand_url = "?".mangle_query(["full" => 1]);
 
 		$xhr_url = "?".mangle_query(["fmt" => "html-xhr"]);
 		$xml_url = "?".mangle_query(["fmt" => "xml"]);
@@ -125,12 +120,7 @@ class UserListPage extends RWhoWebApp {
 		$user = @$_GET["user"] ?? "";
 		$host = @$_GET["host"] ?? "";
 		$has_query = (strlen($user) || strlen($host));
-		if (isset($_GET["full"]))
-			$detailed = true;
-		elseif (isset($_GET["summary"]))
-			$detailed = false;
-		else
-			$detailed = (strlen($user) || strlen($host));
+		$detailed = isset($_GET["full"]);
 		$format = @$_GET["fmt"] ?? "html";
 
 		$data = $this->client->retrieve($user, $host, $this->should_filter());

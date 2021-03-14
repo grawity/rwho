@@ -55,7 +55,7 @@ class RWhoWebApp extends \RWho\ClientApplicationBase {
 		} else {
 			$q = $user;
 		}
-		if ($detailed && !(strlen($user) || strlen($host))) {
+		if ($detailed) {
 			$q = "/W ".$q;
 		}
 		return sprintf($gateway, urlencode($q));
