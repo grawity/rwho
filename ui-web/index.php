@@ -123,7 +123,7 @@ function output_html($data, $plan) {
 				print "<tr>\n";
 
 			$linkuser = !strlen(query::$user);
-			$linkhost = !strlen(query::$host) || is_wildcard(query::$host);
+			$linkhost = !strlen(query::$host);
 
 			if (query::$detailed) {
 				print "\t<td>"
@@ -175,7 +175,7 @@ function handle_users_request($app) {
 	elseif (@$_GET["summary"])
 		$detailed = false;
 	else
-		$detailed = (strlen($user) || (strlen($host) && !is_wildcard($host)));
+		$detailed = (strlen($user) || strlen($host));
 	$format = @$_GET["fmt"] ?? "html";
 
 	/* TODO */

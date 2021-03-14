@@ -2,10 +2,6 @@
 namespace RWho\Web;
 require_once(__DIR__."/../lib-php/client_app.php");
 
-function is_wildcard($str) {
-	return strlen($str) && (strpos($str, "%") !== false);
-}
-
 // http_build_query(dict<str,str> $items) -> str $query
 // Format an assoc array of query items to a query string
 
