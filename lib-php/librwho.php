@@ -35,18 +35,6 @@ class Config {
 	}
 }
 
-class DB {
-	static $dbh;
-
-	static function connect() {
-		if (!isset(self::$dbh)) {
-			$db = new Database(Config::$conf);
-			self::$dbh = $db->dbh;
-		}
-		return self::$dbh;
-	}
-}
-
 Config::$conf = new \RWho\Config\Configuration();
 Config::$conf->load(__DIR__."/../server.conf"); // for DB
 Config::$conf->load(__DIR__."/../rwho.conf");
