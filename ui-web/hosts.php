@@ -76,12 +76,6 @@ class HostListPage extends RWhoWebApp {
 		}
 	}
 
-	function output_html_xhr($data, $params) {
-		extract($params);
-
-		require("html-body-hosts.inc.php");
-	}
-
 	function handle_request() {
 		$has_query = true;
 		$format = @$_GET["fmt"] ?? "html";
