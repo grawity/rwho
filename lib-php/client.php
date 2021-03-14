@@ -2,6 +2,8 @@
 namespace RWho;
 require_once(__DIR__."/../lib-php/database.php");
 
+const MIN_UID = 1000;
+
 class Client {
 	function __construct($config) {
 		$this->config = $config;

@@ -1,8 +1,6 @@
 <?php
 namespace RWho;
 
-const MIN_UID = 1000;
-
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
 
