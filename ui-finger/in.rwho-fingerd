@@ -1,36 +1,73 @@
 #!/usr/bin/php
 <?php
 namespace RWho;
-require __DIR__."/../lib-php/librwho.php";
+require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/config.php");
 chdir(__DIR__."/..");
 
 openlog("rwho-fingerd", null, LOG_DAEMON);
 
-Config::parse(__DIR__."/../server.conf");
+const AC_DENIED = 0;	// Deny access completely
+const AC_LIMITED = 1;	// Show limited information (no rhost)
+const AC_TRUSTED = 2;	// Show all information
+
+class RWhoFingerServer {
+	function __construct() {
+		$this->config = new \RWho\Config\Configuration();
+		$this->config->load(__DIR__."/../server.conf"); // for DB information
+		$this->config->load(__DIR__."/../rwho.conf");
+
+		// Still needed for legacy librwho
+		Config::parse(__DIR__."/../server.conf");
+	}
+
+	function _is_rhost_trusted($host) {
+		$nets = $this->config->get_list("privacy.trusted_nets");
+		foreach ($nets as $net) {
+			if (ip_cidr($host, $net))
+				return true;
+		}
+		return false;
+	}
+
+	function check_access($rhost) {
+		$anon = true;
+		if ($this->_is_rhost_trusted($rhost)) {
+			$anon = false;
+		}
+		if ($anon) {
+			if ($this->config->get_bool("privacy.deny_anonymous", false))
+				return AC_DENIED;
+			elseif ($this->config->get_bool("privacy.hide_rhost", false))
+				return AC_LIMITED;
+			else
+				return AC_TRUSTED;
+		} else {
+			return AC_TRUSTED;
+		}
+	}
+}
+
+$SERVER = new RWhoFingerServer();
 
 function finger_handle_query($input) {
+	global $SERVER;
+
 	list ($query, $detailed) = finger_parse($input);
 
 	$rhost = get_rhost();
 	$anon = true;
 
-	foreach (Config::getlist("privacy.trusted_nets") as $addr)
-		if ($anon && ip_cidr($rhost, $addr))
-			$anon = false;
+	$access = $SERVER->check_access($rhost);
 
-	if ($anon)
-		$accepted = !Config::getbool("privacy.deny_anonymous", false);
-	else
-		$accepted = true;
-
-	if (Config::getbool("finger.log")) {
-		$log_accepted = $accepted ? "accepted" : "refused";
+	if ($SERVER->config->get_bool("finger.log", true)) {
+		$log_accepted = ($access) ? "accepted" : "refused";
 		$log_qry = rtrim($input, "\r\n");
 		$log_msg = "query \"".addcslashes($log_qry, "\000..\037\\")."\"";
 		syslog(LOG_INFO, "$log_accepted $log_msg from $rhost");
 	}
 
-	if (!$accepted)
+	if (!$access)
 		die("Access denied.\r\n");
 
 	// special "list hosts" query
@@ -54,7 +91,7 @@ function finger_handle_query($input) {
 	// normal queries
 
 	list ($q_user, $q_host) = parse_query($query);
-	$hide_rhost = $anon && Config::getbool("privacy.hide_rhost", false);
+	$hide_rhost = ($access <= AC_LIMITED);
 
 	$has_user = strlen($q_user);
 	$has_host = strlen($q_host);

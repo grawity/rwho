@@ -55,7 +55,6 @@ Config::$conf->merge([
 	// maximum age before which the entry will be considered dead
 	// and not displayed in host list
 	"expire.host-dead" => "1d",
-	"finger.log" => "false",
 ]);
 Config::$conf->load(__DIR__."/../rwho.conf");
 
