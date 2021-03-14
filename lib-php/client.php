@@ -3,8 +3,6 @@ namespace RWho;
 require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/util.php");
 
-const MIN_UID = 1000;
-
 class Client {
 	function __construct($config) {
 		$this->config = $config;
@@ -92,11 +90,13 @@ class Client {
 	// $host is ignored in current implementation.
 
 	function _find_user_plan_file($user, $host) {
+		$min_uid = intval($this->config->get("finger.plan_min_uid", 1000));
+
 		if (!function_exists("posix_getpwnam"))
 			return null;
 
 		$pw = @posix_getpwnam($user);
-		if (!$pw || ($pw["uid"] < MIN_UID && $pw["uid"] != 0))
+		if (!$pw || ($pw["uid"] < $min_uid && $pw["uid"] != 0))
 			return null;
 
 		$dir = $pw["dir"];
