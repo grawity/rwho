@@ -50,11 +50,6 @@ class Configuration {
 		$this->_data[$key] = $value;
 	}
 
-	function set_default($key, $value) {
-		if (!array_key_exists($key, $this->_data))
-			$this->_data[$key] = $value;
-	}
-
 	function get($key, $default=null) {
 		if (!array_key_exists($key, $this->_data))
 			return $default;
