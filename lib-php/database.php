@@ -50,11 +50,7 @@ class Database {
 		$st = $this->dbh->prepare($sql);
 		$st->bindValue(":time", $updated_after);
 		$st->execute();
-		$data = [];
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			$data[] = $row;
-		}
-		return $data;
+		return $st->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
 	function host_update($host, $addr) {
@@ -79,15 +75,13 @@ class Database {
 	}
 
 	function host_count($minimum_ts=0) {
-		$sql = "SELECT COUNT(host) AS count
+		$sql = "SELECT COUNT(host)
 			FROM hosts
 			WHERE last_update >= :time";
 		$st = $this->dbh->prepare($sql);
 		$st->bindValue(":time", $minimum_ts);
 		$st->execute();
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			return $row["count"];
-		}
+		return $st->fetchColumn(0);
 	}
 
 	/* "UTMP entries" aka "Logged in users" table */
@@ -110,11 +104,7 @@ class Database {
 			$st->bindValue(":host", $host);
 		}
 		$st->execute();
-		$data = [];
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			$data[] = $row;
-		}
-		return $data;
+		return $st->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
 	function utmp_insert_one($host, $entry) {
@@ -159,19 +149,17 @@ class Database {
 
 	function utmp_count($group_users, $minimum_ts=0) {
 		if ($group_users) {
-			$sql = "SELECT COUNT(DISTINCT user) AS count
+			$sql = "SELECT COUNT(DISTINCT user)
 				FROM utmp
 				WHERE updated >= :time";
 		} else {
-			$sql = "SELECT COUNT(user) AS count
+			$sql = "SELECT COUNT(user)
 				FROM utmp
 				WHERE updated >= :time";
 		}
 		$st = $this->dbh->prepare($sql);
 		$st->bindValue(":time", $minimum_ts);
 		$st->execute();
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			return $row["count"];
-		}
+		return $st->fetchColumn(0);
 	}
 }
