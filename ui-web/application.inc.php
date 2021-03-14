@@ -5,17 +5,9 @@ require_once(__DIR__."/../lib-php/client_app.php");
 
 class RWhoWebApp extends \RWho\ClientApplicationBase {
 	function should_filter() {
-		$anon = true;
 		$rhost = \RWho\get_rhost();
-		foreach ($this->config->get_list("privacy.trusted_nets") as $addr)
-			if (\RWho\ip_cidr($rhost, $addr)) {
-				$anon = false;
-				break;
-			}
-
-		if ($anon && $this->config->get_bool("privacy.hide_rhost", false))
-			return true;
-		return false;
+		$access = $this->_check_access($addr);
+		return ($access < \RWho\AC_TRUSTED);
 	}
 
 	function make_finger_addr($user, $host, $detailed) {

@@ -16,36 +16,7 @@ function finger_parse($input) {
 	return array($query, $detailed);
 }
 
-const AC_DENIED = 0;	// Deny access completely
-const AC_LIMITED = 1;	// Show limited information (no rhost)
-const AC_TRUSTED = 2;	// Show all information
-
 class RWhoFingerServer extends \RWho\ClientApplicationBase {
-	function _is_rhost_trusted($host) {
-		$nets = $this->config->get_list("privacy.trusted_nets");
-		foreach ($nets as $net) {
-			if (ip_cidr($host, $net))
-				return true;
-		}
-		return false;
-	}
-
-	function _check_access($rhost) {
-		$anonymous = true;
-		if ($this->_is_rhost_trusted($rhost)) {
-			$anonymous = false;
-		}
-		if ($anonymous) {
-			if ($this->config->get_bool("privacy.deny_anonymous", false))
-				return AC_DENIED;
-			elseif ($this->config->get_bool("privacy.hide_rhost", false))
-				return AC_LIMITED;
-			else
-				return AC_TRUSTED;
-		} else {
-			return AC_TRUSTED;
-		}
-	}
 
 	function output($data, $detailed=false) {
 		if ($detailed) {
