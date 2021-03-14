@@ -81,83 +81,13 @@ function output_xml($data, $user, $host, $detailed) {
 function output_html($data, $plan, $user, $host, $detailed) {
 	global $app;
 
-	$link_user = !strlen($user);
-	$link_host = !strlen($host);
-
-	$columns = 4; /* user+host+line+address */
-	if ($detailed)
-		$columns += 1; /* uid */
-
-	if (!count($data)) {
-		print "<tr>\n";
-		print "\t<td colspan=\"".$columns."\" class=\"comment\">"
-			."Nobody is logged in."
-			."</td>\n";
-		print "</tr>\n";
-		return;
+	$data_by_user = [];
+	foreach ($data as $row) {
+		$row["fqdn"] = $row["host"];
+		$row["host"] = \RWho\Util\strip_domain($row["fqdn"]);
+		$data_by_user[$row["user"]][] = $row;
 	}
-
-	$byuser = [];
-	foreach ($data as $row)
-		$byuser[$row["user"]][] = $row;
-
-	//ksort($byuser);
-
-	foreach ($byuser as $data) {
-		foreach ($data as $k => $row) {
-			$user = htmlspecialchars($row["user"]);
-			$uid = intval($row["uid"]);
-			$fqdn = htmlspecialchars($row["host"]);
-			$host = Util\strip_domain($fqdn);
-			$line = htmlspecialchars($row["line"]);
-			$rhost = strlen($row["rhost"])
-				? htmlspecialchars($row["rhost"])
-				: "(local)";
-
-			if ($row["is_stale"])
-				print "<tr class=\"stale\">\n";
-			else
-				print "<tr>\n";
-
-			if ($detailed) {
-				print "\t<td>"
-					.($link_user
-						? "<a href=\"?user=$user\">$user</a>"
-						: $user)
-					."</td>\n";
-			} else {
-				if ($k == 0)
-					print "\t<td rowspan=\"".count($data)."\">"
-						.($link_user
-							? "<a href=\"?user=$user\">$user</a>"
-							: $user)
-						."</td>\n";
-			}
-
-			if ($detailed)
-				print "\t<td>$uid</td>\n";
-
-			print "\t<td>"
-				.($link_host
-					? "<a href=\"?host=$fqdn\" title=\"$fqdn\">$host</a>"
-					: $host)
-				."</td>\n";
-			print "\t<td>"
-				.($row["is_summary"] ? "($line ttys)" : $line)
-				."</td>\n";
-			print "\t<td>$rhost</td>\n";
-
-			print "</tr>\n";
-		}
-	}
-
-	if (strlen($plan)) {
-		print "<tr>\n";
-		print "\t<td colspan=\"".$columns."\">";
-		print "\t\t<pre class=\"plan\"><div class=\"plan-head\">~/.plan:</div><br><div class=\"plan-body\">".htmlspecialchars($plan)."</div></pre>\n";
-		print "\t</td>\n";
-		print "</tr>\n";
-	}
+	require(__DIR__."/html-body-usertable.inc.php");
 }
 
 class UserListPage extends \RWho\Web\RWhoWebApp {
