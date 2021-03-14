@@ -2,7 +2,6 @@
 namespace RWho;
 
 require_once(__DIR__."/../lib-php/config.php");
-require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/client.php");
 
 const MIN_UID = 1000;
