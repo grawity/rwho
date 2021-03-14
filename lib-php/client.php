@@ -24,31 +24,15 @@ class Client {
 	// Retrieve all currently known sessions for given query.
 	// Both parameters optional.
 
-	function retrieve($q_user, $q_host, $q_filter=true) {
+	function retrieve($user, $host, $hide_rhost=true) {
 		$dead_ts = time() - $this->_dead_age;
-
-		$sql = "SELECT * FROM utmp";
-		$conds = array();
-		if (strlen($q_user)) $conds[] = "user=:user";
-		if (strlen($q_host)) $conds[] = "host=:host";
-		$conds[] = "updated >= $dead_ts";
-		$sql .= " WHERE ".implode(" AND ", $conds);
-
-		$st = $this->db->dbh->prepare($sql);
-		if (strlen($q_user)) $st->bindValue(":user", $q_user);
-		if (strlen($q_host)) $st->bindValue(":host", $q_host);
-		$st->execute();
-
-		$data = array();
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+		$data = $this->db->utmp_query($user, $host, $dead_ts);
+		foreach ($data as &$row) {
 			$row["is_summary"] = false;
-			$data[] = $row;
-		}
-
-		if ($q_filter)
-			foreach ($data as &$row)
+			if ($hide_rhost) {
 				$row["rhost"] = "none";
-
+			}
+		}
 		usort($data, function($a, $b) {
 			return strnatcmp($a["user"], $b["user"])
 			    ?: strnatcmp($a["host"], $b["host"])
@@ -56,7 +40,6 @@ class Client {
 			    ?: strnatcmp($a["rhost"], $b["rhost"])
 			    ;
 		});
-
 		return $data;
 	}
 
@@ -66,26 +49,8 @@ class Client {
 	function retrieve_hosts($all=true) {
 		$stale_ts = time() - $this->_stale_age;
 		$dead_ts = time() - $this->_dead_age;
-
-		$ignore_ts = $all ? $dead_ts : $stale_ts;
-
-		$sql = "SELECT
-				hosts.*,
-				COUNT(DISTINCT utmp.user) AS users,
-				COUNT(utmp.user) AS entries
-			FROM hosts
-			LEFT OUTER JOIN utmp
-			ON hosts.host = utmp.host
-			WHERE last_update >= $ignore_ts
-			GROUP BY host";
-
-		$st = $this->db->dbh->prepare($sql);
-		$st->execute();
-		$data = array();
-		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
-			$data[] = $row;
-		}
-		return $data;
+		$minimum_ts = $all ? $dead_ts : $stale_ts;
+		return $this->db->host_query($minimum_ts);
 	}
 
 	// Internal use only:

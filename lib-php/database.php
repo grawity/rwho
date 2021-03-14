@@ -37,6 +37,26 @@ class Database {
 
 	/* "Active hosts" table */
 
+	function host_query($updated_after=0) {
+		$sql = "SELECT
+				hosts.*,
+				COUNT(DISTINCT utmp.user) AS users,
+				COUNT(utmp.user) AS entries
+			FROM hosts
+			LEFT OUTER JOIN utmp
+			ON hosts.host = utmp.host
+			WHERE last_update >= :time
+			GROUP BY host";
+		$st = $this->dbh->prepare($sql);
+		$st->bindValue(":time", $updated_after);
+		$st->execute();
+		$data = [];
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			$data[] = $row;
+		}
+		return $data;
+	}
+
 	function host_update($host, $addr) {
 		$st = $this->dbh->prepare("
 			INSERT INTO hosts (host, last_update, last_addr)
@@ -59,6 +79,31 @@ class Database {
 	}
 
 	/* "UTMP entries" aka "Logged in users" table */
+
+	function utmp_query($user, $host, $minimum_ts=0) {
+		$sql = "SELECT * FROM utmp
+			WHERE updated >= :time";
+		if (strlen($user)) {
+			$sql .= " AND user = :user";
+		}
+		if (strlen($host)) {
+			$sql .= " AND host = :host";
+		}
+		$st = $this->dbh->prepare($sql);
+		$st->bindValue(":time", $minimum_ts);
+		if (strlen($user)) {
+			$st->bindValue(":user", $user);
+		}
+		if (strlen($host)) {
+			$st->bindValue(":host", $host);
+		}
+		$st->execute();
+		$data = [];
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			$data[] = $row;
+		}
+		return $data;
+	}
 
 	function utmp_insert_one($host, $entry) {
 		$st = $this->dbh->prepare("
