@@ -2,13 +2,11 @@
 <?php
 namespace RWho;
 require_once(__DIR__."/lib-php/config.php");
-require_once(__DIR__."/lib-php/database.php");
+require_once(__DIR__."/lib-php/client.php");
 
 $config = new \RWho\Config\Configuration();
 $config->load(__DIR__."/server.conf");
-$db = new \RWho\Database($config);
 
-$max_age = $config->get_rel_time("cleanup.max_age", 86400);
-print "cleaning up items older than $max_age seconds\n";
-$rows = $db->utmp_delete_old(time()-$max_age);
-print "done: purged $rows rows\n";
+$client = new \RWho\Client($config);
+$rows = $client->purge_stale();
+print "Purged $rows rows\n";

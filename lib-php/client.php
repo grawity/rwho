@@ -83,6 +83,14 @@ class Client {
 		return $timestamp < $stale_ts;
 	}
 
+	// purge_stale() -> int
+	// Delete rows belonging to dead hosts
+
+	function purge_stale() {
+		$max_age = $this->config->get_rel_time("cleanup.max_age", 86400);
+		return $this->db->utmp_delete_old(time()-$max_age);
+	}
+
 	// _find_user_plan_file(str $user, str $host) -> str?
 	// Find the .plan file for a global user:
 	// * Will return null if user doesn't exist or has 0 < uid < 25000.
