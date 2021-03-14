@@ -112,6 +112,7 @@ if (!create_xhr()) {
 
 	/* Create a custom property */
 	hidden_prop = "hidden";
+	/* This is not optimal, as blurred windows are actually still visible. */
 	window.attachEvent("onfocus", function() {
 		document[hidden_prop] = false;
 		update_visibility();
