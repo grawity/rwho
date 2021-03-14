@@ -97,4 +97,62 @@ class Client {
 		}
 		return $data;
 	}
+
+	// Internal use only:
+	// __single_field_query(str $sql, str $field) -> mixed
+	// Return a single column from the first field of a SQL SELECT result.
+	// Useful for 'SELECT COUNT(x) AS count' kind of queries.
+
+	function __single_field_query($sql, $field) {
+		$st = $this->db->dbh->prepare($sql);
+		if (!$st->execute()) {
+			var_dump($st->errorInfo());
+			return null;
+		}
+
+		while ($row = $st->fetch(\PDO::FETCH_ASSOC)) {
+			return $row[$field];
+		}
+	}
+
+	// count_users() -> int
+	// Count unique user names on all utmp records.
+
+	function count_users() {
+		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$sql = "SELECT COUNT(DISTINCT user) AS count
+			FROM utmp
+			WHERE updated >= $stale_ts";
+		return $this->__single_field_query($sql, "count");
+	}
+
+	// count_conns() -> int
+	// Count all connections (utmp records).
+
+	function count_conns() {
+		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$sql = "SELECT COUNT(user) AS count
+			FROM utmp
+			WHERE updated >= $stale_ts";
+		return $this->__single_field_query($sql, "count");
+	}
+
+	// count_hosts() -> int
+	// Count all currently active hosts, with or without users.
+
+	function count_hosts() {
+		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		$sql = "SELECT COUNT(host) AS count
+			FROM hosts
+			WHERE last_update >= $stale_ts";
+		return $this->__single_field_query($sql, "count");
+	}
+
+	// is_stale(int $time) -> bool
+	// Check whether the given timestamp should be considered "stale".
+
+	function is_stale($timestamp) {
+		$stale_ts = time() - $this->config->get_rel_time("expire.mark-stale");
+		return $timestamp < $stale_ts;
+	}
 }
