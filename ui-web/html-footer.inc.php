@@ -5,7 +5,7 @@ var settings = <?= json_encode([
 	"args" => $xhr_url,
 ]) ?>;
 </script>
-<script type="text/javascript" src="xhr.js?v4"></script>
+<script type="text/javascript" src="xhr.js?v5"></script>
 <?php } ?>
 
 <p class="footer"><a href="https://github.com/grawity/rwho/">rwho</a> by grawity</p>

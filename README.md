@@ -57,6 +57,7 @@ traditional Finger protocol. See it in action via [HTTP][ex-http] or
   * `agent-win32/` &ndash; old agent service for Windows XP/2003 (requires [pywin32][])
   * `server-php/` &ndash; API server for PHP
   * `ui-finger/` &ndash; a text interface for the [Finger][] protocol (inetd-style)
-  * `ui-web/` &ndash; a slightly fancy HTML interface
+  * `ui-web/` &ndash; a slightly fancy HTML interface for Mozilla 1.7 and
+    Internet Explorer 5 (requires PHP 7.4)
 
 [pywin32]: https://sourceforge.net/projects/pywin32/files/pywin32

@@ -43,7 +43,12 @@ function handle_data(data) {
 	var old_div = document.getElementById("rwho-table-wrapper");
 	var new_div = document.createElement("div");
 	new_div.innerHTML = data;
-	old_div.parentNode.replaceChild(new_div, old_div);
+
+	/* Use DOM instead of raw innerHTML to make it work in IE 5 */
+	/* But replace just the <tbody> to avoid flickering in Mozilla */
+	var old_tbody = old_div.getElementsByTagName("tbody")[0];
+	var new_tbody = new_div.getElementsByTagName("tbody")[0];
+	old_tbody.parentNode.replaceChild(new_tbody, old_tbody);
 }
 
 function is_visible() {
