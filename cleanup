@@ -8,5 +8,5 @@ $config = new \RWho\Config\Configuration();
 $config->load(__DIR__."/server.conf");
 
 $client = new \RWho\Client($config);
-$rows = $client->purge_stale();
+$rows = $client->purge_dead();
 print "Purged $rows rows\n";

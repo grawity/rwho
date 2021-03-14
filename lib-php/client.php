@@ -83,10 +83,10 @@ class Client {
 		return $timestamp < $stale_ts;
 	}
 
-	// purge_stale() -> int
+	// purge_dead() -> int
 	// Delete rows belonging to dead hosts
 
-	function purge_stale() {
+	function purge_dead() {
 		$dead_ts = time() - $this->_dead_age;
 		return $this->db->utmp_delete_old($dead_ts);
 	}
