@@ -197,6 +197,7 @@ function handle_users_request($app) {
 		$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
 		$page_title .= " on ";
 		$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
+		$page_css = $app->config->get("web.stylesheet", null);
 		$page_xhr_refresh = 3;
 		require("html-header.inc.php");
 		require("html-body-users.inc.php");
