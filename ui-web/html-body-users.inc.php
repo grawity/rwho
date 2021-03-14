@@ -1,6 +1,5 @@
+<div id="rwho-table-wrapper">
 <?php if ($data !== false) { ?>
-<!-- user session table -->
-
 <table id="rwho-sessions">
 	<thead>
 	<tr>
@@ -38,7 +37,7 @@
 
 <?php require("html-body-usertable.inc.php"); ?>
 </table>
-
 <?php } else { // data === false ?>
 <p>Could not retrieve <code>rwho</code> information.</p>
 <?php }; ?>
+</div>

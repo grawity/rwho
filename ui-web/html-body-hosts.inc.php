@@ -1,3 +1,4 @@
+<div id="rwho-table-wrapper">
 <table id="rwho-sessions">
 	<thead>
 	<tr>
@@ -27,3 +28,4 @@
 
 <?php require("html-body-hosttable.inc.php"); ?>
 </table>
+</div>

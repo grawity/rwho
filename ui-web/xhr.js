@@ -38,8 +38,8 @@ function fetch_data() {
 }
 
 function handle_data(data) {
-	var table = document.getElementById("rwho-sessions");
-	table.innerHTML = data;
+	var div = document.getElementById("rwho-table-wrapper");
+	div.innerHTML = data;
 }
 
 function is_visible() {
