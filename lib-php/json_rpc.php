@@ -1,6 +1,19 @@
 <?php
 namespace JsonRpc;
 
+if (!function_exists("array_is_list")) {
+	/* Polyfill from https://wiki.php.net/rfc/is_list */
+	function array_is_list(array $array): bool {
+		$expect = 0;
+		foreach ($array as $k => $_) {
+			if ($k !== $expect)
+				return false;
+			$expect++;
+		}
+		return true;
+	}
+}
+
 class Absent {
 	/* Sentinel value indicating that no call ID was present
 	 * and that the request was a notification without reply.
@@ -28,6 +41,13 @@ class RpcBadMethodError extends RpcException {
 	function __construct() {
 		$this->code = -32601;
 		$this->message = "Specified method not available";
+	}
+}
+
+class RpcBadParametersError extends RpcException {
+	function __construct() {
+		$this->code = -32602;
+		$this->message = "Unacceptable call parameters";
 	}
 }
 
@@ -72,8 +92,12 @@ class Server {
 			}
 			if ($params === null) {
 				$result = $server->$method();
-			} elseif (is_array($params)) {
+			} elseif (is_array($params) && array_is_list($params)) {
 				$result = $server->$method(...$params);
+			} elseif (is_array($params)) {
+				/* PHP allows spread of name=>value mappings,
+				 * but we don't want to allow that. */
+				throw new RpcBadParametersError();
 			} else {
 				throw new RpcMalformedObjectError();
 			}
