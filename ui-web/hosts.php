@@ -3,60 +3,60 @@ namespace RWho;
 require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
-function output_json($data) {
-	$json = [
-		"time" => time(),
-		"hosts" => [],
-	];
-	foreach ($data as $row) {
-		$json["hosts"][] = [
-			"host" => $row["host"],
-			"address" => $row["last_addr"],
-			"users" => $row["users"],
-			"entries" => $row["entries"],
-			"updated" => $row["last_update"],
-		];
-	}
-
-	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode($json);
-}
-
-function output_xml($data) {
-	header("Content-Type: application/xml");
-
-	$doc = new \DOMDocument("1.0", "utf-8");
-	$doc->formatOutput = true;
-
-	$root = $doc->appendChild($doc->createElement("rwho"));
-
-	$root->appendChild($doc->createAttribute("time"))
-		->appendChild($doc->createTextNode(date("c")));
-
-	foreach ($data as $row) {
-		$rowx = $root->appendChild($doc->createElement("host"));
-
-		$rowx->appendChild($doc->createAttribute("name"))
-			->appendChild($doc->createTextNode($row["host"]));
-
-		$rowx->appendChild($doc->createElement("address"))
-			->appendChild($doc->createTextNode($row["last_addr"]));
-
-		$rowx->appendChild($doc->createElement("users"))
-			->appendChild($doc->createTextNode($row["users"]));
-
-		$rowx->appendChild($doc->createElement("entries"))
-			->appendChild($doc->createTextNode($row["entries"]));
-
-		$date = date("c", $row["last_update"]);
-		$rowx->appendChild($doc->createElement("updated"))
-			->appendChild($doc->createTextNode($date));
-	}
-
-	print $doc->saveXML();
-}
-
 class HostListPage extends \RWho\Web\RWhoWebApp {
+	function output_json($data) {
+		$json = [
+			"time" => time(),
+			"hosts" => [],
+		];
+		foreach ($data as $row) {
+			$json["hosts"][] = [
+				"host" => $row["host"],
+				"address" => $row["last_addr"],
+				"users" => $row["users"],
+				"entries" => $row["entries"],
+				"updated" => $row["last_update"],
+			];
+		}
+
+		header("Content-Type: text/plain; charset=utf-8");
+		print json_encode($json);
+	}
+
+	function output_xml($data) {
+		header("Content-Type: application/xml");
+
+		$doc = new \DOMDocument("1.0", "utf-8");
+		$doc->formatOutput = true;
+
+		$root = $doc->appendChild($doc->createElement("rwho"));
+
+		$root->appendChild($doc->createAttribute("time"))
+			->appendChild($doc->createTextNode(date("c")));
+
+		foreach ($data as $row) {
+			$rowx = $root->appendChild($doc->createElement("host"));
+
+			$rowx->appendChild($doc->createAttribute("name"))
+				->appendChild($doc->createTextNode($row["host"]));
+
+			$rowx->appendChild($doc->createElement("address"))
+				->appendChild($doc->createTextNode($row["last_addr"]));
+
+			$rowx->appendChild($doc->createElement("users"))
+				->appendChild($doc->createTextNode($row["users"]));
+
+			$rowx->appendChild($doc->createElement("entries"))
+				->appendChild($doc->createTextNode($row["entries"]));
+
+			$date = date("c", $row["last_update"]);
+			$rowx->appendChild($doc->createElement("updated"))
+				->appendChild($doc->createTextNode($date));
+		}
+
+		print $doc->saveXML();
+	}
+
 	function handle_request() {
 		$has_query = true;
 		$format = @$_GET["fmt"] ?? "html";
@@ -85,10 +85,10 @@ class HostListPage extends \RWho\Web\RWhoWebApp {
 			require("html-body-hosttable.inc.php");
 		}
 		elseif ($format == "json") {
-			output_json($data);
+			$this->output_json($data);
 		}
 		elseif ($format == "xml") {
-			output_xml($data);
+			$this->output_xml($data);
 		}
 		else {
 			header("Content-Type: text/plain; charset=utf-8", true, 406);

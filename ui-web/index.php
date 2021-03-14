@@ -13,86 +13,87 @@ function group_by_user($data) {
 	return $grouped;
 }
 
-function output_json($data, $user, $host, $detailed) {
-	$json = [
-		"time" => time(),
-		"query" => [
-			"user" => $user,
-			"host" => $host,
-			"summary" => !$detailed,
-		],
-		"utmp" => [],
-	];
-	foreach ($data as $row) {
-		$json["utmp"][] = [
-			"user" => $row["user"],
-			"uid" => $row["uid"],
-			"host" => $row["host"],
-			"line" => $row["line"],
-			"rhost" => $row["rhost"],
-			"stale" => $row["is_stale"],
-			"summary" => $row["is_summary"],
-		];
-	}
-	header("Content-Type: text/plain; charset=utf-8");
-	print json_encode($json);
-}
-
-function output_xml($data, $user, $host, $detailed) {
-	header("Content-Type: application/xml");
-
-	$doc = new \DOMDocument("1.0", "utf-8");
-	$doc->formatOutput = true;
-
-	$root = $doc->appendChild($doc->createElement("rwho"));
-
-	$root->appendChild($doc->createAttribute("time"))
-		->appendChild($doc->createTextNode(date("c")));
-
-	$query = $root->appendChild($doc->createElement("query"));
-
-	if (strlen($host))
-		$query->appendChild($doc->createElement("host"))
-			->appendChild($doc->createTextNode($host));
-	if (strlen($user))
-		$query->appendChild($doc->createElement("user"))
-			->appendChild($doc->createTextNode($user));
-	if (!$detailed)
-		$query->appendChild($doc->createElement("summary"))
-			->appendChild($doc->createTextNode("true"));
-
-	foreach ($data as $row) {
-		$rowx = $root->appendChild($doc->createElement("row"));
-
-		$date = date("c", $row["updated"]);
-		$rowx->appendChild($doc->createAttribute("updated"))
-			->appendChild($doc->createTextNode($date));
-
-		if ($row["is_stale"])
-			$rowx->appendChild($doc->createAttribute("stale"))
-				->appendChild($doc->createTextNode("true"));
-
-		if ($row["is_summary"])
-			$rowx->appendChild($doc->createAttribute("summary"))
-				->appendChild($doc->createTextNode("true"));
-
-		unset($row["rowid"]);
-		unset($row["updated"]);
-		unset($row["is_stale"]);
-		unset($row["is_summary"]);
-
-		foreach ($row as $k => $v)
-			$rowx->appendChild($doc->createElement($k))
-				->appendChild($doc->createTextNode($v));
-	}
-
-	print $doc->saveXML();
-}
-
 class UserListPage extends \RWho\Web\RWhoWebApp {
 	public $user;
 	public $host;
 	public $detailed;
+
+	function output_json($data, $user, $host, $detailed) {
+		$json = [
+			"time" => time(),
+			"query" => [
+				"user" => $user,
+				"host" => $host,
+				"summary" => !$detailed,
+			],
+			"utmp" => [],
+		];
+		foreach ($data as $row) {
+			$json["utmp"][] = [
+				"user" => $row["user"],
+				"uid" => $row["uid"],
+				"host" => $row["host"],
+				"line" => $row["line"],
+				"rhost" => $row["rhost"],
+				"stale" => $row["is_stale"],
+				"summary" => $row["is_summary"],
+			];
+		}
+
+		header("Content-Type: text/plain; charset=utf-8");
+		print json_encode($json);
+	}
+
+	function output_xml($data, $user, $host, $detailed) {
+		header("Content-Type: application/xml");
+
+		$doc = new \DOMDocument("1.0", "utf-8");
+		$doc->formatOutput = true;
+
+		$root = $doc->appendChild($doc->createElement("rwho"));
+
+		$root->appendChild($doc->createAttribute("time"))
+			->appendChild($doc->createTextNode(date("c")));
+
+		$query = $root->appendChild($doc->createElement("query"));
+
+		if (strlen($host))
+			$query->appendChild($doc->createElement("host"))
+				->appendChild($doc->createTextNode($host));
+		if (strlen($user))
+			$query->appendChild($doc->createElement("user"))
+				->appendChild($doc->createTextNode($user));
+		if (!$detailed)
+			$query->appendChild($doc->createElement("summary"))
+				->appendChild($doc->createTextNode("true"));
+
+		foreach ($data as $row) {
+			$rowx = $root->appendChild($doc->createElement("row"));
+
+			$date = date("c", $row["updated"]);
+			$rowx->appendChild($doc->createAttribute("updated"))
+				->appendChild($doc->createTextNode($date));
+
+			if ($row["is_stale"])
+				$rowx->appendChild($doc->createAttribute("stale"))
+					->appendChild($doc->createTextNode("true"));
+
+			if ($row["is_summary"])
+				$rowx->appendChild($doc->createAttribute("summary"))
+					->appendChild($doc->createTextNode("true"));
+
+			unset($row["rowid"]);
+			unset($row["updated"]);
+			unset($row["is_stale"]);
+			unset($row["is_summary"]);
+
+			foreach ($row as $k => $v)
+				$rowx->appendChild($doc->createElement($k))
+					->appendChild($doc->createTextNode($v));
+		}
+
+		print $doc->saveXML();
+	}
 
 	function handle_request() {
 		$user = @$_GET["user"] ?? "";
@@ -139,10 +140,10 @@ class UserListPage extends \RWho\Web\RWhoWebApp {
 			require("html-body-usertable.inc.php");
 		}
 		elseif ($format == "json") {
-			output_json($data, $user, $host, $detailed);
+			$this->output_json($data, $user, $host, $detailed);
 		}
 		elseif ($format == "xml") {
-			output_xml($data, $user, $host, $detailed);
+			$this->output_xml($data, $user, $host, $detailed);
 		}
 		else {
 			header("Content-Type: text/plain; charset=utf-8", true, 406);
