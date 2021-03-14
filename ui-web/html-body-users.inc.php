@@ -1,7 +1,5 @@
 <?php
 namespace RWho;
-
-$finger_url = $app->make_finger_addr($user, $host, $detailed);
 ?>
 <?php if ($data !== false) { ?>
 <!-- user session table -->
@@ -31,8 +29,8 @@ html::header("address", 30);
 		<a href="?full">Expanded view</a>
 <?php } ?>
 		or output as
-		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "json"])) ?>">JSON</a>,
-		<a href="?<?= htmlspecialchars(Web\mangle_query(["fmt" => "xml"])) ?>">XML</a>,
+		<a href="?<?= htmlspecialchars($json_url) ?>">JSON</a>,
+		<a href="?<?= htmlspecialchars($xml_url) ?>">XML</a>,
 <?php if (!empty($finger_url)) { ?>
 		<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
 <?php } ?>

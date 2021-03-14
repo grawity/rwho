@@ -113,6 +113,9 @@ function handle_hosts_request($app) {
 		$page_css = $app->config->get("web.stylesheet", null);
 		$page_xhr_refresh = 3;
 
+		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+
 		require("html-header.inc.php");
 		require("html-body-hosts.inc.php");
 		require("html-footer.inc.php");

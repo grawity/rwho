@@ -199,6 +199,11 @@ function handle_users_request($app) {
 		$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
 		$page_css = $app->config->get("web.stylesheet", null);
 		$page_xhr_refresh = 3;
+
+		$json_url = Web\mangle_query(["fmt" => "json"]);
+		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+		$finger_url = $app->make_finger_addr($user, $host, $detailed);
+
 		require("html-header.inc.php");
 		require("html-body-users.inc.php");
 		require("html-footer.inc.php");
