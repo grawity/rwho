@@ -1,16 +1,7 @@
 <?php
 namespace RWho;
 
-require_once(__DIR__."/../lib-php/config.php");
-require_once(__DIR__."/../lib-php/client.php");
-
 const MIN_UID = 1000;
-
-$CONFIG = new \RWho\Config\Configuration();
-$CONFIG->load(__DIR__."/../server.conf"); // for DB
-$CONFIG->load(__DIR__."/../rwho.conf");
-
-$CLIENT = new \RWho\Client($CONFIG);
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.

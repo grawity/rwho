@@ -1,6 +1,9 @@
 <?php
 namespace RWho;
 
+require_once(__DIR__."/../lib-php/config.php");
+require_once(__DIR__."/../lib-php/client.php");
+
 class html {
 	static $columns = 0;
 	static $title = "rwho";
