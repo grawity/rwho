@@ -58,9 +58,9 @@ class HostListPage extends RWhoWebApp {
 	function output_html($data, $params, $xhr=false) {
 		extract($params);
 
-		$xhr_url = "?".mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = "?".mangle_query(["fmt" => "xml"]);
-		$json_url = "?".mangle_query(["fmt" => "json"]);
+		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = mangle_query(["fmt" => "xml"]);
+		$json_url = mangle_query(["fmt" => "json"]);
 		$finger_url = $this->make_finger_addr("*", null, false);
 
 		if ($xhr) {

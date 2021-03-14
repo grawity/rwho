@@ -31,7 +31,7 @@ function mangle_query($add, $remove=null) {
 		foreach ($remove as $key)
 			unset($query[$key]);
 
-	return _build_query($query);
+	return "?"._build_query($query);
 }
 
 class RWhoWebApp extends \RWho\ClientApplicationBase {

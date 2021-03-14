@@ -92,12 +92,12 @@ class UserListPage extends RWhoWebApp {
 
 		$data_by_user = group_by_user($data);
 
-		$normal_url = "?".mangle_query([], ["full"]);
-		$expand_url = "?".mangle_query(["full" => 1]);
+		$normal_url = mangle_query([], ["full"]);
+		$expand_url = mangle_query(["full" => 1]);
 
-		$xhr_url = "?".mangle_query(["fmt" => "html-xhr"]);
-		$xml_url = "?".mangle_query(["fmt" => "xml"]);
-		$json_url = "?".mangle_query(["fmt" => "json"]);
+		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
+		$xml_url = mangle_query(["fmt" => "xml"]);
+		$json_url = mangle_query(["fmt" => "json"]);
 		$finger_url = $this->make_finger_addr($user, $host, $detailed);
 
 		if ($xhr) {
