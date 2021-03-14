@@ -4,8 +4,6 @@ error_reporting(E_ALL);
 
 class html {
 	static $columns = 0;
-	static $title = "rwho";
-	static $refresh = 0;
 
 	static function header($title, $width=0) {
 		if ($width)

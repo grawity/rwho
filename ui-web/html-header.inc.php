@@ -2,7 +2,7 @@
 <!DOCTYPE html>
 <head>
 	<meta charset="utf-8">
-	<title>rwho: <?= h(html::$title) ?></title>
+	<title>rwho: <?= htmlspecialchars($page_title) ?></title>
 	<meta name="robots" content="noindex, nofollow">
 	<noscript>
 		<meta http-equiv="Refresh" content="10">
@@ -23,4 +23,4 @@
 <?php } ?>
 </h1>
 
-<p><?= html::$title ?>:</p>
+<p><?= $page_title ?>:</p>

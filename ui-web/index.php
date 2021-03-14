@@ -193,12 +193,11 @@ function handle_users_request($app) {
 		$plan = $app->client->get_plan_file($user, $host);
 
 	if ($format == "html") {
-		$title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
-		$title .= " on ";
-		$title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
-
-		html::$title = $title;
-		html::$refresh = 3;
+		// XXX: Doesn't make sense to use <em> because this also goes in <title>!
+		$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
+		$page_title .= " on ";
+		$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
+		$page_xhr_refresh = 3;
 		require("html-header.inc.php");
 		require("html-body-users.inc.php");
 		require("html-footer.inc.php");

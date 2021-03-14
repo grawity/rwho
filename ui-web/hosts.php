@@ -109,7 +109,7 @@ function handle_hosts_request($app) {
 	$data = $app->client->retrieve_hosts();
 
 	if ($format == "html") {
-		html::$title = "Active hosts";
+		$page_title = "Active hosts";
 		html::$refresh = 5;
 		require("html-header.inc.php");
 		require("html-body-hosts.inc.php");
