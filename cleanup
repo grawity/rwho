@@ -1,15 +1,14 @@
 #!/usr/bin/env php
 <?php
 namespace RWho;
-
-require_once(__DIR__."/lib-php/util.php");
 require_once(__DIR__."/lib-php/config.php");
+require_once(__DIR__."/lib-php/database.php");
 
 $config = new \RWho\Config\Configuration();
 $config->load(__DIR__."/server.conf");
 $db = new \RWho\Database($config);
 
 $max_age = $config->get_rel_time("cleanup.max_age", 86400);
-fwrite(STDOUT, "cleaning up items older than $max_age seconds\n");
+print "cleaning up items older than $max_age seconds\n";
 $rows = $db->utmp_delete_old(time()-$max_age);
-fwrite(STDOUT, "done: purged $rows rows\n");
+print "done: purged $rows rows\n";
