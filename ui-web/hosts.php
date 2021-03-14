@@ -66,7 +66,8 @@ class HostListPage extends RWhoWebApp {
 		if ($xhr) {
 			require("html-body-hosts.inc.php");
 		} else {
-			$page_title = "Active hosts";
+			$page_head = "Active hosts";
+			$page_title = $page_head;
 			$page_css = $this->config->get("web.stylesheet", null);
 			$xhr_refresh = 3;
 

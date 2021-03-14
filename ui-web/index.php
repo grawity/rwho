@@ -103,10 +103,11 @@ class UserListPage extends RWhoWebApp {
 		if ($xhr) {
 			require("html-body-users.inc.php");
 		} else {
+			$page_head = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
+			$page_head .= " on ";
+			$page_head .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
 			// XXX: Doesn't make sense to use <em> because this also goes in <title>!
-			$page_title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
-			$page_title .= " on ";
-			$page_title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
+			$page_title = $page_head;
 			$page_css = $this->config->get("web.stylesheet", null);
 			$xhr_refresh = 3;
 

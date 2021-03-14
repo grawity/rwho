@@ -22,4 +22,4 @@
 <?php } ?>
 </h1>
 
-<p><?= $page_title ?>:</p>
+<p><?= $page_head ?>:</p>
