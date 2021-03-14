@@ -3,6 +3,7 @@
 namespace RWho;
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/config.php");
+require_once(__DIR__."/../lib-php/client.php");
 
 function finger_parse($input) {
 	$input = rtrim($input, "\r\n");
@@ -26,8 +27,7 @@ class RWhoFingerServer {
 		$this->config->load(__DIR__."/../server.conf"); // for DB information
 		$this->config->load(__DIR__."/../rwho.conf");
 
-		// Still needed for legacy librwho
-		Config::parse(__DIR__."/../server.conf");
+		$this->client = new \RWho\Client($this->config);
 	}
 
 	function _is_rhost_trusted($host) {
@@ -75,7 +75,7 @@ class RWhoFingerServer {
 		// special "list hosts" query
 
 		if ($query === "*") {
-			$data = retrieve_hosts();
+			$data = $this->client->retrieve_hosts();
 			if (!count($data))
 				die("No active hosts.\r\n");
 			output_hosts($data);
@@ -98,7 +98,7 @@ class RWhoFingerServer {
 		$has_user = strlen($q_user);
 		$has_host = strlen($q_host);
 
-		$data = retrieve($q_user, $q_host, $hide_rhost);
+		$data = $this->client->retrieve($q_user, $q_host, $hide_rhost);
 
 		// display login info
 
