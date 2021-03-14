@@ -12,9 +12,7 @@ $h_uid = htmlspecialchars($row["uid"]);
 $h_fqdn = htmlspecialchars($row["fqdn"]);
 $h_host = htmlspecialchars($row["host"]);
 $h_line = htmlspecialchars($row["line"]);
-$h_rhost = strlen($row["rhost"])
-	? htmlspecialchars($row["rhost"])
-	: "(local)";
+$h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 ?>
 	<tr class="<?= $row["is_stale"] ? "stale" : "" ?>">
 <?php if ($detailed || $k == 0) { ?>
