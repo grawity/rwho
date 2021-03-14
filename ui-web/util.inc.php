@@ -2,7 +2,7 @@
 namespace RWho;
 error_reporting(E_ALL);
 require_once(__DIR__."/../lib-php/librwho.php");
-require_once(__DIR__."/../lib-php/html_ui.php");
+require_once(__DIR__."/application.inc.php");
 
 class html {
 	static $columns = 0;
