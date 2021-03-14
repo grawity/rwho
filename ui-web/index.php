@@ -10,10 +10,6 @@ class query {
 	static $format;
 }
 
-function is_wildcard($str) {
-	return strlen($str) && (strpos($str, "%") !== false);
-}
-
 function output_json($data) {
 	global $app;
 
@@ -170,45 +166,58 @@ function output_html($data, $plan) {
 	}
 }
 
-query::$user = @$_GET["user"];
-query::$host = @$_GET["host"];
-query::$present = (strlen(query::$user) || strlen(query::$host));
-query::$detailed = (strlen(query::$user)
-			|| (strlen(query::$host) && !is_wildcard(query::$host))
-			|| isset($_GET["full"]))
-		&& !isset($_GET["summary"]);
-query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
+function handle_users_request($app) {
+	$user = @$_GET["user"] ?? "";
+	$host = @$_GET["host"] ?? "";
+	$has_query = (strlen($user) || strlen($host));
+	if (@$_GET["full"])
+		$detailed = true;
+	elseif (@$_GET["summary"])
+		$detailed = false;
+	else
+		$detailed = (strlen($user) || (strlen($host) && !is_wildcard($host)));
+	$format = @$_GET["fmt"] ?? "html";
 
-$data = $app->client->retrieve(query::$user, query::$host, $app->should_filter());
+	/* TODO */
+	query::$user = $user;
+	query::$host = $host;
+	query::$present = $has_query;
+	query::$detailed = $detailed;
+	query::$format = $format;
 
-if (!query::$detailed)
-	$data = summarize($data);
+	$data = $app->client->retrieve($user, $host, $app->should_filter());
+	if (!$detailed)
+		$data = \RWho\summarize($data);
 
-$plan = null;
-if (strlen(query::$user))
-	$plan = $app->client->get_plan_file(query::$user, query::$host);
+	$plan = null;
+	if (strlen($user))
+		$plan = $app->client->get_plan_file($user, $host);
 
-if (query::$format == "html") {
-	html::$title = strlen(query::$user) ? "<em>".H(query::$user)."</em>" : "All users";
-	html::$title .= " on ";
-	html::$title .= strlen(query::$host) ? "<em>".H(query::$host)."</em>" : "all servers";
-	html::$refresh = 3;
+	if ($format == "html") {
+		$title = strlen($user) ? "<em>".htmlspecialchars($user)."</em>" : "All users";
+		$title .= " on ";
+		$title .= strlen($host) ? "<em>".htmlspecialchars($host)."</em>" : "all servers";
 
-	require("html-header.inc.php");
-	require("html-body-users.inc.php");
-	require("html-footer.inc.php");
+		html::$title = $title;
+		html::$refresh = 3;
+		require("html-header.inc.php");
+		require("html-body-users.inc.php");
+		require("html-footer.inc.php");
+	}
+	elseif ($format == "html-xhr") {
+		output_html($data, $plan);
+	}
+	elseif ($format == "json") {
+		output_json($data);
+	}
+	elseif ($format == "xml") {
+		output_xml($data);
+	}
+	else {
+		header("Content-Type: text/plain; charset=utf-8", true, 406);
+		die("Unsupported output format.\n");
+	}
 }
-elseif (query::$format == "html-xhr") {
-	output_html($data, $plan);
-}
-elseif (query::$format == "json") {
-	output_json($data);
-}
-elseif (query::$format == "xml") {
-	output_xml($data);
-}
-else {
-	header("Content-Type: text/plain; charset=utf-8", true, 406);
-	print "Unsupported output format.\n";
-}
+
+handle_users_request($app);
 ?>

@@ -105,29 +105,36 @@ function output_html($data) {
 	}
 }
 
-query::$present = true;
-query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
+function handle_hosts_request($app) {
+	$format = @$_GET["fmt"] ?? "html";
 
-$data = $app->app->client->retrieve_hosts();
+	/* TODO */
+	query::$present = true;
+	query::$format = $format;
 
-if (query::$format == "html") {
-	html::$title = "Active hosts";
-	html::$refresh = 5;
-	require("html-header.inc.php");
-	require("html-body-hosts.inc.php");
-	require("html-footer.inc.php");
+	$data = $app->client->retrieve_hosts();
+
+	if ($format == "html") {
+		html::$title = "Active hosts";
+		html::$refresh = 5;
+		require("html-header.inc.php");
+		require("html-body-hosts.inc.php");
+		require("html-footer.inc.php");
+	}
+	elseif ($format == "html-xhr") {
+		output_html($data);
+	}
+	elseif ($format == "json") {
+		output_json($data);
+	}
+	elseif ($format == "xml") {
+		output_xml($data);
+	}
+	else {
+		header("Content-Type: text/plain; charset=utf-8", true, 406);
+		die("Unsupported output format.\n");
+	}
 }
-elseif (query::$format == "html-xhr") {
-	output_html($data);
-}
-elseif (query::$format == "json") {
-	output_json($data);
-}
-elseif (query::$format == "xml") {
-	output_xml($data);
-}
-else {
-	header("Content-Type: text/plain; charset=utf-8", true, 406);
-	print "Unsupported output format.\n";
-}
+
+handle_hosts_request($app);
 ?>

@@ -3,6 +3,10 @@ namespace RWho\Web;
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/client_app.php");
 
+function is_wildcard($str) {
+	return strlen($str) && (strpos($str, "%") !== false);
+}
+
 class RWhoWebApp extends \RWho\ClientApplicationBase {
 	function should_filter() {
 		$addr = \RWho\get_rhost();
