@@ -203,8 +203,9 @@ class Client {
 						"line" => count($lines) == 1
 							? $lines[0] : count($lines),
 						"rhost" => $from,
-						"is_summary" => count($lines) > 1,
 						"updated" => $updated[$from],
+						"is_summary" => count($lines) > 1,
+						"is_stale" => $this->is_stale($updated[$from]),
 					];
 				}
 			}
