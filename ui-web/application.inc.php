@@ -1,6 +1,6 @@
 <?php
 namespace RWho\Web;
-//require_once(__DIR__."/../lib-php/librwho.php");
+require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/client.php");
 
@@ -11,6 +11,20 @@ class RWhoWebApp {
 		$this->config->load(__DIR__."/../rwho.conf");
 
 		$this->client = new \RWho\Client($this->config);
+	}
+
+	function should_filter() {
+		$anon = true;
+		$rhost = \RWho\get_rhost();
+		foreach ($this->config->get_list("privacy.trusted_nets") as $addr)
+			if (\RWho\ip_cidr($rhost, $addr)) {
+				$anon = false;
+				break;
+			}
+
+		if ($anon && $this->config->get_bool("privacy.hide_rhost", false))
+			return true;
+		return false;
 	}
 
 	function make_finger_addr($user, $host, $detailed) {

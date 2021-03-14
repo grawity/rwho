@@ -170,22 +170,6 @@ function output_html($data, $plan) {
 	}
 }
 
-function should_filter() {
-	global $config;
-
-	$anon = true;
-	$rhost = get_rhost();
-	foreach ($config->get_list("privacy.trusted_nets") as $addr)
-		if (ip_cidr($rhost, $addr)) {
-			$anon = false;
-			break;
-		}
-
-	if ($anon && $config->get_bool("privacy.hide_rhost", false))
-		return true;
-	return false;
-}
-
 query::$user = @$_GET["user"];
 query::$host = @$_GET["host"];
 query::$present = (strlen(query::$user) || strlen(query::$host));
@@ -195,7 +179,7 @@ query::$detailed = (strlen(query::$user)
 		&& !isset($_GET["summary"]);
 query::$format = isset($_GET["fmt"]) ? $_GET["fmt"] : "html";
 
-$data = $client->retrieve(query::$user, query::$host, should_filter());
+$data = $client->retrieve(query::$user, query::$host, $app->should_filter());
 
 if (!query::$detailed)
 	$data = summarize($data);
