@@ -3,13 +3,7 @@ namespace RWho;
 require_once(__DIR__."/application.inc.php");
 require_once(__DIR__."/../lib-php/util.php");
 
-class query {
-	static $user;
-	static $host;
-	static $detailed;
-}
-
-function output_json($data) {
+function output_json($data, $user, $host, $detailed) {
 	global $app;
 
 	foreach ($data as &$row) {
@@ -24,15 +18,15 @@ function output_json($data) {
 	print json_encode([
 		"time" => time(),
 		"query" => [
-			"user" => query::$user,
-			"host" => query::$host,
-			"summary" => !query::$detailed,
+			"user" => $user,
+			"host" => $host,
+			"summary" => !$detailed,
 		],
 		"utmp" => $data,
 	])."\n";
 }
 
-function output_xml($data) {
+function output_xml($data, $user, $host, $detailed) {
 	global $app;
 
 	header("Content-Type: application/xml");
@@ -47,13 +41,13 @@ function output_xml($data) {
 
 	$query = $root->appendChild($doc->createElement("query"));
 
-	if (strlen(query::$host))
+	if (strlen($host))
 		$query->appendChild($doc->createElement("host"))
-			->appendChild($doc->createTextNode(query::$host));
-	if (strlen(query::$user))
+			->appendChild($doc->createTextNode($host));
+	if (strlen($user))
 		$query->appendChild($doc->createElement("user"))
-			->appendChild($doc->createTextNode(query::$user));
-	if (!query::$detailed)
+			->appendChild($doc->createTextNode($user));
+	if (!$detailed)
 		$query->appendChild($doc->createElement("summary"))
 			->appendChild($doc->createTextNode("true"));
 
@@ -84,11 +78,11 @@ function output_xml($data) {
 	print $doc->saveXML();
 }
 
-function output_html($data, $plan) {
+function output_html($data, $plan, $user, $host, $detailed) {
 	global $app;
 
 	$columns = 4; /* user+host+line+address */
-	if (query::$detailed)
+	if ($detailed)
 		$columns += 1; /* uid */
 
 	if (!count($data)) {
@@ -122,10 +116,10 @@ function output_html($data, $plan) {
 			else
 				print "<tr>\n";
 
-			$linkuser = !strlen(query::$user);
-			$linkhost = !strlen(query::$host);
+			$linkuser = !strlen($user);
+			$linkhost = !strlen($host);
 
-			if (query::$detailed) {
+			if ($detailed) {
 				print "\t<td>"
 					.($linkuser
 						? "<a href=\"?user=$user\">$user</a>"
@@ -140,7 +134,7 @@ function output_html($data, $plan) {
 						."</td>\n";
 			}
 
-			if (query::$detailed)
+			if ($detailed)
 				print "\t<td>$uid</td>\n";
 
 			print "\t<td>"
@@ -178,11 +172,6 @@ function handle_users_request($app) {
 		$detailed = (strlen($user) || strlen($host));
 	$format = @$_GET["fmt"] ?? "html";
 
-	/* TODO */
-	query::$user = $user;
-	query::$host = $host;
-	query::$detailed = $detailed;
-
 	$data = $app->client->retrieve($user, $host, $app->should_filter());
 	if (!$detailed)
 		$data = $app->client->summarize($data);
@@ -208,13 +197,13 @@ function handle_users_request($app) {
 		require("html-footer.inc.php");
 	}
 	elseif ($format == "html-xhr") {
-		output_html($data, $plan);
+		output_html($data, $plan, $user, $host, $detailed);
 	}
 	elseif ($format == "json") {
-		output_json($data);
+		output_json($data, $user, $host, $detailed);
 	}
 	elseif ($format == "xml") {
-		output_xml($data);
+		output_xml($data, $user, $host, $detailed);
 	}
 	else {
 		header("Content-Type: text/plain; charset=utf-8", true, 406);

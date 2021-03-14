@@ -39,7 +39,7 @@ namespace RWho;
 </tr>
 </tfoot>
 
-<?php output_html($data, $plan); ?>
+<?php output_html($data, $plan, $user, $host, $detailed); ?>
 </table>
 
 <?php } else { // data === false ?>
