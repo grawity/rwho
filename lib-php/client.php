@@ -11,11 +11,11 @@ class Client {
 		// maximum age before which the entry will be considered stale
 		// (e.g. the host temporarily down for some reason)
 		// default is 1 minute more than the rwhod periodic update time
-		$this->_stale_age = $this->config->get_rel_time("expire.mark-stale", "11m");
+		$this->_stale_age = $this->config->get_rel_time("expire.mark-stale", 11*60);
 
 		// maximum age before which the entry will be considered dead
 		// and not displayed in host list
-		$this->_dead_age = $this->config->get_rel_time("expire.host-dead", "1d");
+		$this->_dead_age = $this->config->get_rel_time("expire.host-dead", 1*86400);
 	}
 
 	// retrieve(str? $user, str? $host) -> utmp_entry[]
