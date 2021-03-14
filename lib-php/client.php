@@ -186,12 +186,14 @@ class Client {
 			foreach ($byhost as $host => &$sessions) {
 				$byfrom = [];
 				$updated = [];
+				$stale = [];
 				foreach ($sessions as $entry) {
 					$from = \RWho\Util\normalize_host($entry["rhost"]);
 					if ($from === "(detached)")
 						continue;
 					@$byfrom[$from][] = $entry["line"];
 					@$updated[$from] = max($updated[$from], $entry["updated"]);
+					@$stale[$from] = @$stale[$from] || $entry["is_stale"];
 					$uid = $entry["uid"];
 				}
 				ksort($byfrom);
@@ -205,7 +207,7 @@ class Client {
 						"rhost" => $from,
 						"updated" => $updated[$from],
 						"is_summary" => count($lines) > 1,
-						"is_stale" => $this->is_stale($updated[$from]),
+						"is_stale" => $stale[$from],
 					];
 				}
 			}
