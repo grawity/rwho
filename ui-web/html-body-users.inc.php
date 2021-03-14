@@ -50,7 +50,7 @@ $h_host = htmlspecialchars($row["host"]);
 $h_line = htmlspecialchars($row["line"]);
 $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 ?>
-	<tr class="<?= $row["is_stale"] ? "stale" : "" ?>">
+	<tr<?= $row["is_stale"] ? " class=\"stale\"" : "" ?>>
 <?php if ($detailed || $k == 0) { ?>
 		<td rowspan="<?= $detailed ? 1 : count($userdata) ?>">
 <?php if ($link_user) { ?>

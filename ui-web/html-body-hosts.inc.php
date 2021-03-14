@@ -27,7 +27,7 @@
 	</tfoot>
 
 <?php foreach ($data as $row) { ?>
-	<tr class="<?= $row["is_stale"] ? "stale" : "" ?>">
+	<tr<?= $row["is_stale"] ? " class=\"stale\"" : "" ?>>
 		<td><a href="?host=<?= htmlspecialchars($row["fqdn"]) ?>"><?= htmlspecialchars($row["host"]) ?></a></td>
 		<td><?= htmlspecialchars($row["fqdn"]) ?></td>
 		<td><?= htmlspecialchars($row["users"]) ?></td>
