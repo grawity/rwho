@@ -3,9 +3,6 @@
 namespace RWho;
 require_once(__DIR__."/../lib-php/librwho.php");
 require_once(__DIR__."/../lib-php/config.php");
-chdir(__DIR__."/..");
-
-openlog("rwho-fingerd", null, LOG_DAEMON);
 
 function finger_parse($input) {
 	$input = rtrim($input, "\r\n");
@@ -43,11 +40,11 @@ class RWhoFingerServer {
 	}
 
 	function _check_access($rhost) {
-		$anon = true;
+		$anonymous = true;
 		if ($this->_is_rhost_trusted($rhost)) {
-			$anon = false;
+			$anonymous = false;
 		}
-		if ($anon) {
+		if ($anonymous) {
 			if ($this->config->get_bool("privacy.deny_anonymous", false))
 				return AC_DENIED;
 			elseif ($this->config->get_bool("privacy.hide_rhost", false))
@@ -63,8 +60,6 @@ class RWhoFingerServer {
 		list ($query, $detailed) = finger_parse($input);
 
 		$rhost = get_rhost();
-		$anon = true;
-
 		$access = $this->_check_access($rhost);
 
 		if ($this->config->get_bool("finger.log", true)) {
@@ -229,6 +224,8 @@ function output_plan($user, $host) {
 	foreach (preg_split('/\r?\n/', $text) as $line)
 		print("$line\r\n");
 }
+
+openlog("rwho-fingerd", null, LOG_DAEMON);
 
 if (isset($_SERVER["REQUEST_URI"])) {
 	header("Content-Type: text/plain");
