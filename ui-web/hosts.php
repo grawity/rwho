@@ -115,6 +115,7 @@ function handle_hosts_request($app) {
 
 		$json_url = Web\mangle_query(["fmt" => "json"]);
 		$xml_url = Web\mangle_query(["fmt" => "xml"]);
+		$finger_url = $app->make_finger_addr("*", null, false);
 
 		require("html-header.inc.php");
 		require("html-body-hosts.inc.php");
