@@ -7,39 +7,11 @@ require_once(__DIR__."/../lib-php/client.php");
 
 const MIN_UID = 1000;
 
-class Config {
-	static $conf = null;
+$CONFIG = new \RWho\Config\Configuration();
+$CONFIG->load(__DIR__."/../server.conf"); // for DB
+$CONFIG->load(__DIR__."/../rwho.conf");
 
-	static function parse($file) {
-		self::$conf->load($file);
-	}
-
-	static function has($key) {
-		return self::$conf->get($key, null) !== null;
-	}
-
-	static function get($key, $default=null) {
-		return self::$conf->get($key, $default);
-	}
-
-	static function getbool($key, $default=false) {
-		return self::$conf->get_bool($key, $default);
-	}
-
-	static function getlist($key) {
-		return self::$conf->get_list($key);
-	}
-
-	static function getreltime($key, $default=0) {
-		return self::$conf->get_rel_time($key, $default);
-	}
-}
-
-Config::$conf = new \RWho\Config\Configuration();
-Config::$conf->load(__DIR__."/../server.conf"); // for DB
-Config::$conf->load(__DIR__."/../rwho.conf");
-
-$CLIENT = new \RWho\Client(Config::$conf);
+$CLIENT = new \RWho\Client($CONFIG);
 
 // parse_query(str? $query) -> str $user, str $host
 // Split a "user", "user@host", or "@host" query to components.
@@ -256,17 +228,17 @@ function find_user_plan_file($user, $host) {
 // $host is ignored in current implementation.
 
 function read_user_plan_ldap($user, $host) {
+	global $CONFIG;
+
 	if (!function_exists("ldap_connect"))
 		return null;
 
-	$ldap_uri = Config::get("finger.ldap.uri");
-	$ldap_dnf = Config::get("finger.ldap.user_dn");
-	$ldap_attr = Config::get("finger.ldap.plan_attr");
+	$ldap_uri = $CONFIG->get("finger.ldap.uri", "");
+	$ldap_dnf = $CONFIG->get("finger.ldap.user_dn", "");
+	$ldap_attr = $CONFIG->get("finger.ldap.plan_attr", "planFile");
 
 	if (!strlen($ldap_uri) || !strlen($ldap_dnf))
 		return null;
-	if (!strlen($ldap_attr))
-		$ldap_attr = "planFile";
 
 	$ldap_dn = sprintf($ldap_dnf, $user);
 
