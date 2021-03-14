@@ -20,12 +20,13 @@ $columns = $detailed ? 5 : 4;
 	<tfoot>
 	<tr>
 		<td colspan="<?= $columns ?>">
-<?php if (strlen($user) or strlen($host)) { ?>
-			<a href="?">Back to all sessions</a>
-<?php } elseif ($detailed) { ?>
-			<a href="?">Back to normal view</a>
+<?php if ($detailed) { ?>
+			<a href="<?= htmlspecialchars($normal_url) ?>">Normal view</a>
 <?php } else { ?>
-			<a href="?full">Expanded view</a>
+			<a href="<?= htmlspecialchars($expand_url) ?>">Expanded view</a>
+<?php } ?>
+<?php if (strlen($user) || strlen($host)) { ?>
+			or <a href="?">back to all sessions</a>
 <?php } ?>
 			or output as
 			<a href="<?= htmlspecialchars($json_url) ?>">JSON</a>,
