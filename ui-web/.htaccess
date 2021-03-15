@@ -1,3 +1,2 @@
 RewriteEngine On
 RewriteRule ^hosts$ hosts.php
-RewriteRule ^hosts\.php$ /hosts [R,L]
