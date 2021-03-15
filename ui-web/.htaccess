@@ -1,4 +1,3 @@
 RewriteEngine On
 RewriteRule ^hosts$ hosts.php
 RewriteRule ^hosts\.php$ /hosts [R,L]
-RewriteRule ^server\.php$ server/index.php
