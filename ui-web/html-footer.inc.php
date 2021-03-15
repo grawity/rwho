@@ -8,4 +8,6 @@ var settings = <?= json_encode([
 <script type="text/javascript" src="xhr.js?v6"></script>
 <?php } ?>
 
-<p class="footer"><a href="https://github.com/grawity/rwho/">rwho</a> by grawity</p>
+<p class="footer">
+	Built using <a href="https://github.com/grawity/rwho/">rwho</a>
+</p>
