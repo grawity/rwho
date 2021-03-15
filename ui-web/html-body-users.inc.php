@@ -73,9 +73,13 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 
 <?php if (strlen($plan)) { ?>
 	<tr>
+		<th colspan="<?= $columns ?>">
+			~<?= htmlspecialchars($user) ?>/.plan:
+		</th>
+	</tr>
+	<tr>
 		<td colspan="<?= $columns ?>">
-			<pre class="plan"><div class="plan-head">~/.plan:</div></pre>
-			<pre class="plan"><div class="plan-body"><?= htmlspecialchars($plan) ?></div></pre>
+			<pre class="plan"><?= htmlspecialchars($plan) ?></pre>
 		</td>
 	</tr>
 <?php } ?>

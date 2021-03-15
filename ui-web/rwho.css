@@ -55,9 +55,3 @@ table#rwho-sessions {
 .plan {
 	margin: 0.2em 0;
 }
-
-.plan-head {
-	display: inline-block;
-	font-weight: bold;
-	margin-bottom: 0.7em;
-}
