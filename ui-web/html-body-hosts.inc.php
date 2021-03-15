@@ -13,13 +13,7 @@
 	<tfoot>
 	<tr>
 		<td colspan="5">
-			Output as
-			<a href="<?= htmlspecialchars($json_url) ?>">JSON</a>,
-			<a href="<?= htmlspecialchars($xml_url) ?>">XML</a>,
-<?php if (!empty($finger_url)) { ?>
-			<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
-<?php } ?>
-			or <a href="./">list sessions</a>
+			<a href="./">List sessions</a>
 		</td>
 	</tr>
 	</tfoot>

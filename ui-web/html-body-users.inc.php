@@ -25,17 +25,10 @@ $columns = $detailed ? 5 : 4;
 <?php } else { ?>
 			<a href="<?= htmlspecialchars($expand_url) ?>">Expanded view</a>
 <?php } ?>
-			or output as
-			<a href="<?= htmlspecialchars($json_url) ?>">JSON</a>,
-			<a href="<?= htmlspecialchars($xml_url) ?>">XML</a>,
-<?php if (!empty($finger_url)) { ?>
-			<a href="<?= htmlspecialchars($finger_url) ?>">text</a>,
-<?php } ?>
 <?php if (strlen($user) || strlen($host)) { ?>
 			or <a href="?">back to all sessions</a>,
 <?php } ?>
-			or
-			<a href="hosts">list hosts</a>
+			or view the <a href="hosts">host list</a>
 		</td>
 	</tr>
 	</tfoot>
