@@ -21,12 +21,12 @@ $columns = $detailed ? 5 : 4;
 	<tr>
 		<td colspan="<?= $columns ?>">
 <?php if ($detailed) { ?>
-			<a href="<?= htmlspecialchars($normal_url) ?>">Normal view</a>
+			<a href="<?= htmlspecialchars($normal_url) ?>">Show summary</a>
 <?php } else { ?>
-			<a href="<?= htmlspecialchars($expand_url) ?>">Expanded view</a>
+			<a href="<?= htmlspecialchars($expand_url) ?>">Show details</a>
 <?php } ?>
 <?php if (strlen($user) || strlen($host)) { ?>
-			or <a href="?">back to all sessions</a>,
+			or back to <a href="?">all sessions</a>,
 <?php } ?>
 			or view the <a href="hosts">host list</a>
 		</td>
@@ -45,7 +45,7 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 ?>
 	<tr<?= $row["is_stale"] ? " class=\"stale\"" : "" ?>>
 <?php if ($detailed || $k == 0) { ?>
-		<td rowspan="<?= $detailed ? 1 : count($userdata) ?>">
+		<td<?= $detailed ? "" : " rowspan=\"".count($userdata)."\"" ?>>
 <?php if ($link_user) { ?>
 			<a href="?user=<?= $h_user ?>"><?= $h_user ?></a>
 <?php } else { ?>

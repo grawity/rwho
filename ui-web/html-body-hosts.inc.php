@@ -13,7 +13,7 @@
 	<tfoot>
 	<tr>
 		<td colspan="5">
-			<a href="./">List sessions</a>
+			Back to <a href="./">all sessions</a>
 		</td>
 	</tr>
 	</tfoot>
