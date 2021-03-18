@@ -23,9 +23,18 @@ function make_salt($algo) {
 
 $fqdn = @$argv[1] ?? "foo.example.com";
 
-$pw = rand_pass();
-echo "; client\n", "agent.auth_password = $pw\n", "\n";
+$passwd = rand_pass();
+// Note: Usage of sha256crypt is deliberate, as these are verified during
+//       every API call, but also are long enough to not be bruteforceable.
+$digest = crypt($passwd, make_salt("5"));
+#$digest = password_hash($passwd, PASSWORD_DEFAULT);
 
-#$dg = password_hash($pw, PASSWORD_DEFAULT);
-$dg = crypt($pw, make_salt("5"));
-echo "; server\n", "auth.pw.$fqdn = $dg\n";
+echo "\e[1m# Client (/etc/rwho/agent.conf)\e[m\n";
+echo "[agent]\n";
+echo "auth_password = $passwd\n";
+echo "\n";
+
+echo "\e[1m# Server (".__DIR__."/server.conf)\e[m\n";
+echo "[auth.pw]\n";
+echo "$fqdn = $digest\n";
+echo "\n";
