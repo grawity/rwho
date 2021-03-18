@@ -1,8 +1,16 @@
 [Unit]
+Description=RWho Agent
+After=network.target
+After=network-online.target
+After=strongswan.service
 
 [Service]
 Type=forking
+User=rwho
 ExecStart=/usr/sbin/rwho-agent --daemon
+TimeoutStopSec=5s
 
 [Install]
 WantedBy=multi-user.target
+
+# vim: ft=systemd
