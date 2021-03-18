@@ -58,6 +58,7 @@ class HostListPage extends RWhoWebApp {
 	function output_html($data, $params, $xhr=false) {
 		extract($params);
 
+		// Page footer URLs (non-XHR)
 		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
 		$xml_url = mangle_query(["fmt" => "xml"]);
 		$json_url = mangle_query(["fmt" => "json"]);

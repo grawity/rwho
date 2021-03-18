@@ -92,9 +92,12 @@ class UserListPage extends RWhoWebApp {
 
 		$data_by_user = group_by_user($data);
 
-		$normal_url = mangle_query([], ["full"]);
-		$expand_url = mangle_query(["full" => 1]);
+		// Table navbar URLs. (Note: These links are refreshed
+		// via XHR, so we must discard ?fmt=html-xhr and &t=.)
+		$normal_url = mangle_query([], ["full", "fmt", "t"]);
+		$expand_url = mangle_query(["full" => 1], ["fmt", "t"]);
 
+		// Page footer URLs (non-XHR)
 		$xhr_url = mangle_query(["fmt" => "html-xhr"]);
 		$xml_url = mangle_query(["fmt" => "xml"]);
 		$json_url = mangle_query(["fmt" => "json"]);
