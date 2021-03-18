@@ -416,7 +416,11 @@ if ($syslog) {
 	openlog("$0", "ndelay,pid", LOG_DAEMON);
 }
 
-$kod_path = ($ENV{HOME} // "/etc") . "/rwho.kod";
+if ($ENV{HOME}) {
+	$kod_path = $ENV{HOME}."/rwho-agent.kod";
+} else {
+	$kod_path = "/etc/rwho/agent.kod";
+}
 
 if (-e $kod_path) {
 	_die("KOD flag found at '$kod_path', exiting");
