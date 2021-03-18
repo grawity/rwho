@@ -3,6 +3,7 @@
 	<meta charset="utf-8">
 	<title>rwho: <?= htmlspecialchars($page_title) ?></title>
 	<meta name="robots" content="noindex, nofollow">
+	<meta name="viewport" content="width=device-width">
 	<noscript>
 		<meta http-equiv="Refresh" content="10">
 	</noscript>
