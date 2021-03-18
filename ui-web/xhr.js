@@ -42,7 +42,10 @@ function fetch_data() {
 }
 
 function handle_data(data) {
-	/* Use DOM instead of raw innerHTML to make it work in IE 5 */
+	// if (document.all) /* IE 4-5 */
+	// else if (document.getElementById) /* IE 5.5 and later */
+
+	/* Use DOM instead of raw innerHTML to make it work in IE 5.5 */
 	var old_div = document.getElementById("rwho-table-wrapper");
 	var new_div = document.createElement("div");
 	new_div.innerHTML = data;
