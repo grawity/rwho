@@ -15,11 +15,11 @@ class ApiServerApp {
 		die();
 	}
 
-	function check_authentication() {
+	function authenticate() {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
+		$auth_type = @$_SERVER["AUTH_TYPE"];
 		$auth_id = @$_SERVER["PHP_AUTH_USER"];
 		$auth_pw = @$_SERVER["PHP_AUTH_PW"];
-		$auth_type = @$_SERVER["AUTH_TYPE"];
 
 		if (isset($auth_id) && isset($auth_pw)) {
 			$db_pw = $this->config->get("auth.pw.$auth_id", null);
@@ -33,7 +33,7 @@ class ApiServerApp {
 				}
 			} else {
 				xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
-				// Fall through - if there is no such username, apply the same rules as for anonymous clients.
+				// Fall through to anonymous
 			}
 		}
 
@@ -108,7 +108,7 @@ class ApiServerApp {
 	}
 
 	function handle_request() {
-		$auth_id = $this->check_authentication();
+		$auth_id = $this->authenticate();
 		$environ = [
 			"REMOTE_USER" => $auth_id,
 			"REMOTE_ADDR" => $_SERVER["REMOTE_ADDR"],
