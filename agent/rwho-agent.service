@@ -1,0 +1,24 @@
+[Unit]
+Description=RWho Agent
+After=network.target
+After=network-online.target
+After=strongswan.service
+
+[Service]
+Type=notify
+User=rwho
+ExecStart=/usr/local/rwho/agent/rwho-agent.py
+StandardOutput=null
+StandardError=journal
+TimeoutStopSec=5s
+# Automatically recover after Python exceptions (often caused by transient
+# failures such as timeouts). These will /eventually/ be caught in code...
+Restart=on-failure
+RestartSec=1min
+# Don't restart on remote shutdown requests
+RestartPreventExitStatus=6 7
+
+[Install]
+WantedBy=multi-user.target
+
+# vim: ft=systemd
