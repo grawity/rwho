@@ -184,10 +184,12 @@ def run_forever(agent):
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
+    parser.add_argument("-c", "--config",
+                        help="specify path to configuration file")
     args = parser.parse_args()
 
     try:
-        agent = RwhoAgent()
+        agent = RwhoAgent(config_path=args.config)
         run_forever(agent)
     except RwhoShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
