@@ -25,6 +25,14 @@ class ConfigReader():
                 else:
                     raise ConfigSyntaxError("%s:%d: no assignment in %r" % (self.path, i+1, line))
 
+    def merge(self, options):
+        for line in options:
+            if m := re.match(r"^(\S+)\s*=\s*(.*)$", line):
+                key, val = m.groups()
+                self.data[key] = val
+            else:
+                raise ConfigSyntaxError("argv: no assignment in %r" % (line,))
+
     def get_str(self, key, default=None):
         return self.data.get(key, default)
 

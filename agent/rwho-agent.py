@@ -27,9 +27,11 @@ class RwhoAgent():
     CONFIG_PATH = "/etc/rwho/agent.conf"
     KOD_PATH = "/etc/rwho/agent.kod"
 
-    def __init__(self, config_path=None):
-        self.check_kod()
+    def __init__(self, config_path=None,
+                       config_data=None):
         self.config = ConfigReader(config_path or self.CONFIG_PATH)
+        self.config.merge(config_data or [])
+        self.check_kod()
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
         self.ignored_users = {"root"}
         self.attempt_rdns = True
@@ -186,10 +188,13 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument("-c", "--config",
                         help="specify path to configuration file")
+    parser.add_argument("-o", "--option", default=[], action="append",
+                        help="set a configuration parameter")
     args = parser.parse_args()
 
     try:
-        agent = RwhoAgent(config_path=args.config)
+        agent = RwhoAgent(config_path=args.config,
+                          config_data=args.option)
         run_forever(agent)
     except RwhoShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
