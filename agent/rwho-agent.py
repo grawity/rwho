@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import argparse
 import errno
 import ipaddress
 import os
@@ -182,6 +183,9 @@ def run_forever(agent):
         agent.cleanup()
 
 if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    args = parser.parse_args()
+
     try:
         agent = RwhoAgent()
         run_forever(agent)
