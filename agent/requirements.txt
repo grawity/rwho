@@ -1,0 +1,3 @@
+pyinotify
+requests
+requests_gssapi
