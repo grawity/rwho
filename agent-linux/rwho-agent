@@ -485,7 +485,7 @@ $min_uid = $arg{min_uid}
 
 $notify_url = $arg{notify_url}
 		// $conf{"agent.notify_url"}
-		// "https://rwho.nullroute.eu.org/server/";
+		// "https://rwho.nullroute.lt/server/";
 
 if (!length $notify_url) {
 	_die("server URL not specified");

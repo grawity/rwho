@@ -5,7 +5,7 @@
 
 RWHO_DIR="/etc/rwho"
 
-RWHO_HOST='rwho.nullroute.eu.org'
+RWHO_HOST='rwho.nullroute.lt'
 RWHO_URL="http://$RWHO_HOST/"
 
 CONFIG="$RWHO_DIR/rwho.conf"

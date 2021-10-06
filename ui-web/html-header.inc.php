@@ -14,8 +14,8 @@
 </head>
 
 <h1>
-	<a href="//nullroute.eu.org">nullroute</a>
-	| <a href="//nullroute.eu.org/hosts.html">hosts</a>
+	<a href="//nullroute.lt">nullroute</a>
+	| <a href="//nullroute.lt/hosts.html">hosts</a>
 <?php if ($has_query) { ?>
 	| <a href=".">rwho</a>
 <?php } else { ?>

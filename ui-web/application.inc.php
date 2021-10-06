@@ -46,7 +46,7 @@ class RWhoWebApp extends \RWho\ClientApplicationBase {
 		$host ??= "";
 
 		$host = $this->config->get("web.finger.host", null);
-		$gateway = $this->config->get("web.finger.gateway", "//nullroute.eu.org/finger/?q=%s");
+		$gateway = $this->config->get("web.finger.gateway", "//nullroute.lt/finger/?q=%s");
 		if (empty($host) || empty($gateway))
 			return null;
 

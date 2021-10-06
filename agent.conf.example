@@ -3,7 +3,7 @@
 
 [agent]
 # Server API endpoint
-notify_url = https://rwho.nullroute.eu.org/server/
+notify_url = https://rwho.nullroute.lt/server/
 #auth_username = [will use sys.fqdn if empty]
 #auth_password = hunter2
 #exclude_root = true

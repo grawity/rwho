@@ -47,8 +47,8 @@ traditional Finger protocol. See it in action via [HTTP][ex-http] or
     filesystem or even from LDAP.
 
 [Finger]: https://en.wikipedia.org/wiki/Finger_protocol
-[ex-http]: https://rwho.nullroute.eu.org/
-[ex-finger]: https://nullroute.eu.org/finger/?q=%2Fw+grawity%40nullroute.eu.org
+[ex-http]: https://rwho.nullroute.lt/
+[ex-finger]: https://nullroute.lt/finger/?q=%2Fw+grawity%40nullroute.lt
 
 ## Contents
 
