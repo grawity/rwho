@@ -22,21 +22,18 @@ class RwhoClient():
         self.auth_pass = auth_pass
         self.ua = requests.Session()
 
-    # Defer constructing ua.auth so that .auth_user/.auth_pass could be
-    # manually set by the caller.
-    def _init_auth(self):
-        if not self.ua.auth:
-            if self.auth_method == "basic":
-                self.ua.auth = requests.auth.HTTPBasicAuth(username=self.auth_user,
-                                                           password=self.auth_pass)
-            elif self.auth_method == "gssapi":
-                import requests_gssapi
-                self.ua.auth = requests_gssapi.HTTPSPNEGOAuth()
-            elif self.auth_method:
-                raise ValueError("Invalid auth_method %r" % self.auth_method)
+    def set_auth(self, method=None, username=None, password=None):
+        if not method:
+            self.ua.auth = None
+        elif method == "basic":
+            self.ua.auth = requests.auth.HTTPBasicAuth(username, password)
+        elif method == "gssapi":
+            import requests_gssapi
+            self.ua.auth = requests_gssapi.HTTPSPNEGOAuth()
+        else:
+            raise ValueError("Invalid authentication method %r" % (method,))
 
     def upload(self, action, data):
-        self._init_auth()
         log_debug("api: calling %r with %d items", action, len(data))
         payload = {
             "host": self.host_fqdn,
