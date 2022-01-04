@@ -30,8 +30,7 @@ class RwhoUploader():
                 self.ua.auth = requests.auth.HTTPBasicAuth(username=u, password=p)
             elif self.auth_method == "gssapi":
                 import requests_gssapi
-                ma = requests_gssapi.REQUIRED
-                self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(mutual_authentication=ma)
+                self.ua.auth = requests_gssapi.HTTPSPNEGOAuth()
             elif self.auth_method == None:
                 self.ua.auth = None
             else:
