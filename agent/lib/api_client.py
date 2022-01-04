@@ -1,6 +1,5 @@
 import json
 import requests
-import requests.auth
 import socket
 import sys
 
@@ -22,14 +21,23 @@ class RwhoClient():
         self.auth_pass = auth_pass
         self.ua = requests.Session()
 
-    def set_auth(self, method=None, username=None, password=None):
+    def set_auth(self, method=None,
+                       username=None,
+                       password=None,
+                       *,
+                       gss_service=None):
         if not method:
             self.ua.auth = None
         elif method == "basic":
+            import requests.auth
             self.ua.auth = requests.auth.HTTPBasicAuth(username, password)
         elif method == "gssapi":
+            import gssapi
             import requests_gssapi
-            self.ua.auth = requests_gssapi.HTTPSPNEGOAuth()
+            spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
+            self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=gss_service,
+                                                          mech=spnego,
+                                                          opportunistic_auth=True)
         else:
             raise ValueError("Invalid authentication method %r" % (method,))
 
