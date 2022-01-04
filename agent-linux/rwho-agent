@@ -183,7 +183,6 @@ sub upload {
 
 	my %data = (
 		host => $my_fqdn,
-		opsys => $^O,
 		action => $action,
 		utmp => encode_json($sessions),
 	);
