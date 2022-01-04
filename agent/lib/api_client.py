@@ -9,16 +9,10 @@ from .log_util import *
 class RwhoClient():
     def __init__(self, url,
                        host_name=None,
-                       host_fqdn=None,
-                       auth_method=None,
-                       auth_user=None,
-                       auth_pass=None):
+                       host_fqdn=None):
         self.url = url
         self.host_name = host_name
         self.host_fqdn = host_fqdn
-        self.auth_method = auth_method
-        self.auth_user = auth_user or host_fqdn
-        self.auth_pass = auth_pass
         self.ua = requests.Session()
 
     def auth_set_basic(self, username, password):
