@@ -24,7 +24,7 @@ class RwhoClient():
                                                       mech=spnego,
                                                       opportunistic_auth=True)
 
-    def upload(self, action, data):
+    def _upload(self, action, data):
         log_debug("api: calling %r with %d items", action, len(data))
         payload = {
             "host": self.host_name,
@@ -42,7 +42,7 @@ class RwhoClient():
             raise RwhoUploadRejectedError(resp.text.strip())
 
     def put_sessions(self, sessions):
-        return self.upload(action="put", data=[*sessions])
+        return self._upload(action="put", data=[*sessions])
 
     def remove_host(self):
-        return self.upload(action="destroy", data=[])
+        return self._upload(action="destroy", data=[])
