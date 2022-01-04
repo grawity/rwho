@@ -40,9 +40,9 @@ class RwhoAgent():
         self.update_interval = 1*60
         # TODO: Verify that update_interval >= wake_interval
 
-        self.api = RwhoClient(self.server_url)
-        self.api.host_name = socket.gethostname().lower()
-        self.api.host_fqdn = socket.getfqdn().lower()
+        self.api = RwhoClient(self.server_url,
+                              host_name=socket.gethostname().lower(),
+                              host_fqdn=socket.getfqdn().lower())
         log_info("identifying as %r (aka %r)", self.api.host_fqdn, self.api.host_name)
 
         if self.config.get_bool("agent.auth_gssapi"):
