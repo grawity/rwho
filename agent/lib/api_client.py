@@ -7,12 +7,9 @@ from .exceptions import *
 from .log_util import *
 
 class RwhoClient():
-    def __init__(self, url,
-                       host_name=None,
-                       host_fqdn=None):
+    def __init__(self, url, host_name=None):
         self.url = url
         self.host_name = host_name
-        self.host_fqdn = host_fqdn
         self.ua = requests.Session()
 
     def auth_set_basic(self, username, password):
@@ -30,7 +27,7 @@ class RwhoClient():
     def upload(self, action, data):
         log_debug("api: calling %r with %d items", action, len(data))
         payload = {
-            "host": self.host_fqdn,
+            "host": self.host_name,
             "action": action,
             "utmp": json.dumps(data),
         }

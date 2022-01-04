@@ -41,16 +41,15 @@ class RwhoAgent():
         # TODO: Verify that update_interval >= wake_interval
 
         self.api = RwhoClient(self.server_url)
-        self.api.host_name = socket.gethostname().lower()
-        self.api.host_fqdn = socket.getfqdn().lower()
-        log_info("identifying as %r (aka %r)", self.api.host_fqdn, self.api.host_name)
+        self.api.host_name = socket.getfqdn().lower()
+        log_info("identifying as %r", self.api.host_name)
 
         if self.config.get_bool("agent.auth_gssapi"):
             log_info("using GSSAPI authentication")
             self.api.auth_set_kerberos()
         elif passwd := self.config.get_str("agent.auth_password"):
             log_info("using Basic authentication")
-            self.api.auth_set_basic(self.api.host_fqdn, passwd)
+            self.api.auth_set_basic(self.api.host_name, passwd)
         elif (os.environ.get("KRB5_CLIENT_KTNAME")
               or os.environ.get("KRB5CCNAME")
               or os.environ.get("GSS_USE_PROXY")):
