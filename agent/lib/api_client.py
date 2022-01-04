@@ -32,10 +32,6 @@ class RwhoUploader():
                 import requests_gssapi
                 ma = requests_gssapi.REQUIRED
                 self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(mutual_authentication=ma)
-            elif self.auth_method == "gssapi-old":
-                import requests_kerberos
-                ma = requests_kerberos.REQUIRED
-                self.ua.auth = requests_kerberos.HTTPKerberosAuth(mutual_authentication=ma)
             elif self.auth_method == None:
                 self.ua.auth = None
             else:
