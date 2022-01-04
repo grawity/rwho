@@ -7,7 +7,7 @@ import sys
 from .exceptions import *
 from .log_util import *
 
-class RwhoUploader():
+class RwhoClient():
     def __init__(self, url,
                        host_name=None,
                        host_fqdn=None,

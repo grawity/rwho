@@ -13,7 +13,7 @@ import time
 
 from lib.exceptions import *
 from lib.utmp_linux import UTMP_PATH, enum_sessions
-from lib.api_client import RwhoUploader
+from lib.api_client import RwhoClient
 from lib.config import ConfigReader
 from lib.log_util import *
 
@@ -40,7 +40,7 @@ class RwhoAgent():
         self.update_interval = 1*60
         # TODO: Verify that update_interval >= wake_interval
 
-        self.api = RwhoUploader(self.server_url)
+        self.api = RwhoClient(self.server_url)
         self.api.host_name = socket.gethostname().lower()
         self.api.host_fqdn = socket.getfqdn().lower()
         log_info("identifying as %r (aka %r)", self.api.host_fqdn, self.api.host_name)
