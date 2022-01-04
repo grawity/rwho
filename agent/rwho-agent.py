@@ -34,7 +34,7 @@ class RwhoAgent():
         self.check_kod()
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
         self.ignored_users = {"root"}
-        self.attempt_rdns = True
+        self.attempt_rdns = self.config.get_bool("agent.attempt_rdns", True)
         self.last_upload = -1
         self.wake_interval = 1*15
         self.update_interval = 1*60
