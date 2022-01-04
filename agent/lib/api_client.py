@@ -25,11 +25,11 @@ class RwhoClient():
         import requests.auth
         self.ua.auth = requests.auth.HTTPBasicAuth(username, password)
 
-    def auth_set_kerberos(self, gss_service=None):
+    def auth_set_kerberos(self, service="HTTP"):
         import gssapi
         import requests_gssapi
         spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
-        self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=gss_service,
+        self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=service,
                                                       mech=spnego,
                                                       opportunistic_auth=True)
 
