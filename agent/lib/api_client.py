@@ -40,8 +40,7 @@ class RwhoUploader():
         self._init_auth()
         log_debug("api: calling %r with %d items", action, len(data))
         payload = {
-            "host": self.host_name,
-            "fqdn": self.host_fqdn,
+            "host": self.host_fqdn,
             "opsys": sys.platform,
             "action": action,
             "utmp": json.dumps(data),

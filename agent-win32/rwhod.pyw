@@ -196,8 +196,7 @@ def upload(action, sdata):
 
     print("uploading %d items" % len(sdata))
     data = {
-        "host": socket.gethostname().lower(),
-        "fqdn": socket.getfqdn().lower(),
+        "host": socket.getfqdn().lower(),
         "opsys": sys.platform,
         "action": action,
         "utmp": json.dumps(sdata),
