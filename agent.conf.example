@@ -4,14 +4,11 @@
 [agent]
 # Server API endpoint
 notify_url = https://rwho.nullroute.lt/server/
-#auth_username = [will use sys.fqdn if empty]
+# Override system FQDN
+#host_name = hades.arpa
+#auth_username = [will use host_name if empty]
 #auth_password = hunter2
 #exclude_root = true
 #exclude_users = smith|guest\d+
 #include_users = jane
 #min_uid = 1000
-
-[sys]
-# System identification overrides (only implemented by the Perl agent)
-#hostname =
-#fqdn =

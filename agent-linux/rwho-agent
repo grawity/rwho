@@ -503,20 +503,15 @@ unless ($do_monitor || $do_poll) {
 	_die("cannot disable both polling and monitor");
 }
 
-$my_hostname = $conf{"sys.hostname"}
-		|| hostname()
-		|| "(none)";
-
+$my_hostname = hostname() || "none";
 if ($my_hostname eq "(none)" || $my_hostname eq "localhost") {
 	_die("could not determine own hostname");
 }
 
-$my_fqdn = $conf{"sys.fqdn"}
+$my_fqdn = $conf{"agent.host_name"}
 		|| canon_hostname($my_hostname)
-		|| canon_hostname(hostname())
 		|| $my_hostname;
-
-debug("identifying as \"$my_fqdn\" (hostname=\"$my_hostname\")");
+debug("identifying as \"$my_fqdn\"");
 
 $auth_id = $arg{auth_id}
 		// $conf{"agent.auth_username"}
