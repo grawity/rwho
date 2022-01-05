@@ -33,6 +33,7 @@ class RwhoAgent():
         self.config.merge(config_data or [])
         self.check_kod()
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
+        self.host_name = socket.getfqdn().lower()
         self.ignored_users = {"root"}
         self.attempt_rdns = self.config.get_bool("agent.attempt_rdns", True)
         self.last_upload = -1
@@ -40,16 +41,16 @@ class RwhoAgent():
         self.update_interval = 1*60
         # TODO: Verify that update_interval >= wake_interval
 
-        self.api = RwhoClient(self.server_url)
-        self.api.host_name = socket.getfqdn().lower()
-        log_info("identifying as %r", self.api.host_name)
+        log_info("identifying as %r", self.host_name)
+        self.api = RwhoClient(self.server_url,
+                              host_name=self.host_name)
 
         if self.config.get_bool("agent.auth_gssapi"):
             log_info("using GSSAPI authentication")
             self.api.set_auth_kerberos()
         elif passwd := self.config.get_str("agent.auth_password"):
             log_info("using Basic authentication")
-            self.api.set_auth_basic(self.api.host_name, passwd)
+            self.api.set_auth_basic(self.host_name, passwd)
         elif (os.environ.get("KRB5_CLIENT_KTNAME")
               or os.environ.get("KRB5CCNAME")
               or os.environ.get("GSS_USE_PROXY")):
