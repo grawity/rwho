@@ -33,7 +33,7 @@ class RwhoAgent():
         self.config.merge(config_data or [])
         self.check_kod()
         self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
-        self.host_name = socket.getfqdn().lower()
+        self.host_name = self.config.get_str("sys.fqdn", socket.getfqdn().lower())
         self.ignored_users = {"root"}
         self.attempt_rdns = self.config.get_bool("agent.attempt_rdns", True)
         self.last_upload = -1
