@@ -1,25 +1,19 @@
 from .exceptions import *
 from .json_rpc import JsonRpcClient, RemoteFault
 
-class RwhoClient():
+class RwhoClient(JsonRpcClient):
     _fault_map = {
         403: RwhoUploadRejectedError,
         410: RwhoShutdownRequestedError,
     }
 
-    def __init__(self, url, host_name=None):
-        self.rpc = JsonRpcClient(url)
+    def __init__(self, url, *, host_name=None):
+        super().__init__(url)
         self.host_name = host_name
 
-    def set_auth_basic(self, username, password):
-        self.rpc.set_auth_basic(username, password)
-
-    def set_auth_gssapi(self, service="HTTP"):
-        self.rpc.set_auth_gssapi(service)
-
-    def call(self, method, *params):
+    def call(self, method, params):
         try:
-            return self.rpc.call(method, params)
+            return super().call(method, params)
         except RemoteFault as e:
             if handler := self._fault_map.get(e.code):
                 raise handler(e.message) from None
@@ -27,7 +21,7 @@ class RwhoClient():
                 raise
 
     def put_sessions(self, sessions):
-        return self.call("PutEntries", self.host_name, [*sessions])
+        return self.PutEntries(self.host_name, [*sessions])
 
     def remove_host(self):
-        return self.call("ClearEntries", self.host_name)
+        return self.ClearEntries(self.host_name)
