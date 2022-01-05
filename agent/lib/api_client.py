@@ -20,6 +20,9 @@ class RwhoClient(JsonRpcClient):
             else:
                 raise
 
+    def verify_auth(self):
+        return self.WhoAmI()
+
     def put_sessions(self, sessions):
         return self.PutEntries(self.host_name, [*sessions])
 

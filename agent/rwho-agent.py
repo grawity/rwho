@@ -41,6 +41,9 @@ class RwhoAgent():
         self.update_interval = 1*60
         # TODO: Verify that update_interval >= wake_interval
 
+        if names := self.config.get_str("agent.exclude_users"):
+            self.ignored_users |= {*names.split()}
+
         log_info("identifying as %r", self.host_name)
         self.api = RwhoClient(self.server_url,
                               host_name=self.host_name)
@@ -54,8 +57,10 @@ class RwhoAgent():
         else:
             log_info("using no authentication")
 
-        if names := self.config.get_str("agent.exclude_users"):
-            self.ignored_users |= {*names.split()}
+        if authn := self.api.verify_auth():
+            log_info("server recognized us as %r", authn)
+        else:
+            log_info("server thinks we're anonymous")
 
     def check_kod(self):
         if os.path.exists(self.KOD_PATH):
