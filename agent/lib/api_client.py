@@ -12,9 +12,9 @@ class RwhoClient():
     def set_auth_gssapi(self, service="HTTP"):
         self.rpc._set_auth_gssapi(service)
 
-    def call(self, method, *args):
+    def call(self, method, *params):
         try:
-            return self.rpc.call(method, args)
+            return self.rpc.call(method, params)
         except RemoteFault as e:
             if e.code == 403:
                 raise RwhoUploadRejectedError(e.message) from None
