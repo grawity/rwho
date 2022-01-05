@@ -2,6 +2,11 @@ from .exceptions import *
 from .json_rpc import JsonRpcClient, RemoteFault
 
 class RwhoClient():
+    _fault_map = {
+        403: RwhoUploadRejectedError,
+        410: RwhoShutdownRequestedError,
+    }
+
     def __init__(self, url, host_name=None):
         self.rpc = JsonRpcClient(url)
         self.host_name = host_name
@@ -16,10 +21,8 @@ class RwhoClient():
         try:
             return self.rpc.call(method, params)
         except RemoteFault as e:
-            if e.code == 403:
-                raise RwhoUploadRejectedError(e.message) from None
-            elif e.code == 410:
-                raise RwhoShutdownRequestedError(e.message) from None
+            if handler := self._fault_map.get(e.code):
+                raise handler(e.message) from None
             else:
                 raise
 
