@@ -11,8 +11,8 @@ if sys.platform != "win32":
     # simple sanity check
     raise RuntimeError("This script requires Windows NT with Terminal Services.")
 
-import servicemanager as sm
-import win32api as Api
+import servicemanager
+import win32api
 from win32con import *
 from win32gui import *
 from win32ts import *
@@ -117,7 +117,7 @@ def _wtsapi_WTSQuerySessionInformation(hServer, sessionID, infoClass):
     if res:
         return (ppBuffer, pBytesReturned)
     else:
-        print("WTSQuerySessionInformationW: error %r" % Api.GetLastError())
+        print("WTSQuerySessionInformationW: error %r" % win32api.GetLastError())
         return (0, 0)
 
 def WTSQuerySessionInformation_SessionInfo(hServer, sessionId):
@@ -246,7 +246,7 @@ class RWhoMonitor(WTSSessionEventMonitor):
         self.periodic_timeout = 10*60
 
         try:
-            Api.GetConsoleTitle()
+            win32api.GetConsoleTitle()
         except:
             self.have_console = False
         else:
@@ -256,7 +256,7 @@ class RWhoMonitor(WTSSessionEventMonitor):
         print("starting monitor")
         try:
             if self.have_console:
-                Api.SetConsoleCtrlHandler(self.OnConsoleCtrlEvent, True)
+                win32api.SetConsoleCtrlHandler(self.OnConsoleCtrlEvent, True)
 
             self.running = True
             self.OnTimer()
