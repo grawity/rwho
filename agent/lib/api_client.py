@@ -13,16 +13,10 @@ class RwhoClient():
         self.host_name = host_name
 
     def set_auth_basic(self, username, password):
-        import requests.auth
-        self.rpc.ua.auth = requests.auth.HTTPBasicAuth(username, password)
+        self.rpc._set_auth_basic(username, password)
 
     def set_auth_gssapi(self, service="HTTP"):
-        import gssapi
-        import requests_gssapi
-        spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
-        self.rpc.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=service,
-                                                          mech=spnego,
-                                                          opportunistic_auth=True)
+        self.rpc._set_auth_gssapi(service)
 
     def call(self, method, *args):
         try:
