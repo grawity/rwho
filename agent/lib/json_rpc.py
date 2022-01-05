@@ -1,4 +1,4 @@
-# Copy of n.jsonrpc.client 2022-01-04
+# Copy of n.jsonrpc.client 2022-01-05
 import itertools
 import requests
 
@@ -21,20 +21,28 @@ class JsonRpcClient():
     def __init__(self, url, *,
                        gss_service=None):
         self.url = url
+        self.ids = itertools.count()
         self.ua = requests.Session()
         if gss_service:
-            import gssapi
-            import requests_gssapi
-            spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
-            self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=gss_service,
-                                                          mech=spnego,
-                                                          opportunistic_auth=True)
-        self._callids = itertools.count()
+            self._set_auth_gssapi(gss_service)
+
+    def _set_auth_basic(self, username, password):
+        import requests.auth
+        self.ua.auth = requests.auth.HTTPBasicAuth(username.encode(),
+                                                   password.encode())
+
+    def _set_auth_gssapi(self, service="HTTP"):
+        import gssapi
+        import requests_gssapi
+        spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
+        self.ua.auth = requests_gssapi.HTTPSPNEGOAuth(target_name=service,
+                                                      mech=spnego,
+                                                      opportunistic_auth=True)
 
     def call(self, method, params=None):
         if params is None:
             params = []
-        callid = next(self._callids)
+        callid = next(self.ids)
         data = {"jsonrpc": "2.0", "method": method, "params": params, "id": callid}
         resp = self.ua.post(self.url, data=json_dump(data))
         resp.raise_for_status()
