@@ -1,11 +1,5 @@
-import json
-import requests
-import socket
-import sys
-
 from .exceptions import *
 from .json_rpc import JsonRpcClient, RemoteFault
-from .log_util import *
 
 class RwhoClient():
     def __init__(self, url, host_name=None):
