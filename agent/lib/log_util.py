@@ -14,6 +14,8 @@ def sd_notify(*msgs):
 def log_debug(msg, *args):
     if os.environ.get("DEBUG"):
         msg = msg % args
+        if sys.stdout.isatty():
+            msg = "\033[2m%s\033[m" % msg
         print(msg, file=sys.stdout, flush=True)
         syslog.syslog(syslog.LOG_DEBUG, msg)
 
