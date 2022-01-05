@@ -12,10 +12,10 @@ class RwhoClient():
         self.host_name = host_name
 
     def set_auth_basic(self, username, password):
-        self.rpc._set_auth_basic(username, password)
+        self.rpc.set_auth_basic(username, password)
 
     def set_auth_gssapi(self, service="HTTP"):
-        self.rpc._set_auth_gssapi(service)
+        self.rpc.set_auth_gssapi(service)
 
     def call(self, method, *params):
         try:

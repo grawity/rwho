@@ -24,14 +24,14 @@ class JsonRpcClient():
         self.ids = itertools.count()
         self.ua = requests.Session()
         if gss_service:
-            self._set_auth_gssapi(gss_service)
+            self.set_auth_gssapi(gss_service)
 
-    def _set_auth_basic(self, username, password):
+    def set_auth_basic(self, username, password):
         import requests.auth
         self.ua.auth = requests.auth.HTTPBasicAuth(username.encode(),
                                                    password.encode())
 
-    def _set_auth_gssapi(self, service="HTTP"):
+    def set_auth_gssapi(self, service="HTTP"):
         import gssapi
         import requests_gssapi
         spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
