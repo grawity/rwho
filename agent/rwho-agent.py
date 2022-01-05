@@ -46,15 +46,15 @@ class RwhoAgent():
 
         if self.config.get_bool("agent.auth_gssapi"):
             log_info("using GSSAPI authentication")
-            self.api.auth_set_kerberos()
+            self.api.set_auth_kerberos()
         elif passwd := self.config.get_str("agent.auth_password"):
             log_info("using Basic authentication")
-            self.api.auth_set_basic(self.api.host_name, passwd)
+            self.api.set_auth_basic(self.api.host_name, passwd)
         elif (os.environ.get("KRB5_CLIENT_KTNAME")
               or os.environ.get("KRB5CCNAME")
               or os.environ.get("GSS_USE_PROXY")):
             log_info("using GSSAPI authentication (detected from environment)")
-            self.api.auth_set_kerberos()
+            self.api.set_auth_kerberos()
         else:
             log_info("using no authentication")
 

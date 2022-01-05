@@ -12,11 +12,11 @@ class RwhoClient():
         self.rpc = JsonRpcClient(url)
         self.host_name = host_name
 
-    def auth_set_basic(self, username, password):
+    def set_auth_basic(self, username, password):
         import requests.auth
         self.rpc.ua.auth = requests.auth.HTTPBasicAuth(username, password)
 
-    def auth_set_kerberos(self, service="HTTP"):
+    def set_auth_gssapi(self, service="HTTP"):
         import gssapi
         import requests_gssapi
         spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
