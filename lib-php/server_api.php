@@ -45,7 +45,7 @@ class RWhoApiInterface {
 		$this->db = new \RWho\Database($this->config);
 	}
 
-	function _authorize($host) {
+	function _authorize_host($host) {
 		$auth_id = $this->environ["REMOTE_USER"];
 		$auth_required = $this->config->get_bool("server.auth_required", false);
 
@@ -99,7 +99,7 @@ class RWhoApiInterface {
 	}
 
 	function PutHostEntries($host, $entries) {
-		$this->_authorize($host);
+		$this->_authorize_host($host);
 		$this->db->begin();
 		$this->_host_update($host);
 		$this->db->utmp_delete_all($host);
@@ -108,7 +108,7 @@ class RWhoApiInterface {
 	}
 
 	function InsertHostEntries($host, $entries) {
-		$this->_authorize($host);
+		$this->_authorize_host($host);
 		$this->db->begin();
 		$this->_host_update($host);
 		$this->_insert_entries($host, $entries);
@@ -116,7 +116,7 @@ class RWhoApiInterface {
 	}
 
 	function RemoveHostEntries($host, $entries) {
-		$this->_authorize($host);
+		$this->_authorize_host($host);
 		$this->db->begin();
 		$this->_host_update($host);
 		$this->_remove_entries($host, $entries);
@@ -124,7 +124,7 @@ class RWhoApiInterface {
 	}
 
 	function ClearHostEntries($host) {
-		$this->_authorize($host);
+		$this->_authorize_host($host);
 		$this->db->begin();
 		$this->db->host_delete($host);
 		$this->db->utmp_delete_all($host);
