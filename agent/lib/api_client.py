@@ -11,9 +11,9 @@ class RwhoClient(JsonRpcClient):
         super().__init__(url)
         self.host_name = host_name
 
-    def call(self, method, params):
+    def rpc_call(self, method, params):
         try:
-            return super().call(method, params)
+            return super().rpc_call(method, params)
         except RemoteFault as e:
             if handler := self._fault_map.get(e.code):
                 raise handler(e.message) from None

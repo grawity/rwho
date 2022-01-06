@@ -23,14 +23,14 @@ class JsonRpcClient():
         self.ids = itertools.count()
         self.ua = requests.Session()
         if gss_service:
-            self.set_auth_gssapi(gss_service)
+            self.rpc_set_auth_gssapi(gss_service)
 
-    def set_auth_basic(self, username, password):
+    def rpc_set_auth_basic(self, username, password):
         import requests.auth
         self.ua.auth = requests.auth.HTTPBasicAuth(username.encode(),
                                                    password.encode())
 
-    def set_auth_gssapi(self, service="HTTP"):
+    def rpc_set_auth_gssapi(self, service="HTTP"):
         import gssapi
         import requests_gssapi
         spnego = gssapi.Mechanism.from_sasl_name("SPNEGO")
@@ -38,7 +38,7 @@ class JsonRpcClient():
                                                       mech=spnego,
                                                       opportunistic_auth=True)
 
-    def call(self, method, params=None):
+    def rpc_call(self, method, params=None):
         if params is None:
             params = []
         callid = next(self.ids)
@@ -61,9 +61,9 @@ class JsonRpcClient():
                 if args and kwargs:
                     raise RuntimeError("cannot send both positional and named args")
                 elif kwargs:
-                    return self.call(name, kwargs)
+                    return self.rpc_call(name, kwargs)
                 else:
-                    return self.call(name, args)
+                    return self.rpc_call(name, args)
             return wrapper
         else:
             raise AttributeError(name)

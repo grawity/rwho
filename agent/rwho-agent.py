@@ -50,10 +50,10 @@ class RwhoAgent():
 
         if service := self.config.get_str("agent.auth_gss_service"):
             log_info("using GSS authentication")
-            self.api.set_auth_gssapi(service)
+            self.api.rpc_set_auth_gssapi(service)
         elif passwd := self.config.get_str("agent.auth_password"):
             log_info("using Basic authentication")
-            self.api.set_auth_basic(self.host_name, passwd)
+            self.api.rpc_set_auth_basic(self.host_name, passwd)
         else:
             log_info("using no authentication")
 
