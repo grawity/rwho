@@ -98,16 +98,6 @@ class RWhoApiInterface {
 		return $this->environ["REMOTE_USER"];
 	}
 
-	function TestIsAuthorized($host) {
-		try {
-			$this->_authorize($host);
-		} catch (UnauthorizedHostError $e) {
-			return false;
-		} finally {
-			return true;
-		}
-	}
-
 	function PutEntries($host, $entries) {
 		$this->_authorize($host);
 		$this->db->begin();
