@@ -2,11 +2,10 @@
 import itertools
 import requests
 
-#from n.jsonrpc.util import json_load, json_dump
 # We don't need the binary-capable variants for now.
-import json
-json_load = json.loads
-json_dump = json.dumps
+#from n.jsonrpc.util import json_load, json_dump
+from json import (dumps as json_dump,
+                  loads as json_load)
 
 class RemoteFault(RuntimeError):
     def __init__(self, arg):
