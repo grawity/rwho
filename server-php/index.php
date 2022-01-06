@@ -68,24 +68,24 @@ class ApiServerApp {
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$api->InsertEntries($host, $data);
+					$api->InsertHostEntries($host, $data);
 					die("OK\n");
 				case "delete":
 					$data = json_decode($_POST["utmp"], true);
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$api->RemoveEntries($host, $data);
+					$api->RemoveHostEntries($host, $data);
 					die("OK\n");
 				case "put":
 					$data = json_decode($_POST["utmp"], true);
 					if (!is_array($data)) {
 						die("error: no data\n");
 					}
-					$api->PutEntries($host, $data);
+					$api->PutHostEntries($host, $data);
 					die("OK\n");
 				case "destroy":
-					$api->ClearEntries($host);
+					$api->ClearHostEntries($host);
 					die("OK\n");
 				default:
 					die("error: unknown action\n");

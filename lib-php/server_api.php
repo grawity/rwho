@@ -98,7 +98,7 @@ class RWhoApiInterface {
 		return $this->environ["REMOTE_USER"];
 	}
 
-	function PutEntries($host, $entries) {
+	function PutHostEntries($host, $entries) {
 		$this->_authorize($host);
 		$this->db->begin();
 		$this->_host_update($host);
@@ -107,7 +107,7 @@ class RWhoApiInterface {
 		$this->db->commit();
 	}
 
-	function InsertEntries($host, $entries) {
+	function InsertHostEntries($host, $entries) {
 		$this->_authorize($host);
 		$this->db->begin();
 		$this->_host_update($host);
@@ -115,7 +115,7 @@ class RWhoApiInterface {
 		$this->db->commit();
 	}
 
-	function RemoveEntries($host, $entries) {
+	function RemoveHostEntries($host, $entries) {
 		$this->_authorize($host);
 		$this->db->begin();
 		$this->_host_update($host);
@@ -123,7 +123,7 @@ class RWhoApiInterface {
 		$this->db->commit();
 	}
 
-	function ClearEntries($host) {
+	function ClearHostEntries($host) {
 		$this->_authorize($host);
 		$this->db->begin();
 		$this->db->host_delete($host);

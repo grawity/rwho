@@ -24,7 +24,7 @@ class RwhoClient(JsonRpcClient):
         return self.WhoAmI()
 
     def put_sessions(self, sessions):
-        return self.PutEntries(self.host_name, [*sessions])
+        return self.PutHostEntries(self.host_name, [*sessions])
 
     def remove_host(self):
-        return self.ClearEntries(self.host_name)
+        return self.ClearHostEntries(self.host_name)
