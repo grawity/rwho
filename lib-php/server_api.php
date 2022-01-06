@@ -45,6 +45,19 @@ class RWhoApiInterface {
 		$this->db = new \RWho\Database($this->config);
 	}
 
+	// Accept any non-anonymous client, e.g. via mod_auth_gssapi. This
+	// gives access to Get*() calls that reveal network-sensitive information.
+	function _authorize_any($what) {
+		$auth_id = $this->environ["REMOTE_USER"];
+		if (!$auth_id) {
+			// No authentication
+			throw new UnauthorizedClientError($what);
+		} else {
+			xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to call $what");
+		}
+	}
+
+	// Permit hosts (via Basic auth) to update their own records.
 	function _authorize_host($host) {
 		$auth_id = $this->environ["REMOTE_USER"];
 		$auth_required = $this->config->get_bool("server.auth_required", false);
@@ -98,6 +111,16 @@ class RWhoApiInterface {
 		return $this->environ["REMOTE_USER"];
 	}
 
+	function GetHosts() {
+		$this->_authorize_any("GetHosts");
+		return $this->db->host_query();
+	}
+
+	function GetEntries($user, $host) {
+		$this->_authorize_any("GetEntries");
+		return $this->db->utmp_query($user, $host);
+	}
+
 	function PutHostEntries($host, $entries) {
 		$this->_authorize_host($host);
 		$this->db->begin();
@@ -129,6 +152,13 @@ class RWhoApiInterface {
 		$this->db->host_delete($host);
 		$this->db->utmp_delete_all($host);
 		$this->db->commit();
+	}
+}
+
+class UnauthorizedClientError extends \JsonRpc\RpcException {
+	function __construct($what) {
+		$this->code = 403;
+		$this->message = "Client not authorized to call $what()";
 	}
 }
 
