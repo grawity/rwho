@@ -17,9 +17,15 @@ class ApiServerApp {
 
 	function authenticate() {
 		$auth_required = $this->config->get_bool("server.auth_required", false);
+		$preauth_id = @$_SERVER["REMOTE_USER"];
 		$auth_type = @$_SERVER["AUTH_TYPE"];
 		$auth_id = @$_SERVER["PHP_AUTH_USER"];
 		$auth_pw = @$_SERVER["PHP_AUTH_PW"];
+
+		if (isset($preauth_id)) {
+			xsyslog(LOG_DEBUG, "Accepting pre-authenticated client '$preauth_id'");
+			return $preauth_id;
+		}
 
 		if (isset($auth_id) && isset($auth_pw)) {
 			$db_pw = $this->config->get("auth.pw.$auth_id", null);
