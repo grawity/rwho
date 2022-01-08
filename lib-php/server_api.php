@@ -1,5 +1,6 @@
 <?php
 namespace RWho\Server;
+require_once(__DIR__."/../lib-php/client.php");
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
@@ -43,6 +44,7 @@ class RWhoApiInterface {
 		$this->config = $config;
 		$this->environ = $environ;
 		$this->db = new \RWho\Database($this->config);
+		$this->client = new \RWho\Client($this->config, $this->db);
 	}
 
 	// Accept any non-anonymous client, e.g. via mod_auth_gssapi. This
