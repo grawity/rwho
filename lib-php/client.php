@@ -65,10 +65,10 @@ class Client {
 		return $this->db->utmp_count(true, $stale_ts);
 	}
 
-	// count_conns() -> int
+	// count_lines() -> int
 	// Count all connections (utmp records).
 
-	function count_conns() {
+	function count_lines() {
 		$stale_ts = time() - $this->_stale_age;
 		return $this->db->utmp_count(false, $stale_ts);
 	}

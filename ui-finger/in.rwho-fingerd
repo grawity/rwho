@@ -143,7 +143,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			$this->output_hosts($data);
 			if ($detailed) {
 				$n_users = $this->client->count_users();
-				$n_conns = $this->client->count_conns();
+				$n_conns = $this->client->count_lines();
 				$n_hosts = count($data);
 				print("\r\n");
 				printf("(%d users over %d connections on %d hosts)\r\n",
