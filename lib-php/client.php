@@ -4,9 +4,9 @@ require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/util.php");
 
 class Client {
-	function __construct($config) {
+	function __construct($config, $db=null) {
 		$this->config = $config;
-		$this->db = new \RWho\Database($config);
+		$this->db = $db ?? new \RWho\Database($config);
 
 		// maximum age before which the entry will be considered stale
 		// (e.g. the host temporarily down for some reason)
