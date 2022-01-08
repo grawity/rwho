@@ -44,23 +44,25 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 
 		$last = ["user" => null];
 		foreach ($data as $row) {
-			$line = [];
-			$flag = "";
+			if ($row["is_stale"] && !$detailed)
+				continue;
 
-			if ($row["is_stale"]) {
-				if (!$detailed)
-					continue;
-				$flag = "?";
-			}
-			elseif ($row["uid"] == 0)
-				$flag = "#";
-			elseif ($row["uid"] < 25000)
-				$flag = "<";
+			$line = [];
 
 			$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
 
-			if ($detailed)
+			if ($detailed) {
+				if ($row["is_stale"])
+					$flag = "?";
+				elseif ($row["uid"] == 0)
+					$flag = "#";
+				elseif ($row["uid"] < 25000)
+					$flag = "<";
+				else
+					$flag = "";
+
 				$line[] = $flag;
+			}
 
 			$line[] = $detailed
 					? $row["host"]
