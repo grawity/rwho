@@ -113,6 +113,8 @@ class RWhoApiInterface {
 		return $this->environ["REMOTE_USER"];
 	}
 
+	/* Client functions */
+
 	function GetHosts() {
 		$this->_authorize_any("GetHosts");
 		return $this->db->host_query();
@@ -122,6 +124,25 @@ class RWhoApiInterface {
 		$this->_authorize_any("GetEntries");
 		return $this->db->utmp_query($user, $host);
 	}
+
+	function GetCounts() {
+		$this->_authorize_any("GetCounts");
+		return ["hosts" => $this->client->count_hosts(),
+			"users" => $this->client->count_users(),
+			"lines" => $this->client->count_lines()];
+	}
+
+	function GetPlanFile($user, $host) {
+		$this->_authorize_any("GetPlanFile");
+		return $this->client->get_plan_file($user, $host);
+	}
+
+	function Purge() {
+		$this->_authorize_any("Purge");
+		return $this->client->purge_dead();
+	}
+
+	/* Host functions */
 
 	function PutHostEntries($host, $entries) {
 		$this->_authorize_host($host);
