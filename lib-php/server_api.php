@@ -13,27 +13,14 @@ function xsyslog($level, $message) {
 }
 
 // canonicalize_utmp_user(utmp_entry& $entry) -> utmp_entry
-// canonicalize_user(str $user, int $uid, str $host) -> str $user
 //
 // Strip off the SSSD "@domain" suffix. This allows the same username from
 // multiple SSSD domains to be summarized under a single section.
-//
-// Deprecated (legacy Cluenet-era function).
 
 function canonicalize_utmp_user(&$entry) {
 	$entry["raw_user"] = $entry["user"];
-	$entry["user"] = canonicalize_user(
-				$entry["raw_user"],
-				$entry["uid"],
-				$entry["host"]);
+	$entry["user"] = explode("@", $entry["user"])[0];
 	return $entry;
-}
-
-function canonicalize_user($user, $uid, $host) {
-	$pos = strpos($user, "@");
-	if ($pos !== false)
-		$user = substr($user, 0, $pos);
-	return $user;
 }
 
 class RWhoApiInterface {
