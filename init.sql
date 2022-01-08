@@ -6,7 +6,7 @@ CREATE TABLE utmp (
 	host		varchar(255)	NOT NULL,
 	-- normally UT_NAMESIZE, but allow more for Windows
 	user		varchar(64)	NOT NULL,
-	rawuser		varchar(64)	NOT NULL,
+	raw_user	varchar(64)	NOT NULL,
 	uid		integer,
 	-- UT_HOSTSIZE
 	rhost		varchar(256),

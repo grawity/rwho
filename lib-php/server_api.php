@@ -21,9 +21,9 @@ function xsyslog($level, $message) {
 // Deprecated (legacy Cluenet-era function).
 
 function canonicalize_utmp_user(&$entry) {
-	$entry["rawuser"] = $entry["user"];
+	$entry["raw_user"] = $entry["user"];
 	$entry["user"] = canonicalize_user(
-				$entry["rawuser"],
+				$entry["raw_user"],
 				$entry["uid"],
 				$entry["host"]);
 	return $entry;
