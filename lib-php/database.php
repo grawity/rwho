@@ -93,7 +93,7 @@ class Database {
 			$sql .= " AND user = :user";
 		}
 		if (strlen($host)) {
-			$sql .= " AND host = :host";
+			$sql .= " AND :host IN (host, SUBSTRING_INDEX(host, '.', 1))";
 		}
 		$st = $this->dbh->prepare($sql);
 		$st->bindValue(":time", $minimum_ts);
