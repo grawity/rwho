@@ -49,8 +49,13 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 
 			$line = [];
 
-			$line[] = ($row["user"] === $last["user"]) ? "" : $row["user"];
+			// Username
+			if ($row["user"] === $last["user"])
+				$line[] = "";
+			else
+				$line[] = $row["user"];
 
+			// Flag
 			if ($detailed) {
 				if ($row["is_stale"])
 					$flag = "?";
@@ -64,17 +69,20 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 				$line[] = $flag;
 			}
 
+			// Host
 			$line[] = $detailed
 					? $row["host"]
 					: substr(Util\strip_domain($row["host"]), 0, 12);
 
+			// Line or {count}
 			$line[] = $row["is_summary"]
 					? "{".$row["line"]."}"
 					: $row["line"];
 
-			if ($detailed)
+			// Remote host
+			if ($detailed) {
 				$line[] = $row["rhost"];
-			else {
+			} else {
 				$len = strlen($row["rhost"]);
 				if ($len > 40)
 					$line[] = substr($row["rhost"], 0, 39).">";
