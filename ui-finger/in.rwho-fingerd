@@ -59,10 +59,6 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			if ($detailed) {
 				if ($row["is_stale"])
 					$flag = "?";
-				elseif ($row["uid"] == 0)
-					$flag = "#";
-				elseif ($row["uid"] < 25000)
-					$flag = "<";
 				else
 					$flag = "";
 
