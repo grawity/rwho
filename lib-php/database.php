@@ -116,7 +116,7 @@ class Database {
 		$st->bindValue(":user", $entry["user"]);
 		$st->bindValue(":raw_user", $entry["raw_user"]);
 		$st->bindValue(":uid", $entry["uid"]);
-		$st->bindValue(":rhost", $entry["host"]);
+		$st->bindValue(":rhost", $entry["rhost"]);
 		$st->bindValue(":line", $entry["line"]);
 		$st->bindValue(":time", $entry["time"]);
 		$st->bindValue(":updated", time());

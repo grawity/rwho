@@ -72,11 +72,18 @@ class RWhoApiInterface {
 	}
 
 	function _utmp_canon_entry($entry) {
+		// Compat with older agents which sent :host instead of :rhost
+		if (!isset($entry["rhost"]) && isset($entry["host"])) {
+			$entry["rhost"] = $entry["host"];
+			unset($entry["host"]);
+		}
+
 		// Strip off the SSSD "@domain" suffix. This allows the same
 		// username in multiple SSSD domains to be summarized under a
 		// single section.
 		$entry["raw_user"] = $entry["user"];
 		$entry["user"] = explode("@", $entry["user"])[0];
+
 		return $entry;
 	}
 
