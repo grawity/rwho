@@ -84,7 +84,7 @@ class RWhoApiInterface {
 		$this->db->host_update($host, $this->environ["REMOTE_ADDR"]);
 	}
 
-	function _utmp_canon_entry($host, $entry) {
+	function _utmp_canon_entry($entry) {
 		if (!is_array($entry) || array_is_list($entry)) {
 			throw new MalformedEntryError();
 		}
@@ -110,9 +110,6 @@ class RWhoApiInterface {
 			throw new MalformedEntryError();
 		}
 
-		// Always store the authenticated host name in entry.
-		$entry["host"] = $host;
-
 		// Strip off the SSSD "@domain" suffix. This allows the same
 		// username in multiple SSSD domains to be summarized under a
 		// single section.
@@ -124,15 +121,15 @@ class RWhoApiInterface {
 
 	function _insert_entries($host, $entries) {
 		foreach ($entries as $entry) {
-			$entry = $this->_utmp_canon_entry($host, $entry);
-			$this->db->utmp_insert_one($entry);
+			$entry = $this->_utmp_canon_entry($entry);
+			$this->db->utmp_insert_one($host, $entry);
 		}
 	}
 
 	function _remove_entries($host, $entries) {
 		foreach ($entries as $entry) {
-			$entry = $this->_utmp_canon_entry($host, $entry);
-			$this->db->utmp_delete_one($entry);
+			$entry = $this->_utmp_canon_entry($entry);
+			$this->db->utmp_delete_one($host, $entry);
 		}
 	}
 
