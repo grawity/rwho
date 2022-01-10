@@ -107,12 +107,12 @@ class Database {
 		return $st->fetchAll(\PDO::FETCH_ASSOC);
 	}
 
-	function utmp_insert_one($host, $entry) {
+	function utmp_insert_one($entry) {
 		$st = $this->dbh->prepare("
 			INSERT INTO utmp (host, user, raw_user, uid, rhost, line, time, updated)
 			VALUES (:host, :user, :raw_user, :uid, :rhost, :line, :time, :updated)
 		");
-		$st->bindValue(":host", $host);
+		$st->bindValue(":host", $entry["host"]);
 		$st->bindValue(":user", $entry["user"]);
 		$st->bindValue(":raw_user", $entry["raw_user"]);
 		$st->bindValue(":uid", $entry["uid"]);
@@ -123,12 +123,12 @@ class Database {
 		$st->execute();
 	}
 
-	function utmp_delete_one($host, $entry) {
+	function utmp_delete_one($entry) {
 		$st = $this->dbh->prepare("
 			DELETE FROM utmp
 			WHERE host=:host AND raw_user=:raw_user AND line=:line
 		");
-		$st->bindValue(":host", $host);
+		$st->bindValue(":host", $entry["host"]);
 		$st->bindValue(":raw_user", $entry["raw_user"]);
 		$st->bindValue(":line", $entry["line"]);
 		$st->execute();
