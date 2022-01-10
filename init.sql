@@ -4,6 +4,7 @@ DROP TABLE IF EXISTS utmp;
 CREATE TABLE utmp (
 	rowid		integer		AUTO_INCREMENT,
 	host		varchar(255)	NOT NULL,
+	raw_host	varchar(255)	NOT NULL,
 	-- normally UT_NAMESIZE, but allow more for Windows
 	user		varchar(64)	NOT NULL,
 	raw_user	varchar(64)	NOT NULL,
