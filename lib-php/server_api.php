@@ -12,17 +12,6 @@ function xsyslog($level, $message) {
 	return syslog($level, $message);
 }
 
-// canonicalize_utmp_user(utmp_entry& $entry) -> utmp_entry
-//
-// Strip off the SSSD "@domain" suffix. This allows the same username from
-// multiple SSSD domains to be summarized under a single section.
-
-function canonicalize_utmp_user(&$entry) {
-	$entry["raw_user"] = $entry["user"];
-	$entry["user"] = explode("@", $entry["user"])[0];
-	return $entry;
-}
-
 class RWhoApiInterface {
 	private $config;
 	private $environ;
@@ -82,25 +71,36 @@ class RWhoApiInterface {
 		$this->db->host_update($host, $this->environ["REMOTE_ADDR"]);
 	}
 
+	function _utmp_canon_entry($entry) {
+		// Strip off the SSSD "@domain" suffix. This allows the same
+		// username in multiple SSSD domains to be summarized under a
+		// single section.
+		$entry["raw_user"] = $entry["user"];
+		$entry["user"] = explode("@", $entry["user"])[0];
+		return $entry;
+	}
+
 	function _insert_entries($host, $entries) {
 		foreach ($entries as $entry) {
-			$entry = canonicalize_utmp_user($entry);
+			$entry = $this->_utmp_canon_entry($entry);
 			$this->db->utmp_insert_one($host, $entry);
 		}
 	}
 
 	function _remove_entries($host, $entries) {
 		foreach ($entries as $entry) {
-			$entry = canonicalize_utmp_user($entry);
+			$entry = $this->_utmp_canon_entry($entry);
 			$this->db->utmp_delete_one($host, $entry);
 		}
 	}
+
+	/* Common API */
 
 	function WhoAmI() {
 		return $this->environ["REMOTE_USER"];
 	}
 
-	/* Client functions */
+	/* Client API */
 
 	function GetHosts() {
 		$this->_authorize_any("GetHosts");
@@ -129,7 +129,7 @@ class RWhoApiInterface {
 		return $this->client->purge_dead();
 	}
 
-	/* Host functions */
+	/* Host API */
 
 	function PutHostEntries($host, $entries) {
 		$this->_authorize_host($host);
