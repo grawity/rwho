@@ -8,5 +8,5 @@ $config = new \RWho\Config\Configuration();
 $config->load(__DIR__."/server.conf");
 
 $client = new \RWho\Client($config);
-$rows = $client->purge_dead();
-print "Purged $rows rows\n";
+list ($hrows, $urows) = $client->purge_dead();
+print "Purged $hrows hosts and $urows utmp entries.\n";

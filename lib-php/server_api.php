@@ -124,8 +124,8 @@ class RWhoApiInterface {
 		return $this->client->get_plan_file($user, $host);
 	}
 
-	function Purge() {
-		$this->_authorize_any("Purge");
+	function PurgeOld() {
+		$this->_authorize_any("PurgeOld");
 		return $this->client->purge_dead();
 	}
 

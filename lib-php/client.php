@@ -94,7 +94,7 @@ class Client {
 
 	function purge_dead() {
 		$dead_ts = time() - $this->_dead_age;
-		return $this->db->utmp_delete_old($dead_ts);
+		return $this->db->delete_old($dead_ts);
 	}
 
 	// _find_user_plan_file(str $user, str $host) -> str?

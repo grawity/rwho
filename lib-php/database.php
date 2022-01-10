@@ -140,13 +140,6 @@ class Database {
 		$st->execute();
 	}
 
-	function utmp_delete_old($before) {
-		$st = $this->dbh->prepare("DELETE FROM utmp WHERE updated<:before");
-		$st->bindValue(":before", $before);
-		$st->execute();
-		return $st->rowCount();
-	}
-
 	function utmp_count($group_users, $minimum_ts=0) {
 		if ($group_users) {
 			$sql = "SELECT COUNT(DISTINCT user)
@@ -161,5 +154,21 @@ class Database {
 		$st->bindValue(":time", $minimum_ts);
 		$st->execute();
 		return $st->fetchColumn(0);
+	}
+
+	/* Maintenance functions dealing with both tables */
+
+	function delete_old($before) {
+		$st = $this->dbh->prepare("DELETE FROM hosts WHERE last_update<:before");
+		$st->bindValue(":before", $before);
+		$st->execute();
+		$hc = $st->rowCount();
+
+		$st = $this->dbh->prepare("DELETE FROM utmp WHERE updated<:before");
+		$st->bindValue(":before", $before);
+		$st->execute();
+		$uc = $st->rowCount();
+
+		return [$hc, $uc];
 	}
 }
