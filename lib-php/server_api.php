@@ -92,7 +92,7 @@ class RWhoApiInterface {
 	function _remove_entries($host, $entries) {
 		foreach ($entries as $entry) {
 			$entry = canonicalize_utmp_user($entry);
-			$this->db->utmp_delete_all($host, $entry);
+			$this->db->utmp_delete_one($host, $entry);
 		}
 	}
 
