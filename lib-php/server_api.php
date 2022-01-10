@@ -5,19 +5,6 @@ require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
 
-if (!function_exists("array_is_list")) {
-	/* Polyfill from https://wiki.php.net/rfc/is_list */
-	function array_is_list(array $array): bool {
-		$expect = 0;
-		foreach ($array as $k => $_) {
-			if ($k !== $expect)
-				return false;
-			$expect++;
-		}
-		return true;
-	}
-}
-
 openlog("rwho-server", null, LOG_DAEMON);
 
 function xsyslog($level, $message) {
@@ -85,29 +72,10 @@ class RWhoApiInterface {
 	}
 
 	function _utmp_canon_entry($entry) {
-		if (!is_array($entry) || array_is_list($entry)) {
-			throw new MalformedEntryError();
-		}
-
 		// Compat with older agents which sent :host instead of :rhost
 		if (!isset($entry["rhost"]) && isset($entry["host"])) {
 			$entry["rhost"] = $entry["host"];
 			unset($entry["host"]);
-		}
-
-		if (!isset($entry["user"])
-		    || !is_string($entry["user"])
-		    || !isset($entry["uid"])
-		    || !is_int($entry["uid"])
-		    || !isset($entry["rhost"])
-		    || !is_string($entry["rhost"])
-		    || !isset($entry["line"])
-		    || !is_string($entry["line"])
-		    || !isset($entry["time"])
-		    || !(is_int($entry["time"])
-		         || is_float($entry["time"])))
-		{
-			throw new MalformedEntryError();
 		}
 
 		// Strip off the SSSD "@domain" suffix. This allows the same
@@ -201,13 +169,6 @@ class RWhoApiInterface {
 		$this->db->host_delete($host);
 		$this->db->utmp_delete_all($host);
 		$this->db->commit();
-	}
-}
-
-class MalformedEntryError extends \JsonRpc\RpcBadParametersError {
-	function __construct() {
-		parent::__construct();
-		$this->message = "Bad utmp entry format";
 	}
 }
 
