@@ -109,11 +109,10 @@ class Database {
 
 	function utmp_insert_one($entry) {
 		$st = $this->dbh->prepare("
-			INSERT INTO utmp (host, raw_host, user, raw_user, uid, rhost, line, time, updated)
-			VALUES (:host, :raw_host, :user, :raw_user, :uid, :rhost, :line, :time, :updated)
+			INSERT INTO utmp (host, user, raw_user, uid, rhost, line, time, updated)
+			VALUES (:host, :user, :raw_user, :uid, :rhost, :line, :time, :updated)
 		");
 		$st->bindValue(":host", $entry["host"]);
-		$st->bindvalue(":raw_host", $entry["raw_host"]);
 		$st->bindValue(":user", $entry["user"]);
 		$st->bindValue(":raw_user", $entry["raw_user"]);
 		$st->bindValue(":uid", $entry["uid"]);
@@ -136,7 +135,7 @@ class Database {
 	}
 
 	function utmp_delete_all($host) {
-		$st = $this->dbh->prepare("DELETE FROM utmp WHERE raw_host=:host");
+		$st = $this->dbh->prepare("DELETE FROM utmp WHERE host=:host");
 		$st->bindValue(":host", $host);
 		$st->execute();
 	}

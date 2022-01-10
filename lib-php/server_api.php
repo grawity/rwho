@@ -113,11 +113,6 @@ class RWhoApiInterface {
 		// Always store the authenticated host name in entry.
 		$entry["host"] = $host;
 
-		// Strip off the ".domain" suffix. This allows searching for
-		// entries by either the FQDN or the bare host name.
-		$entry["raw_host"] = $entry["host"];
-		$entry["host"] = explode(".", $entry["raw_host"])[0];
-
 		// Strip off the SSSD "@domain" suffix. This allows the same
 		// username in multiple SSSD domains to be summarized under a
 		// single section.
