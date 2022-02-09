@@ -90,16 +90,20 @@ class Server {
 			if (!method_exists($server, $method)) {
 				throw new RpcBadMethodError();
 			}
-			if ($params === null) {
-				$result = $server->$method();
-			} elseif (is_array($params) && array_is_list($params)) {
-				$result = $server->$method(...$params);
-			} elseif (is_array($params)) {
-				/* PHP allows spread of name=>value mappings,
-				 * but we don't want to allow that. */
+			try {
+				if ($params === null) {
+					$result = $server->$method();
+				} elseif (is_array($params) && array_is_list($params)) {
+					$result = $server->$method(...$params);
+				} elseif (is_array($params)) {
+					/* PHP allows spread of name=>value mappings,
+					 * but we don't want to allow that. */
+					throw new RpcBadParametersError();
+				} else {
+					throw new RpcMalformedObjectError();
+				}
+			} catch (\ArgumentCountError $e) {
 				throw new RpcBadParametersError();
-			} else {
-				throw new RpcMalformedObjectError();
 			}
 			$response = [
 				"jsonrpc" => "2.0",
