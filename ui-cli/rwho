@@ -5,8 +5,6 @@
 
 RWHO_DIR="/etc/rwho"
 
-RWHO_HOST='rwho.nullroute.lt'
-RWHO_URL="http://$RWHO_HOST/"
 
 CONFIG="$RWHO_DIR/rwho.conf"
 
@@ -30,10 +28,12 @@ if [[ -s $CONFIG ]]; then
 	done < "$CONFIG"
 fi
 
+RWHO_HOST='rwho.nullroute.lt'
 if [[ ${config['finger.host']} ]]; then
 	RWHO_HOST=${config['finger.host']}
 fi
 
+RWHO_URL="http://$RWHO_HOST/"
 if [[ ${config['agent.notify_url']} ]]; then
 	RWHO_URL=${config['agent.notify_url']#'server.php'}
 fi
