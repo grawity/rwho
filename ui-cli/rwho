@@ -1,9 +1,30 @@
 #!/usr/bin/env bash
 # rwho - simple 'finger' client hardcoded to query a rwho-ng server
 
-[[ $DEBUG ]] && set -x
+usage() {
+	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
+	echo ""
+	echo "  -l  list hosts"
+	echo "  -v  verbose output"
+}
+
+filter() {
+	perl -pe 's/\033/"^".chr(ord($&)+0100)/ge'
+}
+
+conn() {
+	local host=$1 request=$2 fd=
+	exec {fd}<>"/dev/tcp/$host/finger" || {
+		echo "${0##*/}: connection failed ($?)" >&2
+		return 1
+	}
+	printf >&$fd '%s\r\n' "$request"
+	filter <&$fd
+	exec {fd}>&-
+}
 
 RWHO_DIR="/etc/rwho"
+RWHO_HOST="rwho.nullroute.lt"
 
 declare -A config=()
 
@@ -25,32 +46,9 @@ if [[ -s "$RWHO_DIR/rwho.conf" ]]; then
 	done < "$RWHO_DIR/rwho.conf"
 fi
 
-RWHO_HOST='rwho.nullroute.lt'
 if [[ ${config['finger.host']} ]]; then
 	RWHO_HOST=${config['finger.host']}
 fi
-
-usage() {
-	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
-	echo ""
-	echo "  -l  list hosts"
-	echo "  -v  verbose output"
-}
-
-filter() {
-	perl -pe 's/\033/"^".chr(ord($&)+0100)/ge'
-}
-
-conn() {
-	local host=$1 request=$2 fd=
-	exec {fd}<>"/dev/tcp/$host/finger" || {
-		echo >&2 "rwho: connection failed ($?)"
-		return 1
-	}
-	printf >&$fd '%s\r\n' "$request"
-	filter <&$fd
-	exec {fd}>&-
-}
 
 action='query'
 opt_l=false
