@@ -34,9 +34,6 @@ if [[ ${config['finger.host']} ]]; then
 fi
 
 RWHO_URL="http://$RWHO_HOST/"
-if [[ ${config['agent.notify_url']} ]]; then
-	RWHO_URL=${config['agent.notify_url']#'server.php'}
-fi
 
 usage() {
 	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
