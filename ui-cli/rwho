@@ -35,9 +35,6 @@ usage() {
 	echo ""
 	echo "  -l  list hosts"
 	echo "  -v  verbose output"
-	echo ""
-	echo "This version of rwho was developed by grawity <grawity@gmail.com>"
-	exit 2
 }
 
 filter() {
@@ -65,7 +62,8 @@ while getopts ":lv" OPT; do
 	'l')	opt_l=true;;
 	'v')	long=true;;
 	'?')	echo "Unknown option '$OPTARG'" >&2;
-		usage;;
+		usage;
+		exit 2;;
 	esac
 done
 shift $((OPTIND-1))
