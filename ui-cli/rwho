@@ -5,12 +5,9 @@
 
 RWHO_DIR="/etc/rwho"
 
-
-CONFIG="$RWHO_DIR/rwho.conf"
-
 declare -A config=()
 
-if [[ -s $CONFIG ]]; then
+if [[ -s "$RWHO_DIR/rwho.conf" ]]; then
 	cre='^[^;#]'
 	sre='^\[([^\s]+)\]$'
 	are='^([^\s]+)\s*=\s*(.*)$'
@@ -25,7 +22,7 @@ if [[ -s $CONFIG ]]; then
 			val=${BASH_REMATCH[2]}
 			config["$section$key"]=$val
 		fi
-	done < "$CONFIG"
+	done < "$RWHO_DIR/rwho.conf"
 fi
 
 RWHO_HOST='rwho.nullroute.lt'
