@@ -10,6 +10,8 @@ RWHO_URL="http://$RWHO_HOST/"
 
 CONFIG="$RWHO_DIR/rwho.conf"
 
+declare -A config=()
+
 if [[ -s $CONFIG ]]; then
 	cre='^[^;#]'
 	sre='^\[([^\s]+)\]$'
@@ -23,14 +25,17 @@ if [[ -s $CONFIG ]]; then
 		elif [[ $line =~ $are ]]; then
 			key=${BASH_REMATCH[1]}
 			val=${BASH_REMATCH[2]}
-			case "$section$key" in
-			'finger.host')
-				RWHO_HOST=$val;;
-			'agent.notify_url')
-				RWHO_URL=${val#server.php};;
-			esac
+			config["$section$key"]=$val
 		fi
 	done < "$CONFIG"
+fi
+
+if [[ ${config['finger.host']} ]]; then
+	RWHO_HOST=${config['finger.host']}
+fi
+
+if [[ ${config['agent.notify_url']} ]]; then
+	RWHO_URL=${config['agent.notify_url']#'server.php'}
 fi
 
 usage() {
