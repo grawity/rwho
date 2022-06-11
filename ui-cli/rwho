@@ -30,15 +30,11 @@ if [[ ${config['finger.host']} ]]; then
 	RWHO_HOST=${config['finger.host']}
 fi
 
-RWHO_URL="http://$RWHO_HOST/"
-
 usage() {
 	echo "Usage: ${0##*/} [-l] [-v] [user][@host]"
 	echo ""
 	echo "  -l  list hosts"
 	echo "  -v  verbose output"
-	echo ""
-	echo "HTTP interface is available at: $RWHO_URL"
 	echo ""
 	echo "This version of rwho was developed by grawity <grawity@gmail.com>"
 	exit 2
