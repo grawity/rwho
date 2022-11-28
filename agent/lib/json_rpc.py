@@ -7,6 +7,9 @@ import requests
 from json import (dumps as json_dump,
                   loads as json_load)
 
+# Allow users to import the exception
+from requests.exceptions import ConnectionError
+
 class RemoteFault(RuntimeError):
     def __init__(self, arg):
         self.code = arg["code"]

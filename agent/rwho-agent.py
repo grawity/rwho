@@ -13,7 +13,7 @@ import time
 
 from lib.exceptions import *
 from lib.utmp_linux import UTMP_PATH, enum_sessions
-from lib.api_client import RwhoClient
+from lib.api_client import RwhoClient, ConnectionError
 from lib.config import ConfigReader
 from lib.log_util import *
 
@@ -202,3 +202,6 @@ if __name__ == "__main__":
     except RwhoPermanentError as e:
         log_err("exiting on permanent error: %s", e)
         exit(EX_NORESTART)
+    except ConnectionError as e:
+        log_err("exiting on temporary error: %s", e)
+        exit(1)

@@ -1,5 +1,5 @@
 from .exceptions import *
-from .json_rpc import JsonRpcClient, RemoteFault
+from .json_rpc import JsonRpcClient, RemoteFault, ConnectionError
 
 class RwhoClient(JsonRpcClient):
     _fault_map = {
