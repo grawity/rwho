@@ -27,25 +27,35 @@ class UtType(enum.IntEnum):
 def timeval_to_float(tv):
     return tv[0] + tv[1]/1e6
 
-class struct_exit_status(ctypes.Structure):
+class _Structure(ctypes.Structure):
+    def asdict(self):
+        return {k: getattr(self, k) for k, _ in self._fields_}
+
+    def __repr__(self):
+        name = self.__class__.__name__
+        args = ["%s=%r" % (k, getattr(self, k)) for k, _ in self._fields_]
+        return "<%s(%s)>" % (name, ", ".join(args))
+
+class struct_lastlog(_Structure):
+    _fields_ = [
+        ("ll_time",         ctypes.c_int32),
+        ("ll_line",         ctypes.c_char * UT_LINESIZE),
+        ("ll_host",         ctypes.c_char * UT_HOSTSIZE),
+    ]
+
+class struct_exit_status(_Structure):
     _fields_ = [
         ("e_termination",   ctypes.c_short),
         ("e_exit",          ctypes.c_short),
     ]
 
-    def __repr__(self):
-        return "<exit_status(termination=%r, exit=%r)>" % (self.e_termination, self.e_exit)
-
-class struct_timeval(ctypes.Structure):
+class struct_timeval(_Structure):
     _fields_ = [
         ("tv_sec",          ctypes.c_int32),
         ("tv_usec",         ctypes.c_int32),
     ]
 
-    def __repr__(self):
-        return "<timeval(sec=%r, usec=%r)>" % (self.tv_sec, self.tv_usec)
-
-class struct_utent(ctypes.Structure):
+class struct_utent(_Structure):
     _fields_ = [
         ("ut_type",         ctypes.c_short),
         ("ut_pid",          ctypes.c_int32), # pid_t
@@ -59,9 +69,6 @@ class struct_utent(ctypes.Structure):
         ("ut_addr_v6",      ctypes.c_uint32 * 4),
         ("__reserved",      ctypes.c_char * 20),
     ]
-
-    def __repr__(self):
-        return "<utent(type=%r, pid=%r, line=%r, id=%r, user=%r, host=%r, exit=%r, session=%r, tv=%r, addr_v6=%r)>" % (self.ut_type, self.ut_pid, self.ut_line, self.ut_id, self.ut_user, self.ut_host, self.ut_exit, self.ut_session, self.ut_tv, [*self.ut_addr_v6])
 
 def enum_utmp(path=None):
     sz = ctypes.sizeof(struct_utent)
