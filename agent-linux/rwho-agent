@@ -181,6 +181,7 @@ sub upload {
 		});
 	}
 
+	# TODO: port from legacy API to JSON-RPC
 	my %data = (
 		host => $my_fqdn,
 		action => $action,

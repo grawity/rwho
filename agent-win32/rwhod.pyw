@@ -8,7 +8,6 @@ import ctypes as c
 import json
 
 if sys.platform != "win32":
-    # simple sanity check
     raise RuntimeError("This script requires Windows NT with Terminal Services.")
 
 import servicemanager
@@ -195,6 +194,7 @@ def upload(action, sdata):
         from urllib.request import urlopen
 
     print("uploading %d items" % len(sdata))
+    # TODO: port from legacy API to JSON-RPC
     data = {
         "host": socket.getfqdn().lower(),
         "action": action,
