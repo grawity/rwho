@@ -35,6 +35,37 @@ class RWhoApiInterface {
 		}
 	}
 
+	// Check whether a realm is trusted to not issue fake host principals.
+	function _is_trusted_realm($realm) {
+		$realms = $this->config->get_list("server.auth.local_realms");
+		if (count($realms)) {
+			return in_array($realm, $realms, true);
+		} else {
+			// If not defined, trust all realms.
+			return true;
+		}
+	}
+
+	// Check whether a Kerberos host principal is for a specific FQDN.
+	function _match_host_principal($principal, $host) {
+		if (!preg_match('!^host/([^/@]+)@([^/@]+)$!', $principal, $m)) {
+			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' is not a host principal");
+			return false;
+		}
+		$khost = $m[1];
+		$realm = $m[2];
+		if (!$this->_is_trusted_realm($realm)) {
+			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' is from an untrusted realm");
+			return false;
+		}
+		// Check exact FQDN match only, no "short <=> fqdn" mapping (as we don't do it for Basic auth).
+		if (strtolower($khost) !== strtolower($host)) {
+			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' not authorized for host '$host'");
+			return false;
+		}
+		return true;
+	}
+
 	// Permit hosts (via Basic auth) to update their own records.
 	function _authorize_host($host) {
 		$auth_id = $this->environ["REMOTE_USER"];
@@ -58,7 +89,7 @@ class RWhoApiInterface {
 			}
 		} else {
 			// Valid auth for known account
-			if ($auth_id === $host) {
+			if ($auth_id === $host || $this->_match_host_principal($auth_id, $host)) {
 				xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
 			} else {
 				xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
