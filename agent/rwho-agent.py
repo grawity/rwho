@@ -23,7 +23,8 @@ EX_LSB_NOTRUNNING = 7
 EX_NORESTART = EX_LSB_NOTRUNNING
 
 class RwhoAgent():
-    DEFAULT_SERVER = "https://rwho.nullroute.lt/server/"
+    # Basic auth uses /api/host, GSS auth uses /api/gss
+    DEFAULT_SERVER = "https://rwho.nullroute.lt/api/host"
     CONFIG_PATH = "/etc/rwho/agent.conf"
     KOD_PATH = "/etc/rwho/agent.kod"
 
