@@ -52,7 +52,7 @@ class RpcBadParametersError extends RpcException {
 }
 
 class Server {
-	function dispatch($request, $server) {
+	function dispatch($request, $interface) {
 		$call_id = null;
 		$request = json_decode($request, true, 64);
 
@@ -87,14 +87,14 @@ class Server {
 			if (preg_match("/^_|^rpc[._]/", $method)) {
 				throw new RpcBadMethodError();
 			}
-			if (!method_exists($server, $method)) {
+			if (!method_exists($interface, $method)) {
 				throw new RpcBadMethodError();
 			}
 			try {
 				if ($params === null) {
-					$result = $server->$method();
+					$result = $interface->$method();
 				} elseif (is_array($params) && array_is_list($params)) {
-					$result = $server->$method(...$params);
+					$result = $interface->$method(...$params);
 				} elseif (is_array($params)) {
 					/* PHP allows spread of name=>value mappings,
 					 * but we don't want to allow that. */
@@ -129,9 +129,9 @@ class Server {
 		}
 	}
 
-	function handle_posted_request($server) {
+	function handle_posted_request($interface) {
 		$request = file_get_contents("php://input");
-		$response = $this->dispatch($request, $server);
+		$response = $this->dispatch($request, $interface);
 		if ($response === null) {
 			die();
 		} else {
