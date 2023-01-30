@@ -106,8 +106,8 @@ class ApiServerApp {
 
 	function handle_json_request($api) {
 		if ($_SERVER["REQUEST_METHOD"] === "POST") {
-			$rpc = new \JsonRpc\Server();
-			$rpc->handle_posted_request($api);
+			$rpc = new \JsonRpc\Server($api);
+			$rpc->handle_posted_request();
 		} else {
 			header("Status: 405 Method Not Allowed");
 		}
