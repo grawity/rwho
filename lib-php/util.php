@@ -53,6 +53,16 @@ function normalize_host($host) {
 	return $host;
 }
 
+// str_truncate(str $string, int $length, [str $ellipsis]) -> str
+// Truncate the string to maximum length, adding an ellipsis indicator.
+
+function str_truncate($string, $length, $ellipsis = ">") {
+	if (strlen($string) > $length)
+		$string = substr($string, 0, $length - 1) . $ellipsis;
+
+	return $string;
+}
+
 // interval(unixtime $start, unixtime? $end) -> str
 // Convert the difference between two timestamps (in seconds), or
 // between given Unix timestamp and current time, to a human-readable

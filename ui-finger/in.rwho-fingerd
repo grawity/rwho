@@ -73,7 +73,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			// Line or {count}
 			$line[] = $row["is_summary"]
 					? "{".$row["line"]."}"
-					: $row["line"];
+					: Util\str_truncate($row["line"], 10);
 
 			// Remote host
 			if ($detailed) {
