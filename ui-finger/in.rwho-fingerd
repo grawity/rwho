@@ -68,7 +68,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			// Host
 			$line[] = $detailed
 					? $row["host"]
-					: substr(Util\strip_domain($row["host"]), 0, 12);
+					: Util\str_truncate(Util\strip_domain($row["host"]), 12);
 
 			// Line or {count}
 			$line[] = $row["is_summary"]
@@ -80,10 +80,8 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 				$line[] = $row["rhost"];
 			} else {
 				$len = strlen($row["rhost"]);
-				if ($len > 40)
-					$line[] = substr($row["rhost"], 0, 39).">";
-				elseif ($len > 0)
-					$line[] = $row["rhost"];
+				if ($len > 0)
+					$line[] = Util\str_truncate($row["rhost"], 40);
 				else
 					$line[] = "(local)";
 			}
@@ -102,7 +100,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 
 		foreach ($data as $row) {
 			printf($fmt,
-				substr(Util\strip_domain($row["host"]), 0, 12),
+				Util\str_truncate(Util\strip_domain($row["host"]), 12),
 				$row["host"],
 				$row["users"],
 				$row["entries"],
