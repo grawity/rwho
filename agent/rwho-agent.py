@@ -113,7 +113,7 @@ class RwhoAgent():
             self.api.put_sessions(sessions)
             self.last_upload = time.time()
         except RwhoShutdownRequestedError as e:
-            log_debug("shutdown requested, giving up")
+            log_debug("shutdown requested by server, giving up")
             self.store_kod(e.args[0])
             raise
 
@@ -122,7 +122,7 @@ class RwhoAgent():
         try:
             self.api.remove_host()
         except RwhoShutdownRequestedError as e:
-            log_debug("shutdown requested, giving up")
+            log_debug("shutdown requested by server, giving up")
             self.store_kod(e.args[0])
             raise
 
@@ -152,7 +152,7 @@ def run_forever(agent):
         return False
 
     def on_signal(sig, frame):
-        log_info("received signal %r, exiting", sig)
+        log_debug("received signal %r, exiting", sig)
         raise KeyboardInterrupt
 
     watchmgr = pyinotify.WatchManager()
@@ -167,6 +167,7 @@ def run_forever(agent):
     signal.signal(signal.SIGQUIT, on_signal)
 
     try:
+        log_info("stale entry refresh every %d seconds" % agent.update_interval)
         log_info("performing initial upload")
         on_periodic_upload()
         log_trace("entering main loop")
