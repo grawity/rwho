@@ -126,7 +126,7 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 		list ($query, $detailed) = finger_parse($input);
 
 		$rhost = get_rhost();
-		$access = $this->_check_access($rhost);
+		$access = $this->_check_access($rhost, null);
 
 		if ($this->config->get_bool("finger.log", true)) {
 			$log_accepted = ($access) ? "accepted" : "refused";

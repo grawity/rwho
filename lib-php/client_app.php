@@ -26,9 +26,17 @@ class ClientApplicationBase {
 		return false;
 	}
 
-	function _check_access($rhost) {
+	function _is_ruser_trusted($user) {
+		// This might check for known bad usernames like 'guest' or 'anonymous'.
+		return true;
+	}
+
+	function _check_access($rhost, $ruser) {
 		$anonymous = true;
-		if ($this->_is_rhost_trusted($rhost)) {
+		if (!empty($rhost) && $this->_is_rhost_trusted($rhost)) {
+			$anonymous = false;
+		}
+		if (!empty($ruser) && $this->_is_ruser_trusted($ruser)) {
 			$anonymous = false;
 		}
 		if ($anonymous) {
