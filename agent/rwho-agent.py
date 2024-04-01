@@ -108,7 +108,7 @@ class RwhoAgent():
 
     def refresh(self):
         sessions = self.enum_sessions()
-        log_info("uploading %d sessions" % len(sessions))
+        log_debug("uploading %d sessions" % len(sessions))
         try:
             self.api.put_sessions(sessions)
             self.last_upload = time.time()
@@ -129,7 +129,7 @@ class RwhoAgent():
 def run_forever(agent):
     def on_periodic_upload():
         if agent.last_upload < time.time() - agent.update_interval:
-            log_debug("periodic: uploading on timer")
+            log_trace("periodic: uploading on timer")
             try:
                 agent.refresh()
             except RwhoShutdownRequestedError:
@@ -138,10 +138,10 @@ def run_forever(agent):
                 log_err("periodic: upload failed: %r", e)
                 raise
         else:
-            log_debug("periodic: last upload too recent, skipping")
+            log_trace("periodic: last upload too recent, skipping")
 
     def on_inotify_event(event):
-        log_debug("inotify: uploading on event %r", event)
+        log_trace("inotify: uploading on event %r", event)
         try:
             agent.refresh()
         except RwhoShutdownRequestedError:
@@ -167,9 +167,9 @@ def run_forever(agent):
     signal.signal(signal.SIGQUIT, on_signal)
 
     try:
-        log_debug("performing initial upload")
+        log_info("performing initial upload")
         on_periodic_upload()
-        log_debug("entering main loop")
+        log_trace("entering main loop")
         sd_notify("READY=1")
         while True:
             r = poll.poll(agent.wake_interval * 1e3)
@@ -180,11 +180,11 @@ def run_forever(agent):
                 notifier.process_events()
             else:
                 on_periodic_upload()
-        log_debug("loop was stopped")
+        log_trace("loop was stopped")
         sd_notify("STOPPING=1")
         agent.cleanup()
     except KeyboardInterrupt:
-        log_debug("KeyboardInterrupt received")
+        log_trace("KeyboardInterrupt received")
         sd_notify("STOPPING=1")
         agent.cleanup()
 

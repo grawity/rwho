@@ -11,13 +11,16 @@ def sd_notify(*msgs):
         sock = socket.socket(socket.AF_UNIX, socket.SOCK_DGRAM)
         sock.sendto(msg.encode("utf-8"), path)
 
-def log_debug(msg, *args):
+def log_trace(msg, *args):
     if os.environ.get("DEBUG"):
-        msg = msg % args
-        if sys.stdout.isatty():
-            msg = "\033[2m%s\033[m" % msg
-        print(msg, file=sys.stdout, flush=True)
-        syslog.syslog(syslog.LOG_DEBUG, msg)
+        log_trace(msg, *args)
+
+def log_debug(msg, *args):
+    msg = msg % args
+    if sys.stdout.isatty():
+        msg = "\033[2m%s\033[m" % msg
+    print(msg, file=sys.stdout, flush=True)
+    syslog.syslog(syslog.LOG_DEBUG, msg)
 
 def log_info(msg, *args):
     msg = msg % args
