@@ -50,6 +50,9 @@ function normalize_host($host) {
 	$host = preg_replace('/^mosh \[\d+\]$/', '(detached)', $host);
 	$host = preg_replace('/ via mosh \[\d+\]$/', '', $host);
 
+	# strip ::ffff: from v6-mapped addresses
+	$host = preg_replace('/^::ffff:([0-9.]+)$/', '$1', $host);
+
 	return $host;
 }
 
