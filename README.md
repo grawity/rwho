@@ -44,7 +44,7 @@ traditional Finger protocol. See it in action via [HTTP][ex-http] or
 [Finger][ex-finger].
 
   * There is support for showing the user's `~/.plan` file, either from the
-    filesystem or even from LDAP.
+    filesystem or LDAP attribute (see `find_user_plan_file()`).
 
 [Finger]: https://en.wikipedia.org/wiki/Finger_protocol
 [ex-http]: https://rwho.nullroute.lt/
@@ -61,3 +61,82 @@ traditional Finger protocol. See it in action via [HTTP][ex-http] or
     Internet Explorer 5 (requires PHP 7.4)
 
 [pywin32]: https://sourceforge.net/projects/pywin32/files/pywin32
+
+## Server installation
+
+For the API:
+
+ 1. Create a `rwho.example.com` virtual host.
+
+ 2. Define aliases for the API endpoints:
+
+    ```
+    # Password (HTTP Basic) authenticated endpoint for hosts
+    Alias /api/host /usr/local/rwho/server-php/index.php
+    <Location /api/host>
+        CGIPassAuth On
+        Require all granted
+    </Location>
+    ```
+    ```
+    # Optional - Kerberos authenticated endpoint for CLI tools (not really used,
+    # more of an experiment, although the Linux Python agent can optionally use it)
+    Alias /api/gss /usr/local/rwho/server-php/index.php
+    <Location /api/gss>
+        AuthType GSSAPI
+        Require valid-user
+    </Location>
+    ```
+
+ 3. Create the configuration file `/usr/local/rwho/server.conf`, make sure it
+    is readable by PHP-FPM, and define at least the `[db]` section.
+
+ 4. Initialize the database using `mysql rwho < init.sql`.
+
+For the web interface:
+
+ 1. Point DocumentRoot at the web UI directory:
+
+    ```
+    DocumentRoot /usr/local/rwho/ui-web
+    <Directory /usr/local/rwho/ui-web>
+        AllowOverride All
+        Require all granted
+    </Directory>
+    ```
+
+ 2. Create the configuration file `/usr/local/rwho/rwho.conf`, make sure it is
+    readable by PHP-FPM. (Currently the web UI will load both `rwho.conf` for
+    frontend settings and `server.conf` for database settings.)
+
+For the finger interface:
+
+ 1. (Documentation pending, but it's just a systemd socket or xinetd entry for
+    `in.rwho-fingerd`.)
+
+ 2. Create the configuration file `/usr/local/rwho/rwho.conf`. (Currently the
+    UI will load both `rwho.conf` for frontend settings and `server.conf` for
+    database settings.)
+
+## Client installation
+
+If authentication is enabled, use `./genpw` on the server to generate an
+example config. (All tools use the same configuration format.)
+
+Linux agent (Python):
+
+ 1. Install `python-pyinotify`.
+ 2. Create a `rwho` service user.
+ 3. Create `/etc/rwho/agent.conf` (with the authentication password if needed,
+    or at least an empty file otherwise) and chown it to `rwho:`.
+ 4. Add the service using `systemctl enable ./agent/rwho-agent.service`.
+
+Linux/BSD agent (Perl):
+
+ 1. (Documentation pending)
+
+Windows agent (Python):
+
+ 1. Install PyWin32.
+ 2. (Documentation pending, as it probably doesn't even run on modern systems
+    anymore.)
