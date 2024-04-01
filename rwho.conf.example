@@ -17,9 +17,18 @@ plan_attr = planFile
 
 [privacy]
 # Whether to completely block anonymous queries. (Default: false)
-# Note that currently only the Finger UI implements this setting.
+# The usefulness of this setting is questionable:
+#  - Currently only the Finger UI implements this setting, denying access
+#    to any source not listed in 'trusted_nets', but you can achieve the
+#    same using firewall rules.
+#  - The web UI only hides the rhost from anonymous queries, exactly as
+#    if 'hide_rhost' were set. Use web server configuration to completely
+#    deny anonymous access to web UI.
 deny_anonymous = false
 # Hide user hostnames from anonymous queries. (Default: false)
+#  - Finger UI treats queries coming from 'trusted_nets' as authenticated.
+#  - Web UI treats either queries from 'trusted_nets' or queries that have
+#    a non-empty REMOTE_USER as authenticated.
 hide_rhost = true
 # Queries from these IP addresses are considered "authenticated" (making
 # private information visible). Comma-separated list of CIDR masks.
