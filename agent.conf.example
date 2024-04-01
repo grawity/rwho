@@ -2,16 +2,37 @@
 # vim: ft=dosini
 
 [agent]
-# Server API endpoint
-notify_url = https://rwho.nullroute.lt/server/
-# Override system FQDN
-#host_name = hades.arpa
-#auth_username = [will use host_name if empty]
-#auth_password = hunter2
-#exclude_root = true
-#exclude_users = smith|guest\d+
-#include_users = jane
-#min_uid = 1000
+# Server API endpoint (default: "https://rwho.nullroute.lt/api/host")
+notify_url = https://rwho.nullroute.lt/api/host
+
+# Override system FQDN for reporting (default: socket.getfqdn())
+host_name = hades.arpa
+
+# Basic auth username for server API (default: same as host_name)
+auth_username = hades.arpa
+
+# Basic auth password for server API (default: none)
+auth_password = hunter2
+
+# GSSAPI service name for server API (default: none)
+# If set, activates Kerberos authentication. Note that this expects the GSS
+# "service@host" format, not the Kerberos "service/host@REALM" format.
+# Currently only implemented by agent-python.
+auth_gss_service = HTTP@rwho.example.com
+
 # Perform reverse DNS lookup for the remote host field (default: false)
 # Currently only implemented by agent-python.
-#attempt_rdns = true
+attempt_rdns = true
+
+# Do not report sessions by 'root' (default: false)
+exclude_root = true
+
+# Do not report sessions by users matching the regexp (default: not set)
+exclude_users = smith|guest\d+
+
+# Only report sessions by users matching the regexp (default: not set)
+include_users = jane
+
+# Only report sessions by users in the specified UID range (default: not set)
+# Only implemented by agent-perl at the moment.
+min_uid = 1000
