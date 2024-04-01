@@ -12,3 +12,6 @@ notify_url = https://rwho.nullroute.lt/server/
 #exclude_users = smith|guest\d+
 #include_users = jane
 #min_uid = 1000
+# Perform reverse DNS lookup for the remote host field (default: false)
+# Currently only implemented by agent-python.
+#attempt_rdns = true
