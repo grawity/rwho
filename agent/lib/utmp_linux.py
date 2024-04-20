@@ -38,7 +38,7 @@ class _Structure(ctypes.Structure):
 
 class struct_lastlog(_Structure):
     _fields_ = [
-        ("ll_time",         ctypes.c_int32),
+        ("ll_time",         ctypes.c_uint32),
         ("ll_line",         ctypes.c_char * UT_LINESIZE),
         ("ll_host",         ctypes.c_char * UT_HOSTSIZE),
     ]
@@ -51,7 +51,7 @@ class struct_exit_status(_Structure):
 
 class struct_timeval(_Structure):
     _fields_ = [
-        ("tv_sec",          ctypes.c_int32),
+        ("tv_sec",          ctypes.c_uint32),
         ("tv_usec",         ctypes.c_int32),
     ]
 
