@@ -10,8 +10,8 @@ class Client {
 
 		// maximum age before which the entry will be considered stale
 		// (e.g. the host temporarily down for some reason)
-		// default is 1 minute more than the rwhod periodic update time
-		$this->_stale_age = $this->config->get_rel_time("expire.mark_stale", 11*60);
+		// default is 5 minutes more than the rwhod periodic update time
+		$this->_stale_age = $this->config->get_rel_time("expire.mark_stale", 15*60);
 
 		// maximum age before which the entry will be considered dead
 		// and not displayed in host list
