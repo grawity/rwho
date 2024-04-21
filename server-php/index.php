@@ -54,7 +54,7 @@ class ApiServerApp {
 			xsyslog(LOG_NOTICE, "Rejecting anonymous client (configuration requires auth)");
 			$this->die_require_http_basic();
 		} else {
-			$this->log_debug("Allowing anonymous client with no auth");
+			$this->log_debug("Accepting anonymous client without auth");
 			return null;
 		}
 	}
