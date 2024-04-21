@@ -105,7 +105,7 @@ class ApiServerApp {
 		}
 	}
 
-	function handle_json_request($api) {
+	function handle_rpc_request($api) {
 		if ($_SERVER["REQUEST_METHOD"] === "POST") {
 			$rpc = new \JsonRpc\Server($api);
 			$rpc->handle_posted_request();
@@ -125,7 +125,7 @@ class ApiServerApp {
 		if (isset($_REQUEST["action"])) {
 			$this->handle_legacy_request($api);
 		} else {
-			$this->handle_json_request($api);
+			$this->handle_rpc_request($api);
 		}
 	}
 }
