@@ -79,6 +79,8 @@ class HostListPage extends RWhoWebApp {
 	}
 
 	function handle_request() {
+		$this->authorize();
+
 		$has_query = true;
 		$format = @$_GET["fmt"] ?? "html";
 

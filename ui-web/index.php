@@ -121,6 +121,8 @@ class UserListPage extends RWhoWebApp {
 	}
 
 	function handle_request() {
+		$this->authorize();
+
 		$user = @$_GET["user"] ?? "";
 		$host = @$_GET["host"] ?? "";
 		$has_query = (strlen($user) || strlen($host));
