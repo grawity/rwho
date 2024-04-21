@@ -1,13 +1,11 @@
 #!/usr/bin/env php
 <?php
 namespace RWho;
-require_once(__DIR__."/lib-php/config.php");
-require_once(__DIR__."/lib-php/client.php");
+require_once(__DIR__."/lib-php/client_app.php");
 
-$config = new \RWho\Config\Configuration();
-$config->load(__DIR__."/server.conf");
-$config->load(__DIR__."/rwho.conf");
-
-$client = new \RWho\Client($config);
-list ($hrows, $urows) = $client->purge_dead();
-print "Purged $hrows hosts and $urows utmp entries.\n";
+(new class extends ClientApplicationBase {
+	function run() {
+		list ($hrows, $urows) = $this->client->purge_dead();
+		print "Purged $hrows hosts and $urows utmp entries.\n";
+	}
+})->run();
