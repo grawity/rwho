@@ -8,8 +8,8 @@ username = rwho
 password = asdfhjkl
 
 [server]
-# Deny updates from anonymous clients
-#update_auth_required = true
+# Permit updates from anonymous clients.
+#allow_anonymous_updates = false
 
 [expire]
 # Display entries as stale if the host hasn't refreshed them for a while

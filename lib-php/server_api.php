@@ -95,7 +95,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	// Permit hosts (via Basic auth) to update their own records.
 	function _authorize_host($host) {
 		$auth_id = $this->environ["REMOTE_USER"];
-		$auth_required = $this->config->get_bool("server.update_auth_required", false);
+		$allow_anonymous = $this->config->get_bool("server.allow_anonymous_updates", false);
 
 		// Check by host, not auth_id, to match anonymous clients as well.
 		$kod_msg = $this->config->get("auth.kod.$host", $this->config->get("auth.kod.all"));
@@ -106,7 +106,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 		if ($auth_id === null) {
 			// No auth header, or account was unknown
-			if (!$auth_required) {
+			if ($allow_anonymous) {
 				xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
 			} else {
 				// XXX: This can't happen because check_authn() already exits in this case.
