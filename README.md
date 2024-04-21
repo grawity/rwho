@@ -48,7 +48,7 @@ traditional Finger protocol. See it in action via [HTTP][ex-http] or
 
 [Finger]: https://en.wikipedia.org/wiki/Finger_protocol
 [ex-http]: https://rwho.nullroute.lt/
-[ex-finger]: https://nullroute.lt/finger/?q=%2Fw+grawity%40nullroute.lt
+[ex-finger]: https://nullroute.lt/finger/?q=grawity%40nullroute.lt
 
 ## Contents
 
