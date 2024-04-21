@@ -164,16 +164,12 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 	function GetHosts() {
 		$this->_authorize_public("GetHosts");
-		return $this->db->host_query();
+		return $this->client->retrieve_hosts(true);
 	}
 
 	function GetEntries($user, $host) {
 		$this->_authorize_public("GetEntries");
-		$data = $this->db->utmp_query($user, $host);
-		if (!$this->trusted) {
-			foreach ($data as &$e) { $e["rhost"] = null; }
-		}
-		return $data;
+		return $this->client->retrieve($user, $host, !$this->trusted);
 	}
 
 	function GetCounts() {
