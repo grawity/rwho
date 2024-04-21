@@ -187,7 +187,9 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 	function PurgeOld() {
 		$this->_authorize_auth("PurgeOld");
-		return $this->client->purge_dead();
+		list ($hrows, $urows) = $this->client->purge_dead();
+		xsyslog(LOG_INFO, "Purged $hrows hosts and $urows utmp entries.");
+		return [$hrows, $urows];
 	}
 
 	/* Host API */
