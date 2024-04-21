@@ -19,6 +19,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 	private $db;
 	private $environ;
+	private $trusted;
 
 	function __construct($config, $environ) {
 		$this->config = $config;
@@ -34,8 +35,10 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		$remote_addr = $this->environ["REMOTE_ADDR"];
 		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
 			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
+			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
 			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
+			$this->trusted = true;
 		} else {
 			throw new UnauthorizedClientError($what);
 		}
@@ -48,16 +51,16 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		$remote_addr = $this->environ["REMOTE_ADDR"];
 		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
 			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
-			return true;
+			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
 			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
-			return true;
+			$this->trusted = true;
 		} elseif ($this->config->get_bool("privacy.deny_anonymous", false)) {
 			xsyslog(LOG_DEBUG, "Denying anonymous client to call $what");
 			throw new UnauthorizedClientError($what);
 		} else {
 			xsyslog(LOG_DEBUG, "Allowing untrusted client [$remote_addr] to call $what");
-			return !$this->config->get_bool("privacy.anonymous_hide_rhost", false);
+			$this->trusted = !$this->config->get_bool("privacy.anonymous_hide_rhost", false);
 		}
 	}
 
@@ -165,9 +168,9 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	}
 
 	function GetEntries($user, $host) {
-		$priv = $this->_authorize_public("GetEntries");
+		$this->_authorize_public("GetEntries");
 		$data = $this->db->utmp_query($user, $host);
-		if (!$priv) {
+		if (!$this->trusted) {
 			foreach ($data as &$e) { $e["rhost"] = null; }
 		}
 		return $data;
