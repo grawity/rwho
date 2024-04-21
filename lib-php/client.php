@@ -135,15 +135,13 @@ class Client {
 
 		$ldap_uri = $this->config->get("finger.ldap.uri", "");
 		$base_dn = $this->config->get("finger.ldap.base_dn", "");
-		$filter_template = $this->config->get("finger.ldap.filter",
-		                                      "(&(objectClass=posixAccount)(uid=%s))");
-		$user_dn_template = $this->config->get("finger.ldap.user_dn", "");
+		$filter = $this->config->get("finger.ldap.filter", "(&(objectClass=posixAccount)(uid=%s))");
 		$plan_attr = $this->config->get("finger.ldap.plan_attr", "planFile");
 
 		if (!strlen($ldap_uri))
 			return null;
 
-		if (!strlen($base_dn) && !strlen($user_dn_template))
+		if (!strlen($base_dn) || !strlen($filter))
 			return null;
 
 		$ldaph = ldap_connect($ldap_uri);
@@ -158,16 +156,9 @@ class Client {
 		if (!$ok)
 			return null;
 
-		if ($user_dn_template) {
-			$user = ldap_escape($user, "", \LDAP_ESCAPE_DN);
-			$user_dn = sprintf($user_dn_template, $user);
-			$res = @ldap_read($ldaph, $user_dn, "(objectClass=*)", [$plan_attr]);
-		} else {
-			$user = ldap_escape($user, "", \LDAP_ESCAPE_FILTER);
-			$filter = sprintf($filter_template, $user);
-			$res = @ldap_search($ldaph, $base_dn, $filter, [$plan_attr]);
-		}
-
+		$user = ldap_escape($user, "", \LDAP_ESCAPE_FILTER);
+		$filter = sprintf($filter, $user);
+		$res = @ldap_search($ldaph, $base_dn, $filter, [$plan_attr], 0, 1);
 		if (!$res)
 			return null;
 
