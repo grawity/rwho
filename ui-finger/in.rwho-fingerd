@@ -43,6 +43,8 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 		vprintf($fmt, $headers);
 
 		$last = ["user" => null];
+		$count = 0;
+
 		foreach ($data as $row) {
 			if ($row["is_stale"] && !$detailed)
 				continue;
@@ -89,6 +91,11 @@ class RWhoFingerServer extends \RWho\ClientApplicationBase {
 			vprintf($fmt, $line);
 
 			$last = $row;
+			$count++;
+		}
+
+		if (!$count) {
+			print("(No one logged in.)\n");
 		}
 	}
 
