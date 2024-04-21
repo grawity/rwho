@@ -22,6 +22,7 @@ finger.gateway = https://nullroute.lt/finger/?q=%s
 uri = ldapi:///
 # If base_dn is specified, it's used to search the directory.
 base_dn = ou=People,o=Nullroute
+filter = (&(objectClass=posixAccount)(uid=%s))
 # If user_dn is specified (and base_dn is not), it's used as the DN template.
 user_dn = uid=%s,ou=People,o=Nullroute
 plan_attr = planFile

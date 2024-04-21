@@ -135,6 +135,8 @@ class Client {
 
 		$ldap_uri = $this->config->get("finger.ldap.uri", "");
 		$base_dn = $this->config->get("finger.ldap.base_dn", "");
+		$filter_template = $this->config->get("finger.ldap.filter",
+		                                      "(&(objectClass=posixAccount)(uid=%s))");
 		$user_dn_template = $this->config->get("finger.ldap.user_dn", "");
 		$plan_attr = $this->config->get("finger.ldap.plan_attr", "planFile");
 
@@ -162,7 +164,7 @@ class Client {
 			$res = @ldap_read($ldaph, $user_dn, "(objectClass=*)", [$plan_attr]);
 		} else {
 			$user = ldap_escape($user, "", \LDAP_ESCAPE_FILTER);
-			$filter = sprintf("(&(objectClass=posixAccount)(uid=%s))", $user);
+			$filter = sprintf($filter_template, $user);
 			$res = @ldap_search($ldaph, $base_dn, $filter, [$plan_attr]);
 		}
 
