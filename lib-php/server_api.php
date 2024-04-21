@@ -30,12 +30,14 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	// Accept any non-anonymous client, e.g. via mod_auth_gssapi. This
 	// gives access to Get*() calls that reveal network-sensitive information.
 	function _authorize_auth($what) {
-		$auth_id = $this->environ["REMOTE_USER"];
-		if (!$auth_id) {
-			// No authentication
-			throw new UnauthorizedClientError($what);
+		$remote_user = $this->environ["REMOTE_USER"];
+		$remote_addr = $this->environ["REMOTE_ADDR"];
+		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
+			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
+		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
+			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
 		} else {
-			xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to call $what");
+			throw new UnauthorizedClientError($what);
 		}
 	}
 
