@@ -11,14 +11,6 @@ pdo_driver = mysql:host=localhost;dbname=rwho
 username = rwho
 password = asdfhjkl
 
-[expire]
-# Display entries as stale if the host hasn't refreshed them for a while
-# (default: 11 minutes)
-mark_stale = 11m
-# Automatically delete stale entries (e.g. from crashed hosts) if they haven't
-# been refreshed in this amount of time. (Default: 1d)
-host_dead = 1d
-
 [auth.clients]
 # HTTP Basic authentication. Each key corresponds to a username (typically the
 # server's FQDN), the value must be a hash compatible with password_verify().

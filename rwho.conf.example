@@ -1,6 +1,14 @@
 # RWho UI configuration
 # vim: ft=dosini
 
+[expire]
+# Display entries as stale if the host hasn't refreshed them for a while
+# (default: 11 minutes)
+mark_stale = 11m
+# Automatically delete stale entries (e.g. from crashed hosts) if they haven't
+# been refreshed in this amount of time. (Default: 1d)
+host_dead = 1d
+
 [web]
 # Additional stylesheet URL for the web UI
 stylesheet = /custom.css
