@@ -17,6 +17,9 @@ stylesheet = /custom.css
 finger.host = localhost
 finger.gateway = https://nullroute.lt/finger/?q=%s
 
+[finger]
+plan_min_uid = 1000
+
 [finger.ldap]
 # LDAP server for plan file retrieval
 uri = ldapi:///

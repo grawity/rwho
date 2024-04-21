@@ -184,6 +184,11 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		return $this->client->get_plan_file($user, $host);
 	}
 
+	function SetPlanFile($user, $host, $text) {
+		$this->_authorize_auth("SetPlanFile");
+		return $this->client->set_plan_file($user, $host, $text);
+	}
+
 	function PurgeOld() {
 		$this->_authorize_auth("PurgeOld");
 		list ($hrows, $urows) = $this->client->purge_dead();

@@ -156,7 +156,7 @@ class Client {
 		if (!$ok)
 			return null;
 
-		$user = ldap_escape($user, "", \LDAP_ESCAPE_FILTER);
+		$user = ldap_escape($user, "", LDAP_ESCAPE_FILTER);
 		$filter = sprintf($filter, $user);
 		$res = @ldap_search($ldaph, $base_dn, $filter, [$plan_attr], 0, 1);
 		if (!$res)
@@ -167,13 +167,12 @@ class Client {
 			return null;
 
 		$attr = strtolower($plan_attr);
-		if (isset($data[0][$attr])) {
-			$text = $data[0][$attr][0];
-			$text = rtrim($text, "\r\n");
-			return $text;
-		} else {
+		if (!isset($data[0][$attr]))
 			return null;
-		}
+
+		$text = $data[0][$attr][0];
+		$text = rtrim($text, "\r\n");
+		return $text;
 	}
 
 	// summarize(utmp_entry[] $data) -> utmp_entry[]
