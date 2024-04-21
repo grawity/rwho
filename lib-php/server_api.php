@@ -43,7 +43,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 			$this->log_debug("Allowing client '$remote_user' to call $what");
 			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
-			$this->log_debug("Allowing client [$remote_addr] to call $what");
+			$this->log_debug("Allowing client to call $what");
 			$this->trusted = true;
 		} else {
 			throw new UnauthorizedClientError($what);
@@ -59,7 +59,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 			$this->log_debug("Allowing client '$remote_user' to call $what");
 			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
-			$this->log_debug("Allowing client [$remote_addr] to call $what");
+			$this->log_debug("Allowing client to call $what");
 			$this->trusted = true;
 		} elseif ($this->config->get_bool("privacy.deny_anonymous", false)) {
 			$this->log_debug("Denying anonymous client to call $what");
