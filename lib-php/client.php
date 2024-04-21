@@ -97,6 +97,49 @@ class Client {
 		return $this->db->delete_old($dead_ts);
 	}
 
+	// summarize(utmp_entry[] $data) -> utmp_entry[]
+	// Sort utmp data by username and group by host. Resulting entries
+	// will have no more than one entry for any user@host pair.
+
+	function summarize($utmp) {
+		$out = [];
+		$byuser = [];
+		foreach ($utmp as &$entry) {
+			$byuser[$entry["user"]][$entry["host"]][] = $entry;
+		}
+		foreach ($byuser as $user => &$byhost) {
+			foreach ($byhost as $host => &$sessions) {
+				$byfrom = [];
+				$updated = [];
+				$stale = [];
+				foreach ($sessions as $entry) {
+					$from = \RWho\Util\normalize_host($entry["rhost"]);
+					if ($from === "(detached)")
+						continue;
+					@$byfrom[$from][] = $entry["line"];
+					@$updated[$from] = max($updated[$from], $entry["updated"]);
+					@$stale[$from] = @$stale[$from] || $entry["is_stale"];
+					$uid = $entry["uid"];
+				}
+				ksort($byfrom);
+				foreach ($byfrom as $from => &$lines) {
+					$out[] = [
+						"user" => $user,
+						"uid" => $uid,
+						"host" => $host,
+						"line" => count($lines) == 1
+							? $lines[0] : count($lines),
+						"rhost" => $from,
+						"updated" => $updated[$from],
+						"is_summary" => count($lines) > 1,
+						"is_stale" => $stale[$from],
+					];
+				}
+			}
+		}
+		return $out;
+	}
+
 	// _find_user_plan_file(str $user, str $host) -> str?
 	// Find the .plan file for a global user:
 	// * Will return null if user doesn't exist or has 0 < uid < 25000.
@@ -173,49 +216,6 @@ class Client {
 		$text = $data[0][$attr][0];
 		$text = rtrim($text, "\r\n");
 		return $text;
-	}
-
-	// summarize(utmp_entry[] $data) -> utmp_entry[]
-	// Sort utmp data by username and group by host. Resulting entries
-	// will have no more than one entry for any user@host pair.
-
-	function summarize($utmp) {
-		$out = [];
-		$byuser = [];
-		foreach ($utmp as &$entry) {
-			$byuser[$entry["user"]][$entry["host"]][] = $entry;
-		}
-		foreach ($byuser as $user => &$byhost) {
-			foreach ($byhost as $host => &$sessions) {
-				$byfrom = [];
-				$updated = [];
-				$stale = [];
-				foreach ($sessions as $entry) {
-					$from = \RWho\Util\normalize_host($entry["rhost"]);
-					if ($from === "(detached)")
-						continue;
-					@$byfrom[$from][] = $entry["line"];
-					@$updated[$from] = max($updated[$from], $entry["updated"]);
-					@$stale[$from] = @$stale[$from] || $entry["is_stale"];
-					$uid = $entry["uid"];
-				}
-				ksort($byfrom);
-				foreach ($byfrom as $from => &$lines) {
-					$out[] = [
-						"user" => $user,
-						"uid" => $uid,
-						"host" => $host,
-						"line" => count($lines) == 1
-							? $lines[0] : count($lines),
-						"rhost" => $from,
-						"updated" => $updated[$from],
-						"is_summary" => count($lines) > 1,
-						"is_stale" => $stale[$from],
-					];
-				}
-			}
-		}
-		return $out;
 	}
 
 	// get_plan_file(str $user, str $host) -> str?
