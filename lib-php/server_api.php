@@ -95,7 +95,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	// Permit hosts (via Basic auth) to update their own records.
 	function _authorize_host($host) {
 		$auth_id = $this->environ["REMOTE_USER"];
-		$auth_required = $this->config->get_bool("server.auth_required", false);
+		$auth_required = $this->config->get_bool("server.update_auth_required", false);
 
 		// Check by host, not auth_id, to match anonymous clients as well.
 		$kod_msg = $this->config->get("auth.kod.$host", $this->config->get("auth.kod.all"));

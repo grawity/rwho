@@ -8,8 +8,10 @@ username = rwho
 password = asdfhjkl
 
 [server]
+# Deny all requests from anonymous clients
+#auth_required = false
 # Deny updates from anonymous clients
-#auth_required = true
+#update_auth_required = true
 
 [expire]
 # Display entries as stale if the host hasn't refreshed them for a while
@@ -24,7 +26,7 @@ host_dead = 1d
 # server's FQDN), the value must be a hash compatible with password_verify().
 #
 # Clients who specify unknown usernames aren't rejected outright, but are
-# treated the same as anonymous clients (see server.auth_required).
+# treated the same as anonymous clients (see server.update_auth_required).
 kremvax.example.com = $5$fJWY8mpdJT5aaAKs$D/hBtRq5ZicMNUtrIgbXdLfjH5Qg1RTvc6/vhXxI3h4
 
 [auth.kod]
