@@ -1,15 +1,15 @@
 # RWho server configuration
 # vim: ft=dosini
 
-[db]
+[server]
+# Permit updates from anonymous clients.
+#allow_anonymous_updates = false
+
+[server.db]
 pdo_driver = mysql:host=localhost;dbname=rwho
 #tls_ca = /etc/ssl/certs/ca-certificates.crt
 username = rwho
 password = asdfhjkl
-
-[server]
-# Permit updates from anonymous clients.
-#allow_anonymous_updates = false
 
 [expire]
 # Display entries as stale if the host hasn't refreshed them for a while

@@ -5,9 +5,9 @@ class Database {
 	public $dbh;
 
 	function __construct($config) {
-		$dsn = $config->get("db.pdo_driver");
-		$user = $config->get("db.username");
-		$pass = $config->get("db.password");
+		$dsn = $config->get("server.db.pdo_driver");
+		$user = $config->get("server.db.username");
+		$pass = $config->get("server.db.password");
 		$options = [
 			\PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
 			\PDO::ATTR_EMULATE_PREPARES => false,
@@ -15,13 +15,13 @@ class Database {
 		if (empty($dsn)) {
 			throw new \Exception("Database PDO DSN missing from configuration");
 		}
-		if (!empty($tmp = $config->get("db.tls_ca"))) {
+		if (!empty($tmp = $config->get("server.db.tls_ca"))) {
 			$options[\PDO::MYSQL_ATTR_SSL_CA] = $tmp;
 		}
-		if (!empty($tmp = $config->get("db.tls_cert"))) {
+		if (!empty($tmp = $config->get("server.db.tls_cert"))) {
 			$options[\PDO::MYSQL_ATTR_SSL_CERT] = $tmp;
 		}
-		if (!empty($tmp = $config->get("db.tls_key"))) {
+		if (!empty($tmp = $config->get("server.db.tls_key"))) {
 			$options[\PDO::MYSQL_ATTR_SSL_KEY] = $tmp;
 		}
 		$this->dbh = new \PDO($dsn, $user, $pass, $options);
