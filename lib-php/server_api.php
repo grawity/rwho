@@ -41,6 +41,26 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		}
 	}
 
+	// Accept any client including anonymous; additionally return whether
+	// it is trusted to see network-sensitive information (IP addresses).
+	function _authorize_public($what) {
+		$remote_user = $this->environ["REMOTE_USER"];
+		$remote_addr = $this->environ["REMOTE_ADDR"];
+		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
+			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
+			return true;
+		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
+			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
+			return true;
+		} elseif ($this->config->get_bool("privacy.deny_anonymous", false)) {
+			xsyslog(LOG_DEBUG, "Denying anonymous client to call $what");
+			throw new UnauthorizedClientError($what);
+		} else {
+			xsyslog(LOG_DEBUG, "Allowing untrusted client [$remote_addr] to call $what");
+			return !$this->config->get_bool("privacy.hide_rhost", false);
+		}
+	}
+
 	// Check whether a realm is trusted to not issue fake host principals.
 	function _is_trusted_realm($realm) {
 		$realms = $this->config->get_list("server.auth.local_realms");
@@ -145,8 +165,12 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	}
 
 	function GetEntries($user, $host) {
-		$this->_authorize_auth("GetEntries");
-		return $this->db->utmp_query($user, $host);
+		$priv = $this->_authorize_public("GetEntries");
+		$data = $this->db->utmp_query($user, $host);
+		if (!$priv) {
+			foreach ($data as &$e) { $e["rhost"] = null; }
+		}
+		return $data;
 	}
 
 	function GetCounts() {
