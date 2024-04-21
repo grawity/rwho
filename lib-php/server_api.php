@@ -28,16 +28,22 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		$this->client = new \RWho\Client($this->config, $this->db);
 	}
 
+	function log_debug($message) {
+		if ($this->config->get_bool("log.debug")) {
+			xsyslog(LOG_DEBUG, $message);
+		}
+	}
+
 	// Accept any non-anonymous client, e.g. via mod_auth_gssapi. This
 	// gives access to Get*() calls that reveal network-sensitive information.
 	function _authorize_auth($what) {
 		$remote_user = $this->environ["REMOTE_USER"];
 		$remote_addr = $this->environ["REMOTE_ADDR"];
 		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
-			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
+			$this->log_debug("Allowing client '$remote_user' to call $what");
 			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
-			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
+			$this->log_debug("Allowing client [$remote_addr] to call $what");
 			$this->trusted = true;
 		} else {
 			throw new UnauthorizedClientError($what);
@@ -50,16 +56,16 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		$remote_user = $this->environ["REMOTE_USER"];
 		$remote_addr = $this->environ["REMOTE_ADDR"];
 		if ($remote_user && $this->_is_ruser_trusted($remote_user)) {
-			xsyslog(LOG_DEBUG, "Allowing client '$remote_user' to call $what");
+			$this->log_debug("Allowing client '$remote_user' to call $what");
 			$this->trusted = true;
 		} elseif ($remote_addr && $this->_is_rhost_trusted($remote_addr)) {
-			xsyslog(LOG_DEBUG, "Allowing client [$remote_addr] to call $what");
+			$this->log_debug("Allowing client [$remote_addr] to call $what");
 			$this->trusted = true;
 		} elseif ($this->config->get_bool("privacy.deny_anonymous", false)) {
-			xsyslog(LOG_DEBUG, "Denying anonymous client to call $what");
+			$this->log_debug("Denying anonymous client to call $what");
 			throw new UnauthorizedClientError($what);
 		} else {
-			xsyslog(LOG_DEBUG, "Allowing untrusted client [$remote_addr] to call $what");
+			$this->log_debug("Allowing untrusted client [$remote_addr] to call $what");
 			$this->trusted = !$this->config->get_bool("privacy.anonymous_hide_rhost", false);
 		}
 	}
@@ -78,18 +84,18 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	// Check whether a Kerberos host principal is for a specific FQDN.
 	function _match_host_principal($principal, $host) {
 		if (!preg_match('!^host/([^/@]+)@([^/@]+)$!', $principal, $m)) {
-			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' is not a host principal");
+			$this->log_debug("Kerberos identity '$principal' is not a host principal");
 			return false;
 		}
 		$khost = $m[1];
 		$realm = $m[2];
 		if (!$this->_is_trusted_realm($realm)) {
-			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' is from an untrusted realm");
+			$this->log_debug("Kerberos identity '$principal' is from an untrusted realm");
 			return false;
 		}
 		// Check exact FQDN match only, no "short <=> fqdn" mapping (as we don't do it for Basic auth).
 		if (strtolower($khost) !== strtolower($host)) {
-			xsyslog(LOG_DEBUG, "Kerberos identity '$principal' not authorized for host '$host'");
+			$this->log_debug("Kerberos identity '$principal' not authorized for host '$host'");
 			return false;
 		}
 		return true;
@@ -110,16 +116,15 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		if ($auth_id === null) {
 			// No auth header, or account was unknown
 			if ($allow_anonymous) {
-				xsyslog(LOG_DEBUG, "Allowing anonymous client to update host '$host'");
+				$this->log_debug("Allowing anonymous client to update host '$host'");
 			} else {
-				// XXX: This can't happen because check_authn() already exits in this case.
 				xsyslog(LOG_WARNING, "Denying anonymous client to update host '$host'");
 				throw new UnauthorizedHostError();
 			}
 		} else {
 			// Valid auth for known account
 			if ($auth_id === $host || $this->_match_host_principal($auth_id, $host)) {
-				xsyslog(LOG_DEBUG, "Allowing client '$auth_id' to update host '$host'");
+				$this->log_debug("Allowing client '$auth_id' to update host '$host'");
 			} else {
 				xsyslog(LOG_WARNING, "Denying client '$auth_id' to update host '$host' (FQDN mismatch)");
 				throw new UnauthorizedHostError();

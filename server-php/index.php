@@ -10,6 +10,12 @@ class ApiServerApp {
 		$this->config->load(__DIR__."/../rwho.conf"); // for deny_anonymous
 	}
 
+	function log_debug($message) {
+		if ($this->config->get_bool("log.debug")) {
+			xsyslog(LOG_DEBUG, $message);
+		}
+	}
+
 	function die_require_http_basic() {
 		header("Status: 401");
 		header("WWW-Authenticate: Basic realm=\"rwho\"");
@@ -24,7 +30,7 @@ class ApiServerApp {
 		$auth_pw = @$_SERVER["PHP_AUTH_PW"];
 
 		if (isset($preauth_id)) {
-			xsyslog(LOG_DEBUG, "Accepting pre-authenticated client '$preauth_id'");
+			$this->log_debug("Accepting pre-authenticated client '$preauth_id'");
 			return $preauth_id;
 		}
 
@@ -32,23 +38,23 @@ class ApiServerApp {
 			$db_pw = $this->config->get("auth.clients.$auth_id", null);
 			if (!empty($db_pw)) {
 				if (password_verify($auth_pw, $db_pw)) {
-					xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");
+					$this->log_debug("Accepting authenticated client '$auth_id'");
 					return $auth_id;
 				} else {
 					xsyslog(LOG_WARNING, "Rejecting client '$auth_id' (authentication failure)");
 					$this->die_require_http_basic();
 				}
 			} else {
-				xsyslog(LOG_DEBUG, "Client sent unknown username '$auth_id', will treat as anonymous.");
+				$this->log_debug("Client sent unknown username '$auth_id', will treat as anonymous.");
 				// Fall through to anonymous
 			}
 		}
 
 		if ($auth_required) {
-			xsyslog(LOG_WARNING, "Rejecting anonymous client (configuration requires auth)");
+			xsyslog(LOG_NOTICE, "Rejecting anonymous client (configuration requires auth)");
 			$this->die_require_http_basic();
 		} else {
-			xsyslog(LOG_DEBUG, "Allowing anonymous client with no auth");
+			$this->log_debug("Allowing anonymous client with no auth");
 			return null;
 		}
 	}

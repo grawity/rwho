@@ -1,6 +1,10 @@
 # RWho UI configuration
 # vim: ft=dosini
 
+[log]
+# Spam the system log about authorization decisions on every call.
+debug = true
+
 [expire]
 # Display entries as stale if the host hasn't refreshed them for a while
 # (default: 11 minutes)
