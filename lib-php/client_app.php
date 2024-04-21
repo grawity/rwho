@@ -44,7 +44,7 @@ class ClientApplicationBase {
 		if ($anonymous) {
 			if ($this->config->get_bool("privacy.deny_anonymous", false))
 				return AC_DENIED;
-			elseif ($this->config->get_bool("privacy.hide_rhost", false))
+			elseif ($this->config->get_bool("privacy.anonymous_hide_rhost", false))
 				return AC_LIMITED;
 			else
 				return AC_TRUSTED;

@@ -57,7 +57,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 			throw new UnauthorizedClientError($what);
 		} else {
 			xsyslog(LOG_DEBUG, "Allowing untrusted client [$remote_addr] to call $what");
-			return !$this->config->get_bool("privacy.hide_rhost", false);
+			return !$this->config->get_bool("privacy.anonymous_hide_rhost", false);
 		}
 	}
 
