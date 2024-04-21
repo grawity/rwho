@@ -9,11 +9,13 @@ const AC_LIMITED = 1;	// Show limited information (no rhost)
 const AC_TRUSTED = 2;	// Show all information
 
 class ClientApplicationBase {
+	public $config;
+	public $client;
+
 	function __construct() {
 		$this->config = new \RWho\Config\Configuration();
 		$this->config->load(__DIR__."/../server.conf"); // for DB info
 		$this->config->load(__DIR__."/../rwho.conf");
-
 		$this->client = new \RWho\Client($this->config);
 	}
 

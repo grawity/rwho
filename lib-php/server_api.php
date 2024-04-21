@@ -1,6 +1,7 @@
 <?php
 namespace RWho\Server;
 require_once(__DIR__."/../lib-php/client.php");
+require_once(__DIR__."/../lib-php/client_app.php");
 require_once(__DIR__."/../lib-php/config.php");
 require_once(__DIR__."/../lib-php/database.php");
 require_once(__DIR__."/../lib-php/json_rpc.php");
@@ -12,8 +13,11 @@ function xsyslog($level, $message) {
 	return syslog($level, $message);
 }
 
-class RWhoApiInterface {
-	private $config;
+class RWhoApiInterface extends \RWho\ClientApplicationBase {
+	public $config;
+	public $client;
+
+	private $db;
 	private $environ;
 
 	function __construct($config, $environ) {
