@@ -8,8 +8,6 @@ username = rwho
 password = asdfhjkl
 
 [server]
-# Deny all requests from anonymous clients
-#auth_required = false
 # Deny updates from anonymous clients
 #update_auth_required = true
 

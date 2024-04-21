@@ -7,6 +7,7 @@ class ApiServerApp {
 	function __construct() {
 		$this->config = new \RWho\Config\Configuration();
 		$this->config->load(__DIR__."/../server.conf");
+		$this->config->load(__DIR__."/../rwho.conf"); // for deny_anonymous
 	}
 
 	function die_require_http_basic() {
@@ -16,7 +17,7 @@ class ApiServerApp {
 	}
 
 	function authenticate() {
-		$auth_required = $this->config->get_bool("server.auth_required", false);
+		$auth_required = $this->config->get_bool("privacy.deny_anonymous", false);
 		$preauth_id = @$_SERVER["REMOTE_USER"];
 		$auth_type = @$_SERVER["AUTH_TYPE"];
 		$auth_id = @$_SERVER["PHP_AUTH_USER"];
