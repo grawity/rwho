@@ -89,9 +89,9 @@ class Server {
 				$call_id = new Absent();
 			} else {
 				$call_id = $request["id"];
-				if (!is_null($call_id)
-				&& !is_string($call_id)
-				&& !is_numeric($call_id)) {
+				if (!is_null($call_id) &&
+				    !is_string($call_id) &&
+				    !is_numeric($call_id)) {
 					throw new RpcMalformedObjectError();
 				}
 			}
@@ -107,17 +107,17 @@ class Server {
 			try {
 				if ($params === null) {
 					$result = $this->interface->$method();
-				} elseif (is_array($params) && array_is_list($params)) {
+				} elseif (!is_array($params)) {
+					throw new RpcMalformedObjectError();
+				} elseif (array_is_list($params)) {
 					$result = $this->interface->$method(...$params);
-				} elseif (is_array($params) && $this->allow_named_args) {
+				} elseif ($this->allow_named_args) {
 					/* Allow spread of named parameters if opted-in.
 					 * This throws a generic Error if the parameter
 					 * names don't match, unfortunately. */
 					$result = $this->interface->$method(...$params);
-				} elseif (is_array($params) && !$this->allow_named_args) {
-					throw new RpcBadParametersError();
 				} else {
-					throw new RpcMalformedObjectError();
+					throw new RpcBadParametersError();
 				}
 			} catch (\ArgumentCountError $e) {
 				throw new RpcBadParametersError();
