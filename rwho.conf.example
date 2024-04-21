@@ -42,12 +42,18 @@ plan_attr = planFile
 #    if 'hide_rhost' were set. Use web server configuration to completely
 #    deny anonymous access to web UI.
 deny_anonymous = false
+#api.deny_anonymous = false
+#finger.deny_anonymous = false
+#web.deny_anonymous = false
 
 # Hide user hostnames from anonymous queries. (Default: false)
 #  - Finger UI treats queries coming from 'trusted_nets' as authenticated.
 #  - Web UI treats either queries from 'trusted_nets' or queries that have
 #    a non-empty REMOTE_USER as authenticated.
 anonymous_hide_rhost = true
+#api.anonymous_hide_rhost = false
+#finger.anonymous_hide_rhost = false
+#web.anonymous_hide_rhost = false
 
 # Queries from these IP addresses are considered "authenticated" (making
 # private information visible). Comma-separated list of CIDR masks.

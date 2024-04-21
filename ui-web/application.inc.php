@@ -38,14 +38,14 @@ class RWhoWebApp extends \RWho\ClientApplicationBase {
 	function should_deny() {
 		$addr = @$_SERVER["REMOTE_ADDR"];
 		$user = @$_SERVER["REMOTE_USER"];
-		$access = $this->_check_access($addr, $user);
+		$access = $this->_check_access($addr, $user, "web");
 		return ($access < \RWho\AC_LIMITED);
 	}
 
 	function should_filter() {
 		$addr = @$_SERVER["REMOTE_ADDR"];
 		$user = @$_SERVER["REMOTE_USER"];
-		$access = $this->_check_access($addr, $user);
+		$access = $this->_check_access($addr, $user, "web");
 		return ($access < \RWho\AC_TRUSTED);
 	}
 

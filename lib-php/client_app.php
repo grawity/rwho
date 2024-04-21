@@ -33,7 +33,23 @@ class ClientApplicationBase {
 		return true;
 	}
 
-	function _check_access($rhost, $ruser) {
+	function _should_deny_anonymous($service) {
+		if ($this->config->get_bool("privacy.deny_anonymous"))
+			return true;
+		elseif ($service && $this->config->get_bool("privacy.$service.deny_anonymous"))
+			return true;
+		return false;
+	}
+
+	function _should_limit_anonymous($service=null) {
+		if ($this->config->get_bool("privacy.anonymous_hide_rhost"))
+			return true;
+		elseif ($service && $this->config->get_bool("privacy.$service.anonymous_hide_rhost"))
+			return true;
+		return false;
+	}
+
+	function _check_access($rhost, $ruser, $service) {
 		$anonymous = true;
 		if (!empty($rhost) && $this->_is_rhost_trusted($rhost)) {
 			$anonymous = false;
@@ -42,9 +58,9 @@ class ClientApplicationBase {
 			$anonymous = false;
 		}
 		if ($anonymous) {
-			if ($this->config->get_bool("privacy.deny_anonymous", false))
+			if ($this->_should_deny_anonymous($service))
 				return AC_DENIED;
-			elseif ($this->config->get_bool("privacy.anonymous_hide_rhost", false))
+			elseif ($this->_should_limit_anonymous($service))
 				return AC_LIMITED;
 			else
 				return AC_TRUSTED;
