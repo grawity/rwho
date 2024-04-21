@@ -101,7 +101,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		$allow_anonymous = $this->config->get_bool("server.allow_anonymous_updates", false);
 
 		// Check by host, not auth_id, to match anonymous clients as well.
-		$kod_msg = $this->config->get("auth.kod.$host", $this->config->get("auth.kod.all"));
+		$kod_msg = $this->config->get("server.kod.$host", $this->config->get("server.kod.all"));
 		if ($kod_msg) {
 			xsyslog(LOG_NOTICE, "Rejected client with KOD message (\"$kod_msg\")");
 			throw new KodResponseError($kod_msg);

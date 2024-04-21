@@ -1,8 +1,11 @@
-# RWho server configuration
+# RWho server-specific configuration
 # vim: ft=dosini
+#
+# This file is also read by the web UI and fingerd, as they are not RPC clients
+# but directly access the database.
 
 [server]
-# Permit updates from anonymous clients.
+# In the original deployment of RWho, any host was allowed to upload data.
 #allow_anonymous_updates = false
 
 [server.db]
@@ -14,17 +17,19 @@ password = asdfhjkl
 [auth.clients]
 # HTTP Basic authentication. Each key corresponds to a username (typically the
 # server's FQDN), the value must be a hash compatible with password_verify().
+# Use ./genpw to generate a hash.
 #
 # Clients who specify unknown usernames aren't rejected outright, but are
-# treated the same as anonymous clients (see server.update_auth_required).
+# treated the same as anonymous clients (see server.allow_anonymous_updates).
 kremvax.example.com = $5$fJWY8mpdJT5aaAKs$D/hBtRq5ZicMNUtrIgbXdLfjH5Qg1RTvc6/vhXxI3h4
 
-[auth.kod]
+[server.kod]
 # "Kiss-o'-Death" responses. Each key corresponds to a RWho FQDN (*not* the
 # username, as anonymous clients do not send one), the value is a free-form
-# message.
+# message. If the key 'all' is set it will be applied to *all* hosts.
 #
 # If present, will request the agent to immediately exit and stop contacting
 # the server. (Any sessions currently in database will have to be purged after
 # expiry.)
+#all = Service has been permanently shut down
 badhost.evilgeniuses.int = Go away!
