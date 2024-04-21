@@ -160,7 +160,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	/* Client API */
 
 	function GetHosts() {
-		$this->_authorize_auth("GetHosts");
+		$this->_authorize_public("GetHosts");
 		return $this->db->host_query();
 	}
 
@@ -174,14 +174,14 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	}
 
 	function GetCounts() {
-		$this->_authorize_auth("GetCounts");
+		$this->_authorize_public("GetCounts");
 		return ["hosts" => $this->client->count_hosts(),
 			"users" => $this->client->count_users(),
 			"lines" => $this->client->count_lines()];
 	}
 
 	function GetPlanFile($user, $host) {
-		$this->_authorize_auth("GetPlanFile");
+		$this->_authorize_public("GetPlanFile");
 		return $this->client->get_plan_file($user, $host);
 	}
 
