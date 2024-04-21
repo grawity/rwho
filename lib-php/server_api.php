@@ -29,7 +29,7 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 	// Accept any non-anonymous client, e.g. via mod_auth_gssapi. This
 	// gives access to Get*() calls that reveal network-sensitive information.
-	function _authorize_any($what) {
+	function _authorize_auth($what) {
 		$auth_id = $this->environ["REMOTE_USER"];
 		if (!$auth_id) {
 			// No authentication
@@ -138,29 +138,29 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 	/* Client API */
 
 	function GetHosts() {
-		$this->_authorize_any("GetHosts");
+		$this->_authorize_auth("GetHosts");
 		return $this->db->host_query();
 	}
 
 	function GetEntries($user, $host) {
-		$this->_authorize_any("GetEntries");
+		$this->_authorize_auth("GetEntries");
 		return $this->db->utmp_query($user, $host);
 	}
 
 	function GetCounts() {
-		$this->_authorize_any("GetCounts");
+		$this->_authorize_auth("GetCounts");
 		return ["hosts" => $this->client->count_hosts(),
 			"users" => $this->client->count_users(),
 			"lines" => $this->client->count_lines()];
 	}
 
 	function GetPlanFile($user, $host) {
-		$this->_authorize_any("GetPlanFile");
+		$this->_authorize_auth("GetPlanFile");
 		return $this->client->get_plan_file($user, $host);
 	}
 
 	function PurgeOld() {
-		$this->_authorize_any("PurgeOld");
+		$this->_authorize_auth("PurgeOld");
 		return $this->client->purge_dead();
 	}
 
