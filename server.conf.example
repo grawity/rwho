@@ -19,7 +19,7 @@ mark_stale = 11m
 # been refreshed in this amount of time. (Default: 1d)
 host_dead = 1d
 
-[auth.pw]
+[auth.clients]
 # HTTP Basic authentication. Each key corresponds to a username (typically the
 # server's FQDN), the value must be a hash compatible with password_verify().
 #

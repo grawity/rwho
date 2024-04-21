@@ -29,7 +29,7 @@ class ApiServerApp {
 		}
 
 		if (isset($auth_id) && isset($auth_pw)) {
-			$db_pw = $this->config->get("auth.pw.$auth_id", null);
+			$db_pw = $this->config->get("auth.hosts.$auth_id", null);
 			if (!empty($db_pw)) {
 				if (password_verify($auth_pw, $db_pw)) {
 					xsyslog(LOG_DEBUG, "Accepting authenticated client '$auth_id'");

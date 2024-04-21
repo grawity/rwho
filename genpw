@@ -35,6 +35,6 @@ echo "auth_password = $passwd\n";
 echo "\n";
 
 echo "\e[1m# Server (".__DIR__."/server.conf)\e[m\n";
-echo "[auth.pw]\n";
+echo "[auth.clients]\n";
 echo "$fqdn = $digest\n";
 echo "\n";
