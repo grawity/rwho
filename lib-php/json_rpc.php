@@ -20,7 +20,7 @@ class Absent {
 	 */
 }
 
-class RpcException extends \Exception {
+abstract class RpcException extends \Exception {
 }
 
 class RpcParseError extends RpcException {
@@ -51,7 +51,17 @@ class RpcBadParametersError extends RpcException {
 	}
 }
 
+class RpcInternalError extends RpcException {
+	function __construct($message) {
+		$this->code = -32603;
+		$this->message = "$message";
+	}
+}
+
 class Server {
+	public $interface;
+	public $allow_named_args = false;
+
 	function __construct($interface) {
 		$this->interface = $interface;
 	}
@@ -99,15 +109,22 @@ class Server {
 					$result = $this->interface->$method();
 				} elseif (is_array($params) && array_is_list($params)) {
 					$result = $this->interface->$method(...$params);
-				} elseif (is_array($params)) {
-					/* PHP allows spread of name=>value mappings,
-					 * but we don't want to allow that. */
+				} elseif (is_array($params) && $this->allow_named_args) {
+					/* Allow spread of named parameters if opted-in.
+					 * This throws a generic Error if the parameter
+					 * names don't match, unfortunately. */
+					$result = $this->interface->$method(...$params);
+				} elseif (is_array($params) && !$this->allow_named_args) {
 					throw new RpcBadParametersError();
 				} else {
 					throw new RpcMalformedObjectError();
 				}
 			} catch (\ArgumentCountError $e) {
 				throw new RpcBadParametersError();
+			} catch (\Error $e) {
+				/* TODO: Implement a dedicated exception for wrong arg names,
+				 * similar to https://github.com/php/php-src/pull/2100 */
+				throw new RpcInternalError($e->getMessage());
 			}
 			$response = [
 				"jsonrpc" => "2.0",
