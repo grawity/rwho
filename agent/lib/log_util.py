@@ -13,7 +13,7 @@ def sd_notify(*msgs):
 
 def log_trace(msg, *args):
     if os.environ.get("DEBUG"):
-        log_trace(msg, *args)
+        log_debug(msg, *args)
 
 def log_debug(msg, *args):
     msg = msg % args
