@@ -108,7 +108,7 @@ class RwhoAgent():
 
     def refresh(self):
         sessions = self.enum_sessions()
-        log_debug("uploading %d sessions" % len(sessions))
+        log_trace("uploading %d sessions" % len(sessions))
         try:
             self.api.put_sessions(sessions)
             self.last_upload = time.time()
