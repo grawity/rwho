@@ -33,7 +33,7 @@ my $only_users;
 my $min_uid;
 my $pidfile;
 my $pidfile_h;
-my $kod_path;
+my @kod_path;
 
 my $my_hostname;
 my $my_fqdn;
@@ -207,11 +207,14 @@ sub upload {
 		return 1;
 	} elsif ($rmsg =~ /^KOD/) {
 		_err("upload: rejected: '".$rmsg."'");
-		if (open(my $kod_h, ">", $kod_path)) {
-			print $kod_h "(".scalar(gmtime)."): ".$rmsg."\n";
-			close($kod_h);
-		} else {
-			_err("could not create KOD file '".$kod_path."': $!");
+		for my $kod_path (@kod_path) {
+			if (open(my $kod_h, ">", $kod_path)) {
+				print $kod_h "(".scalar(gmtime)."): ".$rmsg."\n";
+				close($kod_h);
+				last;
+			} else {
+				_err("could not create KOD file '".$kod_path."': $!");
+			}
 		}
 		_err("exiting on KOD response");
 		exit;
@@ -416,13 +419,15 @@ if ($syslog) {
 }
 
 if ($ENV{HOME}) {
-	$kod_path = $ENV{HOME}."/rwho-agent.kod";
+	@kod_path = ($ENV{HOME}."/rwho-agent.kod");
 } else {
-	$kod_path = "/etc/rwho/agent.kod";
+	@kod_path = ("/var/lib/rwho/agent.kod", "/etc/rwho/agent.kod");
 }
 
-if (-e $kod_path) {
-	_die("KOD flag found at '$kod_path', exiting");
+for my $kod_path (@kod_path) {
+	if (-e $kod_path) {
+		_die("KOD flag found at '$kod_path', exiting");
+	}
 }
 
 # modules
