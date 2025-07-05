@@ -26,7 +26,7 @@ class RwhoAgent():
     # Basic auth uses /api/host, GSS auth uses /api/gss
     DEFAULT_SERVER = "https://rwho.nullroute.lt/api/host"
     CONFIG_PATH = "/etc/rwho/agent.conf"
-    KOD_PATH = "/etc/rwho/agent.kod"
+    KOD_PATH = ["/var/lib/rwho/agent.kod", "/etc/rwho/agent.kod"]
 
     def __init__(self, config_path=None,
                        config_data=None):
@@ -68,14 +68,22 @@ class RwhoAgent():
             log_info("server thinks we're anonymous")
 
     def check_kod(self):
-        if os.path.exists(self.KOD_PATH):
-            with open(self.KOD_PATH, "r") as fh:
-                message = fh.readline()
-            raise RwhoShutdownRequestedError(message)
+        for path in self.KOD_PATH:
+            if os.path.exists(path):
+                with open(path, "r") as fh:
+                    message = fh.readline()
+                raise RwhoShutdownRequestedError(message)
 
     def store_kod(self, message):
-        with open(self.KOD_PATH, "w") as fh:
-            fh.write(message)
+        for path in self.KOD_PATH:
+            try:
+                with open(path, "w") as fh:
+                    fh.write(message)
+            except Exception as e:
+                log_err("unable to store KOD marker at %r: %r", path, e)
+                # the caller will raise a RwhoShutdownRequestedError regardless
+            else:
+                return
 
     def _try_rdns(self, addr):
         if addr.startswith(("tmux(")):
