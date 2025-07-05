@@ -7,6 +7,9 @@ After=strongswan.service
 [Service]
 Type=notify
 User=rwho
+#DynamicUser=true
+ConfigurationDirectory=rwho
+StateDirectory=rwho
 ExecStart=/usr/local/rwho/agent/rwho-agent.py
 StandardOutput=null
 StandardError=journal
