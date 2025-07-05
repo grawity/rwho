@@ -1,7 +1,6 @@
 #!/usr/bin/env perl
 # rwho data collector daemon
 use warnings;
-no if $] >= 5.017011, warnings => qw(experimental::smartmatch);
 use strict;
 use 5.010;
 use Getopt::Long qw(:config no_ignore_case bundling);
@@ -65,11 +64,16 @@ sub _die {
 }
 
 sub parse_bool {
-	given (shift) {
-		when (undef) { undef; }
-		when (/^(yes|true)$/) { 1; }
-		when (/^(no|false)$/) { 0; }
-		default { _warn("invalid boolean value '$_'"); undef; }
+	my ($var) = @_;
+	if (!defined $var) {
+		return undef;
+	} elsif ($var =~ /^(yes|true)$/) {
+		return 1;
+	} elsif ($var =~ /^(no|false)$/) {
+		return 0;
+	} else {
+		_warn("invalid boolean value '$_'");
+		return undef;
 	}
 }
 
@@ -360,10 +364,14 @@ sub mainloop_monitor_inotify {
 sub mainloop_monitor {
 	$0 = "rwho-agent: monitor";
 
-	given ($monitor_impl) {
-		when ("kqueue") { goto &mainloop_monitor_kqueue; }
-		when ("inotify") { goto &mainloop_monitor_inotify; }
-		default { _die("monitor mode not supported on $^O"); }
+	if ($monitor_impl eq "kqueue") {
+		goto &mainloop_monitor_kqueue;
+	}
+	elsif ($monitor_impl eq "inotify") {
+		goto &mainloop_monitor_inotify;
+	}
+	else {
+		_die("monitor mode not supported on $^O");
 	}
 }
 
@@ -437,22 +445,20 @@ if ($do_single) {
 }
 
 if ($do_monitor) {
-	given ($^O) {
-		when (/^(free|net|open)bsd$/) {
-			unless (eval {require IO::KQueue}) {
-				_die("monitor enabled but IO::KQueue missing");
-			}
-			$monitor_impl = "kqueue";
+	if ($^O =~ /^(free|net|open)bsd$/) {
+		unless (eval {require IO::KQueue}) {
+			_die("monitor enabled but IO::KQueue missing");
 		}
-		when ("linux") {
-			unless (eval {require Linux::Inotify2}) {
-				_die("monitor enabled but Linux::Inotify2 missing");
-			}
-			$monitor_impl = "inotify";
+		$monitor_impl = "kqueue";
+	}
+	elsif ($^O eq "linux") {
+		unless (eval {require Linux::Inotify2}) {
+			_die("monitor enabled but Linux::Inotify2 missing");
 		}
-		default {
-			_die("monitor enabled but OS '$^O' not supported");
-		}
+		$monitor_impl = "inotify";
+	}
+	else {
+		_die("monitor enabled but OS '$^O' not supported");
 	}
 	debug("monitor: using $monitor_impl on $^O");
 }
