@@ -15,5 +15,5 @@ var settings = <?= json_encode([
 <?php } ?>
 		<a href="<?= htmlspecialchars($json_url) ?>">json</a>,
 		<a href="<?= htmlspecialchars($xml_url) ?>">xml</a>
-	| Built using <a href="https://github.com/grawity/rwho/">rwho</a>
+	| Built using <a href="https://nullroute.lt/projects/rwho.html">rwho</a>
 </p>
