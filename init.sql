@@ -10,6 +10,7 @@ CREATE TABLE utmp (
 	uid		integer,
 	-- UT_HOSTSIZE
 	rhost		varchar(256),
+	raw_rhost	varchar(256),
 	-- UT_LINESIZE
 	line		varchar(32),
 	time		integer,
