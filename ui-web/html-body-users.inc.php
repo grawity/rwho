@@ -42,6 +42,7 @@ $h_fqdn = htmlspecialchars($row["fqdn"]);
 $h_host = htmlspecialchars($row["host"]);
 $h_line = htmlspecialchars($row["line"]);
 $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
+$h_raw_rhost = strlen($row["raw_rhost"]) ? htmlspecialchars($row["raw_rhost"]) : "(local)";
 ?>
 	<tr<?= $row["is_stale"] ? " class=\"stale\"" : "" ?>>
 <?php if ($detailed || $k == 0) { ?>
@@ -66,7 +67,11 @@ $h_rhost = strlen($row["rhost"]) ? htmlspecialchars($row["rhost"]) : "(local)";
 <?php } ?>
 		</td>
 		<td><?= $row["is_summary"] ? "($h_line ttys)" : $h_line ?></td>
+<?php if ($detailed && $h_rhost !== $h_raw_rhost) { ?>
+		<td><?= $h_rhost ?> <span>(<?= $h_raw_rhost ?>)</span></td>
+<?php } else { ?>
 		<td><?= $h_rhost ?></td>
+<?php } ?>
 	</tr>
 <?php } ?>
 <?php } ?>
