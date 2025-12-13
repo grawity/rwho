@@ -111,9 +111,9 @@ class RwhoAgent():
         if self.ignored_users:
             sessions = [s for s in sessions
                         if s["user"] not in self.ignored_users]
-        for s in sessions:
-            s["raw_host"] = s["host"]
-            if self.attempt_rdns:
+        if self.attempt_rdns:
+            for s in sessions:
+                s["raw_host"] = s["host"]
                 s["host"] = self._try_rdns(s["host"])
         return sessions
 
