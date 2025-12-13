@@ -140,8 +140,15 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 		// Strip off the SSSD "@domain" suffix. This allows the same
 		// username in multiple SSSD domains to be summarized under a
 		// single section.
-		$entry["raw_user"] = $entry["user"];
-		$entry["user"] = explode("@", $entry["user"])[0];
+		if (!isset($entry["raw_user"])) {
+			$entry["raw_user"] = $entry["user"];
+			$entry["user"] = explode("@", $entry["user"])[0];
+		}
+		// Add raw_host for agents which don't perform rDNS lookups
+		// and don't send the separate field.
+		if (!isset($entry["raw_host"])) {
+			$entry["raw_host"] = $entry["host"];
+		}
 		return $entry;
 	}
 

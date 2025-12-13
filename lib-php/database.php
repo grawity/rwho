@@ -109,14 +109,15 @@ class Database {
 
 	function utmp_insert_one($host, $entry) {
 		$st = $this->dbh->prepare("
-			INSERT INTO utmp (host, user, raw_user, uid, rhost, line, time, updated)
-			VALUES (:host, :user, :raw_user, :uid, :rhost, :line, :time, :updated)
+			INSERT INTO utmp (host, user, raw_user, uid, rhost, raw_rhost, line, time, updated)
+			VALUES (:host, :user, :raw_user, :uid, :rhost, :raw_rhost, :line, :time, :updated)
 		");
 		$st->bindValue(":host", $host);
 		$st->bindValue(":user", $entry["user"]);
 		$st->bindValue(":raw_user", $entry["raw_user"]);
 		$st->bindValue(":uid", $entry["uid"]);
 		$st->bindValue(":rhost", $entry["host"]);
+		$st->bindValue(":raw_rhost", $entry["raw_host"]);
 		$st->bindValue(":line", $entry["line"]);
 		$st->bindValue(":time", $entry["time"]);
 		$st->bindValue(":updated", time());
