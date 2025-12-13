@@ -29,10 +29,12 @@ class UserListPage extends RWhoWebApp {
 		foreach ($data as $row) {
 			$json["utmp"][] = [
 				"user" => $row["user"],
+				"raw_user" => $row["raw_user"],
 				"uid" => $row["uid"],
 				"host" => $row["host"],
 				"line" => $row["line"],
 				"rhost" => $row["rhost"],
+				"raw_rhost" => $row["raw_rhost"],
 				"stale" => $row["is_stale"],
 				"summary" => $row["is_summary"],
 			];
@@ -78,7 +80,7 @@ class UserListPage extends RWhoWebApp {
 				$el->appendChild($doc->createAttribute("summary"))
 					->appendChild($doc->createTextNode("true"));
 
-			foreach (["user", "uid", "host", "line", "rhost"] as $k)
+			foreach (["user", "raw_user", "uid", "host", "line", "rhost", "raw_rhost"] as $k)
 				$el->appendChild($doc->createElement($k))
 					->appendChild($doc->createTextNode($row[$k]));
 		}
