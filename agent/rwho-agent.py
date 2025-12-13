@@ -90,6 +90,8 @@ class RwhoAgent():
             return addr
         elif m := re.match(r"^(.+)( via mosh \[\d+\])$", addr):
             return self._try_rdns(m.group(1)) + m.group(2)
+        elif m := re.match(r"^::ffff:([0-9.]+)$", addr):
+            return self._try_rdns(m.group(1))
         else:
             try:
                 _ = ipaddress.ip_address(addr)
