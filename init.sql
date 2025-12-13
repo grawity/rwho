@@ -17,7 +17,7 @@ CREATE TABLE utmp (
 	updated		integer,
 	-- indexes
 	PRIMARY KEY (rowid)
-);
+) ENGINE=MEMORY;
 
 DROP TABLE IF EXISTS hosts;
 CREATE TABLE hosts (
@@ -26,6 +26,6 @@ CREATE TABLE hosts (
 	last_addr	varchar(63),
 	-- indexes
 	PRIMARY KEY (host)
-);
+) ENGINE=MEMORY;
 
 COMMIT;
