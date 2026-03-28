@@ -6,6 +6,11 @@ class ConfigurationSyntaxError extends \Exception {
 		$this->message = "Syntax error at $file:$line: '$text'";
 	}
 }
+class ConfigurationValueError extends \Exception {
+	function __construct($key, $value, $error) {
+		$this->message = "$error: $key = ".var_export($value, true);
+	}
+}
 
 function _parse_config_file($file) {
 	$data = [];
@@ -60,12 +65,12 @@ class Configuration {
 		if (!array_key_exists($key, $this->_data))
 			return $default;
 		$value = $this->_data[$key];
-		if ($value === "true" || $value === "yes")
+		if ($value === "true" || $value === "yes" || $value === "1")
 			return true;
-		elseif ($value === "false" || $value === "no")
+		elseif ($value === "false" || $value === "no" || $value === "0")
 			return false;
 		else
-			return (bool) $value;
+			throw new ConfigurationValueError($key, $value, "Not a boolean value");
 	}
 
 	function get_list($key) {

@@ -37,7 +37,13 @@ class ConfigReader():
         return self.data.get(key, default)
 
     def get_bool(self, key, default=False):
-        return self.data.get(key, default) in {"true", "yes", "1", True}
+        val = self.data.get(key, default)
+        if val in {"true", "yes", "1", True}:
+            return True
+        elif val in {"false", "no", "0", False}:
+            return False
+        else:
+            raise ConfigSyntaxError("not a boolean value in %r: %r" % (key, val))
 
     def get_int(self, key, default=None):
         return int(self.data.get(key, default))
