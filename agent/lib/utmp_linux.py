@@ -1,5 +1,5 @@
+from dataclasses import dataclass
 import ctypes
-import dataclasses
 import enum
 import ipaddress
 import pwd
@@ -74,7 +74,7 @@ class struct_utent(_Structure):
         ("__reserved",      ctypes.c_char * 20),
     ]
 
-@dataclasses.dataclass
+@dataclass
 class UtmpEntry:
     type: UtType
     pid: int
@@ -111,17 +111,6 @@ def enum_utmp(path=None):
                             tv = en.ut_tv,
                             addr = addr)
 
-@dataclasses.dataclass
-class Session:
-    user: str
-    line: str
-    host: str
-    time: float
-    uid: int
-
-    def asdict(self):
-        return dataclasses.asdict(self)
-
 def enum_sessions(path=None):
     sessions = dict()
 
@@ -144,14 +133,16 @@ def enum_sessions(path=None):
             # session but instead deduplicate by line, keeping only the entry
             # with the most recent timestamp.
 
-            session = Session(user = ut.user,
-                              line = ut.line,
-                              host = ut.host,
-                              time = ut.tv.as_float(),
-                              uid = pwent.pw_uid)
+            session = {
+                "user": ut.user,
+                "line": ut.line,
+                "host": ut.host,
+                "time": ut.tv.as_float(),
+                "uid": pwent.pw_uid,
+            }
 
             if ut.line in sessions:
-                if session.time < sessions[ut.line].time:
+                if session["time"] < sessions[ut.line]["time"]:
                     continue
             sessions[ut.line] = session
 
