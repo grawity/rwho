@@ -116,3 +116,12 @@ def enum_sessions(path=None):
                 "time": timeval_to_float(en["tv"]),
                 "uid": pwent.pw_uid,
             }
+
+if __name__ == "__main__":
+    print("-- utmp entries --")
+    for en in enum_utmp("/net/ember/run/utmp"):
+        print(en)
+    print()
+    print("-- sessions --")
+    for en in enum_sessions("/net/ember/run/utmp"):
+        print(en)
