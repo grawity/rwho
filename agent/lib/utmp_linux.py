@@ -100,6 +100,8 @@ def enum_utmp(path=None):
             }
 
 def enum_sessions(path=None):
+    sessions = dict()
+
     for en in enum_utmp(path):
         if en["type"] == UtType.USER_PROCESS:
             try:
@@ -109,13 +111,30 @@ def enum_sessions(path=None):
                 log_info("Skipping utmp entry for nonexistent username %r" % en["user"])
                 continue
 
-            yield {
+            # Sometimes utmp ends up having multiple entries for the same
+            # ut_line (with different ut_id's), because sshd and netkit-telnetd
+            # don't quite agree on how to derive the ut_id for a pty (sshd uses
+            # the full 4-char tail "ts/X" or "s/XX" while telnetd uses the last
+            # path component "XX__").
+            #
+            # To cope with such situations, we no longer directly `yield` each
+            # session but instead deduplicate by line, keeping only the entry
+            # with the most recent timestamp.
+
+            session = {
                 "user": en["user"],
                 "line": en["line"],
                 "host": en["host"],
                 "time": timeval_to_float(en["tv"]),
                 "uid": pwent.pw_uid,
             }
+
+            if session["line"] in sessions:
+                if session["time"] < sessions[session["line"]]["time"]:
+                    continue
+            sessions[session["line"]] = session
+
+    return [*sessions.values()]
 
 if __name__ == "__main__":
     print("-- utmp entries --")
