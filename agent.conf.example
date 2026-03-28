@@ -1,4 +1,4 @@
-# RWho agent configuration
+# Example /etc/rwho/agent.conf for rwho-agent
 # vim: ft=dosini
 
 [agent]
@@ -8,17 +8,22 @@ notify_url = https://rwho.nullroute.lt/api/host
 # Override system FQDN for reporting (default: socket.getfqdn())
 host_name = hades.arpa
 
-# Basic auth username for server API (default: same as host_name)
+# Basic auth username for server API (default: same as 'agent.host_name')
 auth_username = hades.arpa
 
 # Basic auth password for server API (default: none)
 auth_password = hunter2
 
+# Kerberos keytab path for server API (default: none)
+# If set, activates Kerberos authentication (and makes the GSSAPI service name
+# default to "HTTP"). Currently only implemented by agent-python.
+auth_gss_keytab = /etc/krb5.keytab
+
 # GSSAPI service name for server API (default: none)
 # If set, activates Kerberos authentication. Note that this expects the GSS
-# "service@host" format, not the Kerberos "service/host@REALM" format.
-# Currently only implemented by agent-python.
-auth_gss_service = HTTP@rwho.example.com
+# "service" or "service@host" format, not the Kerberos "service/host@REALM"
+# format. Currently only implemented by agent-python.
+auth_gss_service = HTTP
 
 # Perform reverse DNS lookup for the remote host field (default: false)
 # Currently only implemented by agent-python.
