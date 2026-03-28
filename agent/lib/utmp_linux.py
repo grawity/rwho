@@ -1,3 +1,4 @@
+from dataclasses import dataclass
 import ctypes
 import enum
 import ipaddress
@@ -55,6 +56,9 @@ class struct_timeval(_Structure):
         ("tv_usec",         ctypes.c_int32),
     ]
 
+    def as_float(self):
+        return timeval_to_float((self.tv_sec, self.tv_usec))
+
 class struct_utent(_Structure):
     _fields_ = [
         ("ut_type",         ctypes.c_short),
@@ -70,6 +74,19 @@ class struct_utent(_Structure):
         ("__reserved",      ctypes.c_char * 20),
     ]
 
+@dataclass
+class UtmpEntry:
+    type: UtType
+    pid: int
+    id: str
+    line: str
+    user: str
+    host: str
+    session: str
+    tv: struct_timeval
+    exit: struct_exit_status
+    addr: ipaddress.ip_address
+
 def enum_utmp(path=None):
     sz = ctypes.sizeof(struct_utent)
     with open(path or UTMP_PATH, "rb") as fh:
@@ -83,32 +100,27 @@ def enum_utmp(path=None):
                     addr = ipaddress.ip_address(struct.pack("I", addr[0]))
             else:
                 addr = None
-            yield {
-                "type": UtType(en.ut_type),
-                "pid": en.ut_pid,
-                "line": en.ut_line.decode("ascii"),
-                "id": en.ut_id.decode("ascii"),
-                "user": en.ut_user.decode("utf-8", errors="replace"),
-                "host": en.ut_host.decode("utf-8", errors="replace"),
-                "exit": {
-                    "termination": en.ut_exit.e_termination,
-                    "exit": en.ut_exit.e_exit,
-                },
-                "session": en.ut_session,
-                "tv": (en.ut_tv.tv_sec, en.ut_tv.tv_usec),
-                "addr": addr,
-            }
+            yield UtmpEntry(type = UtType(en.ut_type),
+                            pid = en.ut_pid,
+                            id = en.ut_id.decode("ascii"),
+                            line = en.ut_line.decode("ascii"),
+                            user = en.ut_user.decode("utf-8", errors="replace"),
+                            host = en.ut_host.decode("utf-8", errors="replace"),
+                            exit = en.ut_exit,
+                            session = en.ut_session,
+                            tv = en.ut_tv,
+                            addr = addr)
 
 def enum_sessions(path=None):
     sessions = dict()
 
-    for en in enum_utmp(path):
-        if en["type"] == UtType.USER_PROCESS:
+    for ut in enum_utmp(path):
+        if ut.type == UtType.USER_PROCESS:
             try:
-                pwent = pwd.getpwnam(en["user"])
+                pwent = pwd.getpwnam(ut.user)
                 uid = pwent.pw_uid
             except KeyError:
-                log_info("Skipping utmp entry for nonexistent username %r" % en["user"])
+                log_info("Skipping utmp entry for nonexistent username %r" % ut.user)
                 continue
 
             # Sometimes utmp ends up having multiple entries for the same
@@ -122,17 +134,17 @@ def enum_sessions(path=None):
             # with the most recent timestamp.
 
             session = {
-                "user": en["user"],
-                "line": en["line"],
-                "host": en["host"],
-                "time": timeval_to_float(en["tv"]),
+                "user": ut.user,
+                "line": ut.line,
+                "host": ut.host,
+                "time": ut.tv.as_float(),
                 "uid": pwent.pw_uid,
             }
 
-            if session["line"] in sessions:
-                if session["time"] < sessions[session["line"]]["time"]:
+            if ut.line in sessions:
+                if session["time"] < sessions[ut.line]["time"]:
                     continue
-            sessions[session["line"]] = session
+            sessions[ut.line] = session
 
     return [*sessions.values()]
 
