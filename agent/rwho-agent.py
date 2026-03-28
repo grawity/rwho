@@ -23,8 +23,8 @@ EX_LSB_NOTRUNNING = 7
 EX_NORESTART = EX_LSB_NOTRUNNING
 
 class RwhoAgent():
-    # Basic auth uses /api/host, GSS auth uses /api/gss
     DEFAULT_SERVER = "https://rwho.nullroute.lt/api/host"
+    DEFAULT_KRB_SERVER = "https://rwho.nullroute.lt/api/gss"
     CONFIG_PATH = "/etc/rwho/agent.conf"
     KOD_PATH = ["/var/lib/rwho/agent.kod", "/etc/rwho/agent.kod"]
 
@@ -33,7 +33,6 @@ class RwhoAgent():
         self.config = ConfigReader(config_path or self.CONFIG_PATH)
         self.config.merge(config_data or [])
         self.check_kod()
-        self.server_url = self.config.get_str("agent.notify_url", self.DEFAULT_SERVER)
         self.host_name = self.config.get_str("agent.host_name", socket.getfqdn().lower())
         self.ignored_users = {"root"}
         self.attempt_rdns = self.config.get_bool("agent.attempt_rdns", True)
@@ -50,20 +49,26 @@ class RwhoAgent():
             self.ignored_users |= {*names.split()}
 
         log_info("identifying as %r", self.host_name)
-        self.api = RwhoClient(self.server_url,
-                              host_name=self.host_name)
+
+        default_server_url = self.DEFAULT_SERVER
+        gss_service = None
 
         if self.config.get_str("agent.auth_gss_keytab") \
            or os.environ.get("KRB5_CLIENT_KTNAME") \
            or os.environ.get("GSS_USE_PROXY"):
-            log_info("using GSS authentication")
+            default_server_url = self.DEFAULT_KRB_SERVER
             gss_service = self.config.get_str("agent.auth_gss_service", "HTTP")
-            self.api.rpc_set_auth_gssapi(gss_service)
             if not os.environ.get("GSS_USE_PROXY"):
                 gss_keytab = self.config.get_str("agent.auth_gss_keytab",
                                                  os.environ.get("KRB5_CLIENT_KTNAME",
                                                                 "/etc/krb5.keytab"))
                 os.environ["KRB5_CLIENT_KTNAME"] = gss_keytab
+
+        self.api = RwhoClient(self.config.get_str("agent.notify_url", default_server_url),
+                              host_name=self.host_name)
+        if gss_service:
+            log_info("using Kerberos authentication")
+            self.api.rpc_set_auth_gssapi(gss_service)
         elif passwd := self.config.get_str("agent.auth_password"):
             log_info("using Basic authentication")
             self.api.rpc_set_auth_basic(self.host_name, passwd)
