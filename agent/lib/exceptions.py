@@ -10,12 +10,12 @@ class RwhoPermanentError(Exception):
 
 # Exceptions
 
-class RwhoUnauthorizedClientError(RwhoServerError):
+class UnauthorizedClientError(RwhoServerError):
     code = 1
 
-class RwhoUnauthorizedHostError(RwhoServerError):
+class UnauthorizedHostError(RwhoServerError):
     code = 2
 
-class RwhoShutdownRequestedError(RwhoServerError, RwhoPermanentError):
+class ShutdownRequestedError(RwhoServerError, RwhoPermanentError):
     # Upload returned a 'KOD' result, or a stored KOD was found on startup
     code = 3

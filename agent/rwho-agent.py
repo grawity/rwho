@@ -85,7 +85,7 @@ class RwhoAgent():
             if os.path.exists(path):
                 with open(path, "r") as fh:
                     message = fh.readline()
-                raise RwhoShutdownRequestedError(message)
+                raise ShutdownRequestedError(message)
 
     def store_kod(self, message):
         for path in self.KOD_PATH:
@@ -94,7 +94,7 @@ class RwhoAgent():
                     fh.write(message)
             except Exception as e:
                 log_err("unable to store KOD marker at %r: %r", path, e)
-                # the caller will raise a RwhoShutdownRequestedError regardless
+                # the caller will raise a ShutdownRequestedError regardless
             else:
                 return
 
@@ -136,7 +136,7 @@ class RwhoAgent():
         try:
             self.api.put_sessions(sessions)
             self.last_upload = time.time()
-        except RwhoShutdownRequestedError as e:
+        except ShutdownRequestedError as e:
             log_debug("shutdown requested by server, giving up")
             self.store_kod(e.args[0])
             raise
@@ -145,7 +145,7 @@ class RwhoAgent():
         log_info("removing all host data")
         try:
             self.api.remove_host()
-        except RwhoShutdownRequestedError as e:
+        except ShutdownRequestedError as e:
             log_debug("shutdown requested by server, giving up")
             self.store_kod(e.args[0])
             raise
@@ -156,7 +156,7 @@ def run_forever(agent):
             log_trace("periodic: uploading on timer")
             try:
                 agent.refresh()
-            except RwhoShutdownRequestedError:
+            except ShutdownRequestedError:
                 raise
             except Exception as e:
                 log_err("periodic: upload failed: %r", e)
@@ -168,7 +168,7 @@ def run_forever(agent):
         log_trace("inotify: uploading on event %r", event)
         try:
             agent.refresh()
-        except RwhoShutdownRequestedError:
+        except ShutdownRequestedError:
             raise
         except Exception as e:
             log_err("inotify: upload failed: %r", e)
@@ -225,7 +225,7 @@ if __name__ == "__main__":
         agent = RwhoAgent(config_path=args.config,
                           config_data=args.option)
         run_forever(agent)
-    except RwhoShutdownRequestedError as e:
+    except ShutdownRequestedError as e:
         log_err("exiting on server shutdown request: %s", e.args[0])
         sd_notify("ERRNO=%d" % errno.ENOLINK)
         exit(EX_NORESTART)
