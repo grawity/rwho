@@ -67,9 +67,9 @@ sub parse_bool {
 	my ($var) = @_;
 	if (!defined $var) {
 		return undef;
-	} elsif ($var =~ /^(yes|true)$/) {
+	} elsif ($var =~ /^(yes|true|1)$/) {
 		return 1;
-	} elsif ($var =~ /^(no|false)$/) {
+	} elsif ($var =~ /^(no|false|0)$/) {
 		return 0;
 	} else {
 		_warn("invalid boolean value '$_'");

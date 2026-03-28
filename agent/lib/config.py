@@ -37,7 +37,7 @@ class ConfigReader():
         return self.data.get(key, default)
 
     def get_bool(self, key, default=False):
-        return bool(self.data.get(key, default) in {"true", "yes", True})
+        return self.data.get(key, default) in {"true", "yes", "1", True}
 
     def get_int(self, key, default=None):
         return int(self.data.get(key, default))
