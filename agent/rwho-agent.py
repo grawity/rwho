@@ -53,19 +53,19 @@ class RwhoAgent():
         default_server_url = self.DEFAULT_SERVER
         gss_service = None
 
-        if self.config.get_str("agent.auth_gss_keytab") \
+        if self.config.get_bool("agent.auth_gss") \
+           or self.config.get_str("agent.auth_gss_keytab") \
+           or self.config.get_str("agent.auth_gss_service") \
            or os.environ.get("KRB5_CLIENT_KTNAME") \
            or os.environ.get("GSS_USE_PROXY"):
             default_server_url = self.DEFAULT_KRB_SERVER
             gss_service = self.config.get_str("agent.auth_gss_service", "HTTP")
-            if not os.environ.get("GSS_USE_PROXY"):
-                gss_keytab = self.config.get_str("agent.auth_gss_keytab",
-                                                 os.environ.get("KRB5_CLIENT_KTNAME",
-                                                                "/etc/krb5.keytab"))
+            if gss_keytab := self.config.get_str("agent.auth_gss_keytab"):
                 os.environ["KRB5_CLIENT_KTNAME"] = gss_keytab
 
         self.api = RwhoClient(self.config.get_str("agent.notify_url", default_server_url),
                               host_name=self.host_name)
+
         if gss_service:
             log_info("using Kerberos authentication")
             self.api.rpc_set_auth_gssapi(gss_service)

@@ -14,9 +14,15 @@ auth_username = hades.arpa
 # Basic auth password for server API (default: none)
 auth_password = hunter2
 
-# Kerberos keytab path for server API (default: none)
-# If set, activates Kerberos authentication (and makes the GSSAPI service name
-# default to "HTTP"). Currently only implemented by agent-python.
+# Use Kerberos authentication for server API (default: false)
+# If set, activates Kerberos authentication. By default, credentials or keytab
+# will be taken from environment (i.e. default libkrb5 behavior). Currently
+# only implemented by agent-python.
+auth_gss = true
+
+# Kerberos client keytab path for server API (default: none)
+# If set, activates Kerberos authentication using the specified keytab as the
+# client credential. Currently only implemented by agent-python.
 auth_gss_keytab = /etc/krb5.keytab
 
 # GSSAPI service name for server API (default: none)
