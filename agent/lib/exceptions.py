@@ -10,10 +10,12 @@ class RwhoPermanentError(Exception):
 
 # Exceptions
 
+class RwhoUnauthorizedClientError(RwhoServerError):
+    code = 1
+
+class RwhoUnauthorizedHostError(RwhoServerError):
+    code = 2
+
 class RwhoShutdownRequestedError(RwhoServerError, RwhoPermanentError):
     # Upload returned a 'KOD' result, or a stored KOD was found on startup
-    pass
-
-class RwhoUploadRejectedError(RwhoServerError):
-    # Upload returned a result that is neither 'OK' nor 'KOD'
-    pass
+    code = 3

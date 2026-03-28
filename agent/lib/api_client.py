@@ -3,8 +3,9 @@ from .json_rpc import JsonRpcClient, RemoteFault, ConnectionError
 
 class RwhoClient(JsonRpcClient):
     _fault_map = {
-        403: RwhoUploadRejectedError,
-        410: RwhoShutdownRequestedError,
+        1: RwhoUnauthorizedClientError,
+        2: RwhoUnauthorizedHostError,
+        3: RwhoShutdownRequestedError,
     }
 
     def __init__(self, url, *, host_name=None):

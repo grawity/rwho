@@ -246,21 +246,21 @@ class RWhoApiInterface extends \RWho\ClientApplicationBase {
 
 class UnauthorizedClientError extends \JsonRpc\RpcException {
 	function __construct($what) {
-		$this->code = 403;
+		$this->code = 1;
 		$this->message = "Client not authorized to call $what()";
 	}
 }
 
 class UnauthorizedHostError extends \JsonRpc\RpcException {
 	function __construct() {
-		$this->code = 403;
+		$this->code = 2;
 		$this->message = "Client not authorized to update this host";
 	}
 }
 
 class KodResponseError extends \JsonRpc\RpcException {
 	function __construct($message) {
-		$this->code = 410;
+		$this->code = 3;
 		$this->message = "$message";
 	}
 }
